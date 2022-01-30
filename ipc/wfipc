@@ -1,0 +1,23 @@
+#!/bin/env python3
+
+import socket
+import json as js
+
+def send_json(sock, msg):
+    data = js.dumps(msg).encode('utf8')
+    header = len(data).to_bytes(4, byteorder="little")
+    sock.send(header)
+    sock.send(data)
+
+    response = sock.recv(1024)
+    rlen = int.from_bytes(response[:4], byteorder="little")
+    rps = js.loads(response[4:(rlen+4)])
+    return rps
+
+
+client = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
+client.connect("/tmp/wayfire.socket")
+
+message = {}
+message["method"] = "core/hello"
+print(send_json(client, message))
