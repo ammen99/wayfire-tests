@@ -32,7 +32,7 @@ See `../wfpyipc/wftest.py` for a list of possible exit codes and their meaning.
 
 # GUI Tests
 
-**NOTE: GUI Tests are not implemented yet!***
+**NOTE: GUI Tests are not implemented yet!**
 
 Sometimes, we want to verify the graphical output of Wayfire instead of verifying its state
 by using information from the debug IPC.
