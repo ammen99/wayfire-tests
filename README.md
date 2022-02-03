@@ -14,8 +14,11 @@ To execute a test or group of tests, run:
 `<test directory>` is the directory which contains all the tests you want to run.
 Information about each test run will be printed on the terminal.
 
-`<wayfire A>` is a folder which contains a checked out version of Wayfire to test.
-`<wayfire B>` is also a folder with a checked out version of Wayfire to compare with the first version.
+`<wayfire A>` is the Wayfire executable to be used in tests.
+`<wayfire B>` is the second Wayfire executable to be used for comparison in GUI tests.
+
+`<wayfire A>` and `<wayfire B>` (if specified) should both be executables which start Wayfire.
+They should both pass `-c` arguments to it.
 
 # Motivation & How it all works
 
@@ -28,7 +31,7 @@ However, a wayland compositor is not purely a data processing application, where
 Many of the actions we would like to test, even simpler ones like resizing a view, basically involve half of the codebase in one way or another.
 Individual steps can be unit-tested, of course, but the majority of Wayfire's bugs stem from unwanted/unplanned interactions between components.
 These interactions are usually spread out in time and involve one or more actual clients.
-An additional problem with unit-tests is that they cannot be used to effectively see the graphical output of Wayfire, which is of course the most
+An additional problem with unit tests is that they cannot be used to effectively see the graphical output of Wayfire, which is of course the most
 important output for a wayland compositor.
 This renders unit tests insufficient for Wayfire, although they are still used where they make sense (e.g. wf-config, wf-touch, transactions API).
 

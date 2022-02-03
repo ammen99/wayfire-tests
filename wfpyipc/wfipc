@@ -1,0 +1,11 @@
+#!/bin/env python3
+
+import sys
+from wfpyipc import wfipclib as wi
+
+client = wi.open_socket()
+
+def feed_key(message):
+    message["method"] = "core/feed_key"
+    message["data"]["combo"] = sys.argv[2]
+    wi.send_json(client, message)
