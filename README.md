@@ -8,14 +8,14 @@ Tests are organized in directories, starting in `./tests`, and each test is cont
 To execute a test or group of tests, run:
 
 ```sh
-./run_tests.sh <test directory> <wayfire A> <wayfire B>
+./run_tests.sh <test directory> <wayfire A> (<wayfire B>)
 ```
 
 `<test directory>` is the directory which contains all the tests you want to run.
 Information about each test run will be printed on the terminal.
 
 `<wayfire A>` is the Wayfire executable to be used in tests.
-`<wayfire B>` is the second Wayfire executable to be used for comparison in GUI tests.
+`<wayfire B>` is an optional argument, it is the second Wayfire executable to be used for comparison in GUI tests.
 
 `<wayfire A>` and `<wayfire B>` (if specified) should both be executables which start Wayfire.
 They should both pass `-c` arguments to it.
