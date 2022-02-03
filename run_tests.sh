@@ -74,9 +74,13 @@ function execute_test() {
     wayfire_pid=$!
     $1/main
     teststatus=$?
-    kill -9 $wayfire_pid
+    kill -9 $wayfire_pid &> /dev/null
     return $teststatus
 }
+
+test_ok=0
+test_notok=0
+test_skipped=0
 
 for testdir in $(find $1 -type d); do
     # Check only directories which have a main entry point
@@ -96,19 +100,42 @@ for testdir in $(find $1 -type d); do
     case $status in
         $WF_TEST_OK)
             printf "${GREEN}OK"
+            test_ok=$(($test_ok + 1))
             ;;
         $WF_TEST_WRONG)
             printf "${RED}WRONG"
+            test_notok=$(($test_notok + 1))
             ;;
         $WF_TEST_SKIP)
             printf "${YELLOW}SKIPPED"
+            test_skipped=$(($test_skipped + 1))
             ;;
         $WF_TEST_CRASH)
             printf "${RED}CRASH"
+            test_notok=$(($test_notok + 1))
             ;;
         *)
             printf "${RED}Unknown (test crashed?)"
+            test_notok=$(($test_notok + 1))
             ;;
     esac
     printf "${CLR}\n"
 done
+
+# -------------------------------- Summary -------------------------------------
+test_total=$(($test_ok + $test_skipped + $test_notok))
+
+text_ok="${GREEN}${test_ok} ok${CLR}"
+text_notok="${test_ok} not ok"
+text_skipped="${test_skipped} skipped"
+
+if (($test_notok > 0)); then
+    text_ok="${BLUE}${test_ok} ok${CLR}"
+    text_notok="${RED}${test_notok} not ok${CLR}"
+fi
+
+if (($test_skipped > 0)); then
+    text_skipped="${YELLOW}${test_skipped} skipped${CLR}"
+fi
+
+printf "Test summary: $text_ok / $text_notok / $text_skipped (total: ${test_total})\n"
