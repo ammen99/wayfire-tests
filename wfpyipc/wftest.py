@@ -1,7 +1,8 @@
 import os
+import sys
 
 def _end_test(code):
-    exit(os.getenv(code))
+    sys.exit(int(str(os.getenv(code))))
 
 def ok():
     _end_test("WF_TEST_OK")

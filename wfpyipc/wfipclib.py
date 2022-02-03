@@ -4,7 +4,7 @@ import json as js
 
 def open_socket():
     client = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
-    client.connect(str(os.getenv("WAYFIRE_SOCKET")))
+    client.connect(str(os.getenv("_WAYFIRE_SOCKET")))
     return client
 
 def get_msg_template():
@@ -23,6 +23,13 @@ def send_json(sock, msg):
     rlen = int.from_bytes(response[:4], byteorder="little")
     rps = js.loads(response[4:(rlen+4)])
     return rps
+
+def ping(socket):
+    message = get_msg_template()
+    message["method"] = "core/ping"
+    response = send_json(socket, message)
+    return ("result", "ok") in response.items()
+
 
 def create_wayland_output(socket):
     message = get_msg_template()

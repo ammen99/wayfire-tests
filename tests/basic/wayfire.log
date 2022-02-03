@@ -1,3 +1,0 @@
-II 03-02-22 13:29:57.018 - [src/main.cpp:288] Starting wayfire version 0.8.0-543380bc (Feb  1 2022, branch 'debug-ipc')
-II 03-02-22 13:29:57.020 - [backend/wayland/backend.c:531] Creating wayland backend
-II 03-02-22 13:29:57.030 - [render/egl.c:180] Supported EGL client extensions: EGL_EXT_device_base EGL_EXT_device_enumeration EGL_EXT_device_query EGL_EXT_platform_base EGL_KHR_client_get_all_proc_addresses EGL_EXT_client_extensions EGL_KHR_debug EGL_EXT_platform_device EGL_EXT_platform_wayland EGL_KHR_platform_wayland EGL_EXT_platform_x11 EGL_KHR_platform_x11 EGL_MESA_platform_xcb EGL_MESA_platform_gbm EGL_KHR_platform_gbm EGL_MESA_platform_surfaceless
