@@ -30,7 +30,6 @@ def ping(socket):
     response = send_json(socket, message)
     return ("result", "ok") in response.items()
 
-
 def create_wayland_output(socket):
     message = get_msg_template()
     message["method"] = "core/create_wayland_output"
@@ -39,4 +38,10 @@ def create_wayland_output(socket):
 def list_views(socket, message):
     message = get_msg_template()
     message["method"] = "core/list_views"
+    return send_json(socket, message)
+
+def run(socket, cmd):
+    message = get_msg_template()
+    message["method"] = "core/run"
+    message["data"]["cmd"] = cmd
     return send_json(socket, message)

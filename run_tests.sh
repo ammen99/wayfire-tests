@@ -30,6 +30,12 @@ if (( $# == 3 )); then
         print_usage
         exit -1
     fi
+
+    if ! [ -x "grim" ]; then
+        printf "emersion/grim not found in \$PATH, cannot run GUI tests.\n"
+        exit -1
+    fi
+
     printf "Running ${BLUE}GUI${CLR} tests.\n"
 fi
 
@@ -69,12 +75,55 @@ function prepare_test() {
 # $1 - test directory
 # $2 - wayfire executable
 # $? - test result
-function execute_test() {
+function execute_simple_test() {
     $2 -c $1/wayfire.ini &> $1/wayfire.log &
     wayfire_pid=$!
     $1/main
     teststatus=$?
     kill -9 $wayfire_pid &> /dev/null
+    return $teststatus
+}
+
+# $1 - test directory
+# $2 - wayfire executable
+# $3 - output file name
+# $? - test result
+function execute_gui_test_once() {
+    $2 -c $1/wayfire.ini &> $1/wayfire.log &
+    wayfire_pid=$!
+    $1/main
+    if ! [ $? -eq $WF_TEST_OK ]; then
+        return $teststatus
+    fi
+
+    ./wfscreenshot.py $3
+    if ! [ $? -eq 0 ]; then
+        return $WF_TEST_CRASH
+    fi
+    kill -9 $wayfire_pid &> /dev/null
+    return 0
+}
+
+# $1 - test directory
+# $2 - wayfire executable 1
+# $3 - wayfire executable 2
+# $? - test result
+function execute_gui_test() {
+    file1=$1/wayfire_a.png
+    file2=$1/wayfire_b.png
+
+    execute_gui_test_once $1 $2 $file1
+    if ! [ $? -eq 0 ]; then
+        return $WF_TEST_CRASH
+    fi
+
+    execute_gui_test_once $1 $3 $file2
+    if ! [ $? -eq 0 ]; then
+        return $WF_TEST_CRASH
+    fi
+
+
+
     return $teststatus
 }
 
@@ -93,7 +142,7 @@ for testdir in $(find $1 -type d); do
     status=$?
 
     if [ $status -eq $WF_TEST_OK ]; then
-        execute_test $testdir $2
+        execute_simple_test $testdir $2
         status=$?
     fi
 
