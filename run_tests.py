@@ -10,6 +10,7 @@ from termcolor import colored
 from typing import Tuple
 from wfpytest import wftest
 import wfutil as wu
+import traceback
 
 parser = argparse.ArgumentParser()
 parser.add_argument('testdir', type=str)
@@ -27,7 +28,7 @@ def check_arguments():
     if args.compare_with:
         check_exec(args.compare_with)
 
-def run_test_once(TestType, logfile: str, image_path: str | None = None):
+def _run_test_once(TestType, logfile: str, image_path: str | None = None):
     test = TestType()
     test.prepare()
     result = test.run(args.wayfire, logfile)
@@ -39,6 +40,12 @@ def run_test_once(TestType, logfile: str, image_path: str | None = None):
 
     test.cleanup()
     return result
+
+def run_test_once(TestType, logfile: str, image_path: str | None = None):
+    try:
+        _run_test_once(TestType, logfile, image_path)
+    except:
+        return wftest.Status.CRASHED, "Test runner crashed " + traceback.format_exc()
 
 def run_single_test(testMain) -> Tuple[wftest.Status, str | None]:
     spec = importlib.util.spec_from_file_location("main", testMain)
