@@ -44,3 +44,10 @@ class WayfireIPCClient:
         message["method"] = "core/run"
         message["data"]["cmd"] = cmd
         return self.send_json(message)
+
+# Helper functions
+def check_geometry(x: int, y: int, width: int, height: int, obj) -> bool:
+    if obj['x'] == x and obj['y'] == y and \
+        obj['width'] == width and obj['height'] == height:
+        return True
+    return False

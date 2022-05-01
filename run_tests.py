@@ -30,7 +30,11 @@ def check_arguments():
 
 def _run_test_once(TestType, logfile: str, image_path: str | None = None):
     test = TestType()
-    test.prepare()
+
+    status, msg = test.prepare()
+    if status != wftest.Status.OK:
+        return status, msg
+
     result = test.run(args.wayfire, logfile)
     if image_path:
         err_msg = wu.take_screenshot(test.socket, image_path)
@@ -43,7 +47,7 @@ def _run_test_once(TestType, logfile: str, image_path: str | None = None):
 
 def run_test_once(TestType, logfile: str, image_path: str | None = None):
     try:
-        _run_test_once(TestType, logfile, image_path)
+        return _run_test_once(TestType, logfile, image_path)
     except:
         return wftest.Status.CRASHED, "Test runner crashed " + traceback.format_exc()
 
