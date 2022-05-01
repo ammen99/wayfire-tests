@@ -9,6 +9,8 @@ time.sleep(1)
 
 try:
     socket = wi.open_socket()
+    wi.run(socket, 'xterm')
+
     if wi.ping(socket):
         wt.ok()
     else:
