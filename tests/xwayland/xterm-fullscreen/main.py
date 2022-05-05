@@ -18,11 +18,11 @@ class WTest(wt.WayfireTest):
         self.socket.run('xterm -fullscreen')
         time.sleep(0.2) # Wait for xterm to start
 
-        views = self.socket.list_views()
-        for v in views:
-            if v['app-id'] == 'XTerm':
-                if not wi.check_geometry(0, 0, 504, 657, v['base-geometry']) or \
-                        not wi.check_geometry(0, 0, 504, 657, v['geometry']):
-                    return wt.Status.WRONG, "xterm has wrong fullscreen size {}!".format(v['base-geometry'])
+        xterm = self.socket.get_view_info('XTerm')
+        if not xterm:
+            return wt.Status.WRONG, 'No xterm running?'
 
+        if not wi.check_geometry(0, 0, 504, 657, xterm['base-geometry']) or \
+                not wi.check_geometry(0, 0, 504, 657, xterm['geometry']):
+            return wt.Status.WRONG, "xterm has wrong fullscreen size {}!".format(xterm['base-geometry'])
         return wt.Status.OK, None

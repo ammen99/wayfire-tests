@@ -1,3 +1,4 @@
+from typing import Any
 import socket
 import json as js
 
@@ -39,11 +40,38 @@ class WayfireIPCClient:
         message["method"] = "core/list_views"
         return self.send_json(message)
 
+    def get_view_info(self, app_id: str) -> Any:
+        views = self.list_views()
+        for v in views:
+            if v['app-id'] == app_id:
+                return v
+        return None
+
     def run(self, cmd):
         message = get_msg_template()
         message["method"] = "core/run"
         message["data"]["cmd"] = cmd
         return self.send_json(message)
+
+    def move_cursor(self, x: int, y: int):
+        message = get_msg_template()
+        message["method"] = "core/move_cursor"
+        message["data"]["x"] = x
+        message["data"]["y"] = y
+        return self.send_json(message)
+
+    def click_button(self, btn_with_mod: str, mode: str):
+        """
+        btn_with_mod can be S-BTN_LEFT/BTN_RIGHT/etc. or just BTN_LEFT/...
+        If S-BTN..., then the super modifier will be pressed as well.
+        mode is full, press or release
+        """
+        message = get_msg_template()
+        message["method"] = "core/feed_button"
+        message["data"]["mode"] = mode
+        message["data"]["combo"] = btn_with_mod
+        return self.send_json(message)
+
 
 # Helper functions
 def check_geometry(x: int, y: int, width: int, height: int, obj) -> bool:
