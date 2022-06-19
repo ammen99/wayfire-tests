@@ -50,7 +50,7 @@ class WayfireTest:
         env = os.environ.copy()
         env['_WAYFIRE_SOCKET'] = self._socket_name
 
-        with open(logfile, "w+") as log:
+        with open(logfile, "w") as log:
             self._wayfire_process = subprocess.Popen([wayfire_path, '-c', self.locate_cfgfile()], env=env, stdout=log, stderr=log)
             time.sleep(0.5) # Leave a bit of time for Wayfire to initialize
             self.socket = WayfireIPCClient(self._socket_name)

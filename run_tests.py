@@ -16,6 +16,7 @@ parser = argparse.ArgumentParser()
 parser.add_argument('testdir', type=str)
 parser.add_argument('wayfire', type=str)
 parser.add_argument('--compare-with', type=str, required=False)
+parser.add_argument('--show-log', action='store_true', required=False)
 args = parser.parse_args()
 
 def check_exec(path):
@@ -47,7 +48,8 @@ def _run_test_once(TestType, logfile: str, image_path: str | None = None):
 
 def run_test_once(TestType, logfile: str, image_path: str | None = None):
     try:
-        return _run_test_once(TestType, logfile, image_path)
+        actual_log = '/dev/stdout' if args.show_log else logfile
+        return _run_test_once(TestType, actual_log, image_path)
     except:
         return wftest.Status.CRASHED, "Test runner crashed " + traceback.format_exc()
 
