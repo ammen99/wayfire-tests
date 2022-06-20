@@ -2,6 +2,7 @@ from enum import Enum
 from typing import Tuple, Optional
 from wfipclib import WayfireIPCClient
 import subprocess
+import signal
 import os
 import time
 import traceback
@@ -51,7 +52,8 @@ class WayfireTest:
         env['_WAYFIRE_SOCKET'] = self._socket_name
 
         with open(logfile, "w") as log:
-            self._wayfire_process = subprocess.Popen([wayfire_path, '-c', self.locate_cfgfile()], env=env, stdout=log, stderr=log)
+            self._wayfire_process = subprocess.Popen([wayfire_path, '-c', self.locate_cfgfile()],
+                    env=env, stdout=log, stderr=log, preexec_fn=os.setsid)
             time.sleep(0.5) # Leave a bit of time for Wayfire to initialize
             self.socket = WayfireIPCClient(self._socket_name)
 
@@ -61,5 +63,6 @@ class WayfireTest:
 
     def cleanup(self):
         if self._wayfire_process:
-            self._wayfire_process.kill()
-
+            pgrp = os.getpgid(self._wayfire_process.pid)
+            os.killpg(pgrp, signal.SIGKILL)
+            self._wayfire_process.terminate()
