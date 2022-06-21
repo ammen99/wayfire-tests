@@ -65,4 +65,3 @@ class WayfireTest:
         if self._wayfire_process:
             pgrp = os.getpgid(self._wayfire_process.pid)
             os.killpg(pgrp, signal.SIGKILL)
-            self._wayfire_process.terminate()
