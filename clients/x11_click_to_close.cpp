@@ -7,6 +7,7 @@
 #include <X11/Xatom.h>
 #include <X11/Xutil.h>
 #include <stdlib.h>
+#include <iostream>
 
 int main(int argc, char **argv) {
     bool set_fullscreen = 0;
@@ -51,17 +52,18 @@ int main(int argc, char **argv) {
     // Map the window
     XMapRaised(display, window);
 
-    // Manually configure so that wayfire gets the correct position
-    XWindowChanges xws;
-    xws.x = x;
-    xws.y = y;
-    XConfigureWindow(display, window, CWX | CWY, &xws);
+    if (!set_fullscreen) {
+        // Manually configure so that wayfire gets the correct position
+        XWindowChanges xws;
+        xws.x = x;
+        xws.y = y;
+        XConfigureWindow(display, window, CWX | CWY, &xws);
+    }
 
     XEvent event;
     bool running = true;
     while (running) {
         XNextEvent(display, &event);
-
         switch (event.type) {
           case ButtonPress:
             if (event.xbutton.button == Button3) {
