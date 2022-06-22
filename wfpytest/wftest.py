@@ -17,10 +17,21 @@ class Status(Enum):
         return self.value == other.value
 
 class WayfireTest:
+    # An approximation of how long clients take to start and communicate with Wayfire
+    # If your PC is slow, this duration can be increased, making every test wait longer
+    # for clients.
+    # In the end, this also results in longer testing times, but what can we do ...
+    def _set_ipc_duration(self, duration):
+        self._ipc_duration = duration
+
     def __init__(self):
         self._wayfire_process = None
         self.socket: WayfireIPCClient = None #type:ignore
         self._socket_name = "/tmp/wt.socket"
+        self._ipc_duration = 0.1
+
+    def wait_for_clients(self, times=1):
+        time.sleep(self._ipc_duration * times) # Wait for clients to start/process events
 
     def prepare(self) -> Tuple[Status, Optional[str]]:
         return Status.OK, None

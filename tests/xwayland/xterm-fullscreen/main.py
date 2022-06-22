@@ -3,7 +3,6 @@
 import wftest as wt
 import wfipclib as wi
 import shutil
-import time
 
 def is_gui() -> bool:
     return False
@@ -16,7 +15,7 @@ class WTest(wt.WayfireTest):
 
     def _run(self):
         self.socket.run('xterm -fullscreen')
-        time.sleep(0.2) # Wait for xterm to start
+        self.wait_for_clients()
 
         xterm = self.socket.get_view_info('XTerm')
         if not xterm:

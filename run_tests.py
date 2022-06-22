@@ -17,7 +17,10 @@ parser.add_argument('testdir', type=str)
 parser.add_argument('wayfire', type=str)
 parser.add_argument('--compare-with', type=str, required=False)
 parser.add_argument('--show-log', action='store_true', required=False)
+parser.add_argument('--ipc-timeout', type=float, default=0.1, required=False)
 args = parser.parse_args()
+
+# Make tests execute slower or faster
 
 def check_exec(path):
     if not os.access(path, os.X_OK):
@@ -32,6 +35,7 @@ def check_arguments():
 def _run_test_once(TestType, logfile: str, image_path: str | None = None):
     test = TestType()
 
+    test._set_ipc_duration(args.ipc_timeout)
     status, msg = test.prepare()
     if status != wftest.Status.OK:
         return status, msg

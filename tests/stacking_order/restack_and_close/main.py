@@ -2,7 +2,6 @@
 
 import wftest as wt
 import shutil
-import time
 
 def is_gui() -> bool:
     return False
@@ -25,7 +24,7 @@ class WTest(wt.WayfireTest):
         self.socket.run('x11_click_to_close 1 0 0 100 100')
         self.socket.run('x11_click_to_close 2 50 50 100 100')
         self.socket.run('x11_click_to_close 3 0 50 100 100')
-        time.sleep(0.1) # Wait for clients to start
+        self.wait_for_clients()
 
         # Bring 3 to front
         self.socket.move_cursor(1, 140)
@@ -47,19 +46,19 @@ class WTest(wt.WayfireTest):
         # Close 2
         self.socket.move_cursor(75, 75)
         self.socket.click_button('BTN_RIGHT', 'full')
-        time.sleep(0.1)
+        self.wait_for_clients()
         if self._get_views() != ['1', '3']:
             return wt.Status.WRONG, 'Client 2 did not receive input ' + str(self._get_views())
 
         # Close 1
         self.socket.click_button('BTN_RIGHT', 'full')
-        time.sleep(0.1)
+        self.wait_for_clients()
         if self._get_views() != ['3']:
             return wt.Status.WRONG, 'Client 1 did not receive input ' + str(self._get_views())
 
         # Close 3
         self.socket.click_button('BTN_RIGHT', 'full')
-        time.sleep(0.1)
+        self.wait_for_clients()
         if self._get_views() != []:
             return wt.Status.WRONG, 'Client 3 did not receive input ' + str(self._get_views())
 

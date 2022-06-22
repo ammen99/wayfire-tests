@@ -1,9 +1,7 @@
 #!/bin/env python3
 
 import wftest as wt
-import wfipclib as wi
 import shutil
-import time
 
 def is_gui() -> bool:
     return False
@@ -18,14 +16,14 @@ class WTest(wt.WayfireTest):
 
     def _run(self):
         self.socket.run('weston-terminal -m')
-        time.sleep(0.1) # Wait for weston-terminal to start
+        self.wait_for_clients()
 
         terminal = self.socket.get_view_info('nil')
         x = terminal['geometry']['x'] + terminal['geometry']['width'] - 16
         y = terminal['geometry']['y'] + 16
         self.socket.move_cursor(x, y)
         self.socket.click_button('BTN_LEFT', 'full')
-        time.sleep(0.1) # Wait for weston-terminal to close
+        self.wait_for_clients(2)
 
         if len(self.socket.list_views()) > 0:
             print(self.socket.list_views())
