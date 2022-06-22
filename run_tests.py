@@ -32,7 +32,7 @@ def check_arguments():
     if args.compare_with:
         check_exec(args.compare_with)
 
-def _run_test_once(TestType, logfile: str, image_path: str | None = None):
+def _run_test_once(TestType, wayfire_exe, logfile: str, image_path: str | None = None):
     test = TestType()
 
     test._set_ipc_duration(args.ipc_timeout)
@@ -40,7 +40,7 @@ def _run_test_once(TestType, logfile: str, image_path: str | None = None):
     if status != wftest.Status.OK:
         return status, msg
 
-    result = test.run(args.wayfire, logfile)
+    result = test.run(wayfire_exe, logfile)
     if image_path:
         err_msg = wu.take_screenshot(test.socket, image_path)
         if err_msg:
@@ -50,10 +50,10 @@ def _run_test_once(TestType, logfile: str, image_path: str | None = None):
     test.cleanup()
     return result
 
-def run_test_once(TestType, logfile: str, image_path: str | None = None):
+def run_test_once(TestType, wayfire_exe, logfile: str, image_path: str | None = None):
     try:
         actual_log = '/dev/stdout' if args.show_log else logfile
-        return _run_test_once(TestType, actual_log, image_path)
+        return _run_test_once(TestType, wayfire_exe, actual_log, image_path)
     except:
         return wftest.Status.CRASHED, "Test runner crashed " + traceback.format_exc()
 
@@ -72,15 +72,12 @@ def run_single_test(testMain) -> Tuple[wftest.Status, str | None]:
     status = wftest.Status.OK
     msg = None
 
-
-    if foo.is_gui() and not args.compare_with: # type: ignore
-        status, msg = wftest.Status.SKIPPED, 'GUI test need a second Wayfire executable via --compare-with'
-    elif foo.is_gui(): # type: ignore
-        status, msg = run_test_once(foo.WTest, 'wayfireA.log', 'wayfireA.png') # type: ignore
-        msg = 'wayfireA: ' + msg
+    if foo.is_gui() and args.compare_with: # type: ignore
+        status, msg = run_test_once(foo.WTest, args.wayfire, 'wayfireA.log', 'wayfireA.png') # type: ignore
+        msg = 'wayfireA: ' + str(msg)
         if status == wftest.Status.OK:
-            status, msg = run_test_once(foo.WTest, 'wayfireB.log', 'wayfireB.png') # type: ignore
-            msg = 'wayfireB: ' + msg
+            status, msg = run_test_once(foo.WTest, args.compare_with, 'wayfireB.log', 'wayfireB.png') # type: ignore
+            msg = 'wayfireB: ' + str(msg)
             if status == wftest.Status.OK:
                 code = wu.compare_images('wayfireA.png', 'wayfireB.png')
                 if code == wu.ImageDiff.SAME:
@@ -90,7 +87,7 @@ def run_single_test(testMain) -> Tuple[wftest.Status, str | None]:
                 else:
                     status, msg = wftest.Status.WRONG, 'Screenshots are different.'
     else:
-        status, msg = run_test_once(foo.WTest, 'wayfire.log') # type: ignore
+        status, msg = run_test_once(foo.WTest, args.wayfire, 'wayfire.log') # type: ignore
 
     os.chdir(cwd)
     return status, msg
