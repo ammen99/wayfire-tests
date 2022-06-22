@@ -40,22 +40,22 @@ def _run_test_once(TestType, wayfire_exe, logfile: str, image_path: str | None =
     if status != wftest.Status.OK:
         return status, msg
 
-    result = test.run(wayfire_exe, logfile)
-    if image_path:
-        err_msg = wu.take_screenshot(test.socket, image_path)
-        if err_msg:
-            test.cleanup()
-            return wftest.Status.CRASHED, "Could not take a screenshot: " + err_msg
-
-    test.cleanup()
-    return result
+    try:
+        result = test.run(wayfire_exe, logfile)
+        if image_path:
+            err_msg = wu.take_screenshot(test.socket, image_path)
+            if err_msg:
+                test.cleanup()
+                return wftest.Status.CRASHED, "Could not take a screenshot: " + err_msg
+        test.cleanup()
+        return result
+    except:
+        test.cleanup()
+        return wftest.Status.CRASHED, "Test runner crashed " + traceback.format_exc()
 
 def run_test_once(TestType, wayfire_exe, logfile: str, image_path: str | None = None):
-    try:
-        actual_log = '/dev/stdout' if args.show_log else logfile
-        return _run_test_once(TestType, wayfire_exe, actual_log, image_path)
-    except:
-        return wftest.Status.CRASHED, "Test runner crashed " + traceback.format_exc()
+    actual_log = '/dev/stdout' if args.show_log else logfile
+    return _run_test_once(TestType, wayfire_exe, actual_log, image_path)
 
 def run_single_test(testMain) -> Tuple[wftest.Status, str | None]:
     spec = importlib.util.spec_from_file_location("main", testMain)
