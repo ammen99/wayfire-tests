@@ -72,6 +72,11 @@ class WayfireIPCClient:
         message["data"]["combo"] = btn_with_mod
         return self.send_json(message)
 
+    def press_key(self, key: str):
+        message = get_msg_template()
+        message["method"] = "core/feed_key"
+        message["data"]["combo"] = key
+        return self.send_json(message)
 
 # Helper functions
 def check_geometry(x: int, y: int, width: int, height: int, obj) -> bool:
