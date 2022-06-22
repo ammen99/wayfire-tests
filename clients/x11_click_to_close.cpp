@@ -7,6 +7,7 @@
 #include <X11/Xatom.h>
 #include <X11/Xutil.h>
 #include <stdlib.h>
+#include <iostream>
 
 int main(int argc, char **argv) {
     bool set_fullscreen = 0;
@@ -43,7 +44,7 @@ int main(int argc, char **argv) {
     }
 
     // Set app-id so that tests can know which window is which
-    XSelectInput(display, window, ButtonPressMask);
+    XSelectInput(display, window, ButtonPressMask | ButtonReleaseMask | PointerMotionMask);
     XClassHint hint;
     hint.res_class = hint.res_name = argv[1];
     XSetClassHint(display, window, &hint);
@@ -51,23 +52,35 @@ int main(int argc, char **argv) {
     // Map the window
     XMapRaised(display, window);
 
-    // Manually configure so that wayfire gets the correct position
-    XWindowChanges xws;
-    xws.x = x;
-    xws.y = y;
-    XConfigureWindow(display, window, CWX | CWY, &xws);
+    if (!set_fullscreen) {
+        // Manually configure so that wayfire gets the correct position
+        XWindowChanges xws;
+        xws.x = x;
+        xws.y = y;
+        XConfigureWindow(display, window, CWX | CWY, &xws);
+    }
 
     XEvent event;
     bool running = true;
     while (running) {
         XNextEvent(display, &event);
+        std::cout << "Any event" << std::endl;
 
         switch (event.type) {
           case ButtonPress:
+            std::cout << "Got " << event.xbutton.button << " "
+                << event.xbutton.x << " " << event.xbutton.y << " "<< event.xbutton.state << std::endl;
+
             if (event.xbutton.button == Button3) {
                 running = false;
             }
 
+            break;
+          case ButtonRelease:
+            std::cout << "Released " << event.xbutton.button << std::endl;
+            break;
+          case PointerMotionMask:
+            std::cout << "Moved " << event.xmotion.x << " "<< event.xmotion.y << std::endl;
             break;
         }
     }
