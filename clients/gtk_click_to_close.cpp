@@ -21,7 +21,7 @@ static void setup_window(Gtk::Window *win)
 
 int main(int argc, char **argv)
 {
-    Gtk::Window *a, *b, *c, *d;
+    Gtk::Window *a = NULL, *b = NULL, *c = NULL, *d = NULL;
 
     auto app = Gtk::Application::create();
 
