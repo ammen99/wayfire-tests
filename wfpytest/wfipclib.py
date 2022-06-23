@@ -47,6 +47,13 @@ class WayfireIPCClient:
                 return v
         return None
 
+    def get_view_info_title(self, title: str) -> Any:
+        views = self.list_views()
+        for v in views:
+            if v['title'] == title:
+                return v
+        return None
+
     def run(self, cmd):
         message = get_msg_template()
         message["method"] = "core/run"
