@@ -7,14 +7,15 @@
 #include <X11/Xatom.h>
 #include <X11/Xutil.h>
 #include <stdlib.h>
+#include <string.h>
 #include <iostream>
 
 int main(int argc, char **argv) {
     bool set_fullscreen = 0;
     int x = 0;
     int y = 0;
-    int width = 1;
-    int height = 1;
+    int width = 100;
+    int height = 100;
 
     if (argc <= 3) {
         set_fullscreen = 1;
@@ -32,17 +33,6 @@ int main(int argc, char **argv) {
     auto window = XCreateSimpleWindow(display, RootWindow(display, screen),
         x, y, width, height, 0, BlackPixel(display, screen), WhitePixel(display, screen));
 
-    // Set fullscreen if needed
-    if (set_fullscreen) {
-        Atom atoms[2] = {
-            XInternAtom(display, "_NET_WM_STATE_FULLSCREEN", False),
-            None
-        };
-
-        XChangeProperty(display, window, XInternAtom(display, "_NET_WM_STATE", False),
-            XA_ATOM, 32, PropModeReplace, (unsigned char*)atoms, 1);
-    }
-
     // Set app-id so that tests can know which window is which
     XSelectInput(display, window, ButtonPressMask);
     XClassHint hint;
@@ -50,9 +40,26 @@ int main(int argc, char **argv) {
     XSetClassHint(display, window, &hint);
 
     // Map the window
-    XMapRaised(display, window);
+    XMapWindow(display, window);
 
-    if (!set_fullscreen) {
+
+    // Set fullscreen if needed
+    if (set_fullscreen) {
+        Atom fullscreen   = XInternAtom(display, "_NET_WM_STATE_FULLSCREEN", False);
+        Atom net_wm_state = XInternAtom(display, "_NET_WM_STATE", False);
+
+        XEvent fsevent;
+        memset(&fsevent, 0, sizeof(fsevent));
+        fsevent.type = ClientMessage;
+
+        fsevent.xclient.message_type = net_wm_state;
+        fsevent.xclient.display = display;
+        fsevent.xclient.window = window;
+        fsevent.xclient.format = 32;
+        fsevent.xclient.data.l[0] = 1;
+        fsevent.xclient.data.l[1] = (long)fullscreen;
+        XSendEvent(display, XDefaultRootWindow(display), False, SubstructureRedirectMask, &fsevent);
+    } else {
         // Manually configure so that wayfire gets the correct position
         XWindowChanges xws;
         xws.x = x;
