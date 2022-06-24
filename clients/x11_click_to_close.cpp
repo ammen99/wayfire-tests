@@ -38,6 +38,7 @@ int main(int argc, char **argv) {
     XClassHint hint;
     hint.res_class = hint.res_name = argv[1];
     XSetClassHint(display, window, &hint);
+    XStoreName(display, window, argv[1]);
 
     // Map the window
     XMapWindow(display, window);
