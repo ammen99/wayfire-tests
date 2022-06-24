@@ -39,11 +39,10 @@ class WTest(wt.WayfireTest):
         self.wait_for_clients(3)
         if self._get_views() != ['a']:
             return wt.Status.WRONG, 'Dialog b was not closed: ' + str(self._get_views())
-        self.wait_for_clients(10)
 
         # Open one dialog
         self.socket.press_key('KEY_O')
-        self.wait_for_clients(10)
+        self.wait_for_clients(3)
         if self._get_views() != ['a', 'auto0']:
             return wt.Status.WRONG, 'Main view did not get "o": ' + str(self._get_views())
 
