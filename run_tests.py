@@ -49,6 +49,9 @@ def _run_test_once(TestType, wayfire_exe, logfile: str, image_path: str | None =
                 return wftest.Status.CRASHED, "Could not take a screenshot: " + err_msg
         test.cleanup()
         return result
+    except KeyboardInterrupt:
+        test.cleanup()
+        raise
     except:
         test.cleanup()
         return wftest.Status.CRASHED, "Test runner crashed " + traceback.format_exc()
