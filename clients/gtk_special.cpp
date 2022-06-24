@@ -1,12 +1,17 @@
 // A simple program which opens a window and dialogs
 // with nested structure as described in the command line argument.
-// A dialog closes itself if clicked on.
+//
+// All of the created windows close themselves if they receive a right click.
+// In addition, keyboard interaction is supported too:
+// q -> close window and subwindows
 
 // ./gtk_click_to_close a -> Just main window with title a
 // ./gtk_click_to_close a b -> Main window with title a with dialog b
 // ./gtk_click_to_close a b c -> Main window with title a with dialogs b, c
 // ./gtk_click_to_close a b c d -> Main window with title a with dialogs b, c, c has nested dialog d
 #include <gtkmm.h>
+
+int cnt_created = 0;
 
 static void setup_window(Gtk::Window *win)
 {
@@ -15,6 +20,37 @@ static void setup_window(Gtk::Window *win)
         if (button->button == GDK_BUTTON_SECONDARY)
         {
             win->close();
+        }
+    });
+
+    win->signal_key_press_event().connect_notify([win] (GdkEventKey *button)
+    {
+        Gtk::Window *w;
+        switch (button->keyval)
+        {
+          case GDK_KEY_o:
+            w = new Gtk::MessageDialog(*win, "test");
+            w->set_title("auto" + std::to_string(cnt_created));
+            ++cnt_created;
+            setup_window(w);
+            w->show_all();
+
+          default:
+            // do nothing
+            ;
+        }
+    });
+
+    win->signal_key_release_event().connect_notify([win] (GdkEventKey *button)
+    {
+        switch (button->keyval)
+        {
+          case GDK_KEY_q:
+            win->close();
+            break;
+          default:
+            // do nothing
+            ;
         }
     });
 }

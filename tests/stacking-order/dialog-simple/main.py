@@ -11,15 +11,15 @@ def is_gui() -> bool:
 # layer-shell view (and receives input from it).
 class WTest(wt.WayfireTest):
     def prepare(self):
-        if not shutil.which('gtk_click_to_close'):
-            return wt.Status.SKIPPED, "Missing gtk_click_to_close"
+        if not shutil.which('gtk_special'):
+            return wt.Status.SKIPPED, "Missing gtk_special (Did you compile test clients?)"
         return wt.Status.OK, None
 
     def _get_views(self):
         return sorted([v['title'] for v in self.socket.list_views()])
 
     def _run(self):
-        self.socket.run('gtk_click_to_close a b')
+        self.socket.run('gtk_special a b')
         self.wait_for_clients(5)
 
         if self._get_views() != ['a', 'b']:
