@@ -13,16 +13,24 @@ class WayfireIPCClient:
         self.client = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
         self.client.connect(socket_name)
 
+    def read_exact(self, n):
+        response = bytes()
+        while n > 0:
+            read_this_time = self.client.recv(n)
+            n -= len(read_this_time)
+            response += read_this_time
+
+        return response
+
     def send_json(self, msg):
         data = js.dumps(msg).encode('utf8')
         header = len(data).to_bytes(4, byteorder="little")
         self.client.send(header)
         self.client.send(data)
 
-        response = self.client.recv(1024)
-        rlen = int.from_bytes(response[:4], byteorder="little")
-        rps = js.loads(response[4:(rlen+4)])
-        return rps
+        rlen = int.from_bytes(self.read_exact(4), byteorder="little")
+        response_message = self.read_exact(rlen)
+        return js.loads(response_message)
 
     def ping(self):
         message = get_msg_template()
