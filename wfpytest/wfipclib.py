@@ -48,6 +48,25 @@ class WayfireIPCClient:
         message["method"] = "core/list_views"
         return self.send_json(message)
 
+    def layout_views(self, layout):
+        views = self.list_views()
+        print("Start")
+        print(views)
+
+        message = get_msg_template()
+        message["method"] = "core/layout_views"
+        msg_layout = []
+
+        for ident in layout:
+            (x, y, w, h) = layout[ident]
+            for v in views:
+                print(ident, v['app-id'], v['title'], x, y, w, h)
+                if v['app-id'] == ident or v['title'] == ident:
+                    msg_layout.append({"id": v["id"], "x": x, "y": y, "width": w, "height": h})
+
+        message["data"]["views"] = msg_layout
+        return self.send_json(message)
+
     def get_view_info(self, app_id: str) -> Any:
         views = self.list_views()
         for v in views:
