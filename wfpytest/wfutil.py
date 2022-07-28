@@ -5,6 +5,7 @@ import wfipclib as wi
 import traceback
 import psutil
 import time
+import os
 
 class ImageDiff(Enum):
     SAME = 0
@@ -43,3 +44,26 @@ def take_screenshot(socket: wi.WayfireIPCClient, path: str) -> str | None:
         return None
     except:
         return "Failed to wait for grim: " + traceback.format_exc()
+
+class LoggedProcess:
+    def __init__(self, socket: wi.WayfireIPCClient, cmd: str, app_id: str, add_arg: str = ""):
+        socket.run("{} {} {} {}".format(cmd, app_id, "/tmp/" + app_id, add_arg))
+        self.logfile = open("/tmp/" + app_id, "a+")
+        self.logfile = open("/tmp/" + app_id, "r")
+        self.last_line = ""
+        os.set_blocking(self.logfile.fileno(), False)
+
+    def _read_next(self):
+        self.last_line = self.logfile.readline()
+        if not self.last_line:
+            self.last_line = "<empty>"
+        else:
+            self.last_line = self.last_line[:-1] # Remove trailing newline
+
+    def expect_line(self, line: str):
+        self._read_next()
+        return line == self.last_line
+
+    def expect_none(self):
+        self._read_next()
+        return self.last_line == "<empty>"
