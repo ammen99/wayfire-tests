@@ -50,9 +50,6 @@ class WayfireIPCClient:
 
     def layout_views(self, layout):
         views = self.list_views()
-        print("Start")
-        print(views)
-
         message = get_msg_template()
         message["method"] = "core/layout_views"
         msg_layout = []
@@ -60,7 +57,6 @@ class WayfireIPCClient:
         for ident in layout:
             (x, y, w, h) = layout[ident]
             for v in views:
-                print(ident, v['app-id'], v['title'], x, y, w, h)
                 if v['app-id'] == ident or v['title'] == ident:
                     msg_layout.append({"id": v["id"], "x": x, "y": y, "width": w, "height": h})
 

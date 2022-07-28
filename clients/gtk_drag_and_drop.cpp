@@ -1,6 +1,7 @@
 // A simple program which opens a window and waits for drag-and-drop action.
-// Once a drop operation completes, the window who received the operation closes itself.
+// The drag-and-drop action is logged to a file.
 #include <gtkmm.h>
+#include "log.hpp"
 
 int cnt_created = 0;
 
@@ -12,14 +13,25 @@ static void setup_window(Gtk::Window *win)
     win->drag_source_set(types);
     win->drag_dest_set(types);
 
+    win->signal_drag_begin().connect_notify([] (auto)
+    {
+        logger::log("drag-begin");
+    });
+
+    win->signal_drag_end().connect_notify([] (auto)
+    {
+        logger::log("drag-end");
+    });
+
     win->signal_drag_drop().connect_notify([win] (auto, auto, auto, auto)
     {
-        win->close();
+        logger::log("drag-drop");
     });
 }
 
 int main(int argc, char **argv)
 {
+    logger::init(argc, argv);
     auto app = Gtk::Application::create();
 
     Gtk::Window a;
