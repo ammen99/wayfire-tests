@@ -53,6 +53,11 @@ class LoggedProcess:
         self.last_line = ""
         os.set_blocking(self.logfile.fileno(), False)
 
+    def reset_logs(self):
+        # Just read until EOF
+        while self.logfile.readline():
+            pass
+
     def _read_next(self):
         self.last_line = self.logfile.readline()
         if not self.last_line:
