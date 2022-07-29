@@ -1,5 +1,4 @@
-// A simple program which opens a window and waits for drag-and-drop action.
-// The drag-and-drop action is logged to a file.
+// A simple program which opens a window and logs pointer events on it.
 #include <gtkmm.h>
 #include "log.hpp"
 
