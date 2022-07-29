@@ -23,22 +23,21 @@ class WTest(wt.WayfireTest):
         self.socket.click_button('BTN_LEFT', 'full')
 
     def _run(self):
-        # Run 'a' on WL-1
         self.socket.run('gtk_special a')
+        self.socket.run('gtk_special b')
         self.wait_for_clients(2)
-        if self._get_views() != ['a']:
-            return wt.Status.WRONG, 'Demo app A did not open: ' + str(self._get_views())
+        if self._get_views() != ['a', 'b']:
+            return wt.Status.WRONG, 'Demo apps did not open: ' + str(self._get_views())
 
         # Create WL-2
         self.socket.create_wayland_output()
-        # Click on WL-2 to make sure next client opens there
-        self.socket.move_cursor(0, 0)
-        self.socket.click_button('BTN_LEFT', 'full')
-        self.socket.run('gtk_special b')
-        self.wait_for_clients(2)
 
-        if self._get_views() != ['a', 'b']:
-            return wt.Status.WRONG, 'Demo apps did not open completely: ' + str(self._get_views())
+        # position the views (a -> WL-1, b-> WL-2)
+        layout = {}
+        layout['a'] = (0, 0, 100, 100, 'WL-1')
+        layout['b'] = (0, 0, 100, 100, 'WL-2')
+        self.socket.layout_views(layout)
+        self.wait_for_clients(2)
 
         # Go to WL-1
         self.socket.move_cursor(500, 0)
