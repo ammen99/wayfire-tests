@@ -1,3 +1,4 @@
+
 #!/bin/env python3
 
 import wfutil as wu
@@ -19,7 +20,7 @@ class WTest(wt.WayfireTest):
         return sorted([v['title'] for v in self.socket.list_views()])
 
     def _run(self):
-        gtk1 = wu.LoggedProcess(self.socket, 'gtk_logger', 'gtk1')
+        gtk1 = wu.LoggedProcess(self.socket, 'WAYLAND_DEBUG=1 gtk_logger', 'gtk1', ' &> /tmp/log1')
         gtk2 = wu.LoggedProcess(self.socket, 'gtk_logger', 'gtk2')
         self.wait_for_clients(2)
         if self._get_views() != ['gtk1', 'gtk2']:
@@ -36,40 +37,48 @@ class WTest(wt.WayfireTest):
         gtk1.reset_logs()
         gtk2.reset_logs()
 
-        # Go to gtk1
+        # Go to gtk1 and start implicit grab
         self.socket.move_cursor(50, 50)
+        self.socket.click_button('BTN_LEFT', 'press')
         self.wait_for_clients(2)
         if not gtk1.expect_line("pointer-enter"):
             return wt.Status.WRONG, 'gtk1 did not receive enter: ' + gtk1.last_line
-        if not gtk1.expect_none():
-            return wt.Status.WRONG, 'gtk1 has unexpected output: ' + gtk1.last_line
+        if not gtk1.expect_line("button-press 272"): # 272 is BTN_LEFT
+            return wt.Status.WRONG, 'gtk1 did not receive click: ' + gtk1.last_line
 
+        # Move cursor inside gtk1
         self.socket.move_cursor(50, 60)
         self.wait_for_clients(2)
         if not gtk1.expect_line("pointer-motion 50,60"):
             return wt.Status.WRONG, 'gtk1 did not receive motion2: ' + gtk1.last_line
-        if not gtk1.expect_none():
-            return wt.Status.WRONG, 'gtk1 has unexpected output: ' + gtk1.last_line
 
-        # Go to gtk2
-        self.socket.move_cursor(100, 50)
+        # Move cursor to gtk2 => gtk1 should still get the events as it has implicit grab
+        self.socket.move_cursor(100, 40)
+        self.socket.move_cursor(150, 50)
         self.wait_for_clients(2)
+        if not gtk1.expect_line("pointer-motion 100,40"):
+            return wt.Status.WRONG, 'gtk1 did not receive motion3: ' + gtk1.last_line
+        if not gtk1.expect_line("pointer-motion 150,50"):
+            return wt.Status.WRONG, 'gtk1 did not receive motion4: ' + gtk1.last_line
+        if not gtk2.expect_none():
+            return wt.Status.WRONG, 'gtk2 got some events despite implicit grab on gtk1! ' + gtk2.last_line
+
+        # Release button => gtk2 should get focus
+        self.socket.click_button('BTN_LEFT', 'release')
+        self.wait_for_clients(2)
+        if not gtk1.expect_line("button-release 272"): # 272 is BTN_LEFT
+            return wt.Status.WRONG, 'gtk1 did not receive button release: ' + gtk1.last_line
         if not gtk1.expect_line("pointer-leave"):
             return wt.Status.WRONG, 'gtk1 did not receive leave: ' + gtk1.last_line
         if not gtk1.expect_none():
-            return wt.Status.WRONG, 'gtk1 has trailing output2: ' + gtk1.last_line
+            return wt.Status.WRONG, 'gtk1 has trailing output: ' + gtk1.last_line
         if not gtk2.expect_line("pointer-enter"):
             return wt.Status.WRONG, 'gtk2 did not receive enter: ' + gtk2.last_line
-
-        # Move out of windows
-        self.socket.move_cursor(200, 100)
-        self.wait_for_clients(2)
-        if not gtk2.expect_line("pointer-leave"):
-            return wt.Status.WRONG, 'gtk2 did not receive leave: ' + gtk2.last_line
         if not gtk2.expect_none():
-            return wt.Status.WRONG, 'gtk2 has trailing output: ' + gtk1.last_line
+            return wt.Status.WRONG, 'gtk2 has trailing output: ' + gtk2.last_line
 
         if self._get_views() != ['gtk1', 'gtk2']:
             return wt.Status.WRONG, 'Apps crashed? ' + str(self._get_views())
 
         return wt.Status.OK, None
+
