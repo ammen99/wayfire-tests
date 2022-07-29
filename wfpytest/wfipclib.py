@@ -55,10 +55,13 @@ class WayfireIPCClient:
         msg_layout = []
 
         for ident in layout:
-            (x, y, w, h) = layout[ident]
+            x, y, w, h = layout[ident][:4]
             for v in views:
                 if v['app-id'] == ident or v['title'] == ident:
-                    msg_layout.append({"id": v["id"], "x": x, "y": y, "width": w, "height": h})
+                    layout_for_view = {"id": v["id"], "x": x, "y": y, "width": w, "height": h}
+                    if len(layout[ident]) == 5:
+                        layout_for_view["output"] = layout[ident][-1]
+                    msg_layout.append(layout_for_view)
 
         message["data"]["views"] = msg_layout
         return self.send_json(message)
