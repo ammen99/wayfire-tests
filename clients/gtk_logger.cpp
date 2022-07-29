@@ -3,40 +3,95 @@
 #include <gtkmm.h>
 #include "log.hpp"
 
-int cnt_created = 0;
+#include <gdk/gdkwayland.h>
+#include <wayland-client.h>
+
+void handle_pointer_enter(void *data, struct wl_pointer *wl_pointer, uint32_t serial,
+    struct wl_surface *surface, wl_fixed_t surface_x, wl_fixed_t surface_y)
+{
+    logger::log("pointer-enter");
+}
+
+void handle_pointer_leave(void *data, struct wl_pointer *wl_pointer, uint32_t serial,
+    struct wl_surface *surface)
+{
+    logger::log("pointer-leave");
+}
+
+void handle_pointer_motion(void *data, struct wl_pointer *wl_pointer, uint32_t time,
+    wl_fixed_t surface_x, wl_fixed_t surface_y)
+{
+    int x = std::round(wl_fixed_to_double(surface_x));
+    int y = std::round(wl_fixed_to_double(surface_y));
+    logger::log("pointer-motion " + std::to_string(x) + "," + std::to_string(y));
+}
+
+void handle_pointer_button(void *data, struct wl_pointer *wl_pointer,
+    uint32_t serial, uint32_t time, uint32_t button, uint32_t state)
+{
+    if (state == WL_POINTER_BUTTON_STATE_PRESSED)
+    {
+        logger::log("button-press " + std::to_string(button));
+    } else
+    {
+        logger::log("button-release " + std::to_string(button));
+    }
+}
+
+void handle_pointer_axis(void *data, struct wl_pointer *wl_pointer,
+    uint32_t time, uint32_t axis, wl_fixed_t value)
+{
+    // no-op
+}
+
+void handle_pointer_frame(void *data, struct wl_pointer *wl_pointer)
+{
+    // no-op
+}
+
+void handle_pointer_axis_source(void *data, struct wl_pointer *wl_pointer,
+    uint32_t axis_source)
+{
+    // no-op
+}
+
+void handle_pointer_axis_stop(void *data, struct wl_pointer *wl_pointer,
+    uint32_t time, uint32_t axis)
+{
+    // no-op
+}
+
+void handle_pointer_axis_discrete(void *data, struct wl_pointer *wl_pointer,
+    uint32_t axis, int32_t discrete)
+{
+    // no-op
+}
+
+const struct wl_pointer_listener pointer_logger = {
+    .enter = handle_pointer_enter,
+    .leave = handle_pointer_leave,
+    .motion = handle_pointer_motion,
+    .button = handle_pointer_button,
+    .axis = handle_pointer_axis,
+    .frame = handle_pointer_frame,
+    .axis_source = handle_pointer_axis_source,
+    .axis_stop = handle_pointer_axis_stop,
+    .axis_discrete = handle_pointer_axis_discrete,
+};
 
 static void setup_window(Gtk::Window *win)
 {
-    auto btn = new Gtk::Button("test");
+    auto btn = new Gtk::Button("Test");
     win->add(*btn);
 
-    btn->signal_button_press_event().connect_notify([] (GdkEventButton *ev)
-    {
-        logger::log("button-press " + std::to_string(ev->button));
-    });
+    // Ensures all wayland stuff is set up
+    win->show_all();
 
-    btn->signal_button_release_event().connect_notify([] (GdkEventButton *ev)
-    {
-        logger::log("button-release " + std::to_string(ev->button));
-    });
-
-    btn->signal_enter_notify_event().connect_notify([] (GdkEventCrossing *ev)
-    {
-        logger::log("pointer-enter");
-    });
-
-    btn->signal_leave_notify_event().connect_notify([] (GdkEventCrossing *ev)
-    {
-        logger::log("pointer-leave");
-    });
-
-    btn->signal_motion_notify_event().connect_notify([] (GdkEventMotion *ev)
-    {
-        logger::log("pointer-motion " + std::to_string((int)std::round(ev->x)) +
-            "," + std::to_string((int)std::round(ev->y)));
-    });
-
-    btn->set_events(btn->get_events() | Gdk::ALL_EVENTS_MASK);
+    auto disp = Gdk::Display::get_default();
+    auto gdk_pointer = disp->get_default_seat()->get_pointer();
+    auto wl_seat = gdk_wayland_device_get_wl_seat(gdk_pointer->gobj());
+    auto pointer = wl_seat_get_pointer(wl_seat);
+    wl_pointer_add_listener(pointer, &pointer_logger, NULL);
 }
 
 int main(int argc, char **argv)
@@ -48,8 +103,6 @@ int main(int argc, char **argv)
     a.set_default_size(200, 200);
     a.set_title(argv[1] ?: "null");
     setup_window(&a);
-
-    a.show_all();
     app->run(a);
     return 0;
 }
