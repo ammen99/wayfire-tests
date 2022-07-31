@@ -5,19 +5,19 @@
 #include <gdk/gdkwayland.h>
 #include <wayland-client.h>
 
-void handle_pointer_enter(void *data, struct wl_pointer *wl_pointer, uint32_t serial,
-    struct wl_surface *surface, wl_fixed_t surface_x, wl_fixed_t surface_y)
+void handle_pointer_enter(void*, struct wl_pointer*, uint32_t,
+    struct wl_surface*, wl_fixed_t, wl_fixed_t)
 {
     logger::log("pointer-enter");
 }
 
-void handle_pointer_leave(void *data, struct wl_pointer *wl_pointer, uint32_t serial,
-    struct wl_surface *surface)
+void handle_pointer_leave(void*, struct wl_pointer*, uint32_t,
+    struct wl_surface*)
 {
     logger::log("pointer-leave");
 }
 
-void handle_pointer_motion(void *data, struct wl_pointer *wl_pointer, uint32_t time,
+void handle_pointer_motion(void*, struct wl_pointer*, uint32_t,
     wl_fixed_t surface_x, wl_fixed_t surface_y)
 {
     int x = std::round(wl_fixed_to_double(surface_x));
@@ -25,8 +25,8 @@ void handle_pointer_motion(void *data, struct wl_pointer *wl_pointer, uint32_t t
     logger::log("pointer-motion " + std::to_string(x) + "," + std::to_string(y));
 }
 
-void handle_pointer_button(void *data, struct wl_pointer *wl_pointer,
-    uint32_t serial, uint32_t time, uint32_t button, uint32_t state)
+void handle_pointer_button(void*, struct wl_pointer*,
+    uint32_t, uint32_t, uint32_t button, uint32_t state)
 {
     if (state == WL_POINTER_BUTTON_STATE_PRESSED)
     {
@@ -37,31 +37,31 @@ void handle_pointer_button(void *data, struct wl_pointer *wl_pointer,
     }
 }
 
-void handle_pointer_axis(void *data, struct wl_pointer *wl_pointer,
-    uint32_t time, uint32_t axis, wl_fixed_t value)
+void handle_pointer_axis(void*, struct wl_pointer*,
+    uint32_t, uint32_t, wl_fixed_t)
 {
     // no-op
 }
 
-void handle_pointer_frame(void *data, struct wl_pointer *wl_pointer)
+void handle_pointer_frame(void*, struct wl_pointer*)
 {
     // no-op
 }
 
-void handle_pointer_axis_source(void *data, struct wl_pointer *wl_pointer,
-    uint32_t axis_source)
+void handle_pointer_axis_source(void*, struct wl_pointer*,
+    uint32_t)
 {
     // no-op
 }
 
-void handle_pointer_axis_stop(void *data, struct wl_pointer *wl_pointer,
-    uint32_t time, uint32_t axis)
+void handle_pointer_axis_stop(void*, struct wl_pointer*,
+    uint32_t, uint32_t)
 {
     // no-op
 }
 
-void handle_pointer_axis_discrete(void *data, struct wl_pointer *wl_pointer,
-    uint32_t axis, int32_t discrete)
+void handle_pointer_axis_discrete(void*, struct wl_pointer*,
+    uint32_t, int32_t)
 {
     // no-op
 }
