@@ -1,6 +1,7 @@
 from typing import Any
 import socket
 import json as js
+import select
 
 def get_msg_template():
     # Create generic message template
@@ -12,11 +13,17 @@ class WayfireIPCClient:
     def __init__(self, socket_name: str):
         self.client = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
         self.client.connect(socket_name)
+        self.client.setblocking(False)
 
     def read_exact(self, n):
         response = bytes()
         while n > 0:
+            ready = select.select([self.client], [], [], 1) # Wait 1 second
+            if not ready[0]:
+                raise Exception("Failed to read from socket: timeout")
             read_this_time = self.client.recv(n)
+            if not read_this_time:
+                raise Exception("Failed to read anything from the socket!")
             n -= len(read_this_time)
             response += read_this_time
 
