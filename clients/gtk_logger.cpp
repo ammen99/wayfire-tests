@@ -98,6 +98,55 @@ static const struct zwp_confined_pointer_v1_listener confined_pointer_impl = {
     .unconfined = handle_pointer_unconfined,
 };
 
+// ----------------------------- wl_keyboard impl ------------------------------
+
+static void handle_keymap(void*, wl_keyboard*, uint32_t, int32_t, uint32_t)
+{
+    // no-op
+}
+
+static void handle_keyboard_enter(void*, wl_keyboard*, uint32_t, wl_surface*, wl_array*)
+{
+    logger::log("keyboard-enter");
+}
+
+void handle_keyboard_leave(void*, wl_keyboard*, uint32_t, wl_surface*)
+{
+    logger::log("keyboard-leave");
+}
+
+static void handle_keyboard_key(void*, wl_keyboard*, uint32_t, uint32_t,
+    uint32_t key, uint32_t state)
+{
+    if (state == WL_KEYBOARD_KEY_STATE_PRESSED)
+    {
+        logger::log("key-press " + std::to_string(key));
+    } else
+    {
+        logger::log("key-release " + std::to_string(key));
+    }
+}
+
+static void handle_keyboard_modifiers(void*, wl_keyboard*, uint32_t, uint32_t,
+    uint32_t, uint32_t, uint32_t)
+{
+    // no-op
+}
+
+static void handle_keyboard_repeat_info(void*, wl_keyboard*, int32_t, int32_t)
+{
+    // no-op
+}
+
+const struct wl_keyboard_listener keyboard_logger = {
+    .keymap = handle_keymap,
+    .enter = handle_keyboard_enter,
+    .leave = handle_keyboard_leave,
+    .key = handle_keyboard_key,
+    .modifiers = handle_keyboard_modifiers,
+    .repeat_info = handle_keyboard_repeat_info,
+};
+
 // ---------------------------- wl_registry impl -------------------------------
 zwp_pointer_constraints_v1 *pointer_constraints = NULL;
 
@@ -121,9 +170,12 @@ static struct wl_registry_listener registry_listener =
     &registry_remove_object
 };
 
+struct wl_keyboard_listener listener;
+
 static struct
 {
     wl_pointer *pointer = NULL;
+    wl_keyboard *keyboard = NULL;
     zwp_confined_pointer_v1 *confined = NULL;
 
 } global_protocols;
@@ -160,6 +212,8 @@ static void setup_window(Gtk::Window *win, bool do_confine, bool click_to_close)
     auto wl_seat = gdk_wayland_device_get_wl_seat(gdk_pointer->gobj());
     global_protocols.pointer = wl_seat_get_pointer(wl_seat);
     wl_pointer_add_listener(global_protocols.pointer, &pointer_logger, NULL);
+    global_protocols.keyboard = wl_seat_get_keyboard(wl_seat);
+    wl_keyboard_add_listener(global_protocols.keyboard, &keyboard_logger, NULL);
 
     if (do_confine)
     {
