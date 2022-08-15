@@ -20,16 +20,17 @@ class WTest(wt.WayfireTest):
         return sorted([v['title'] for v in self.socket.list_views()])
 
     def _run(self):
-        gtk1 = wu.LoggedProcess(self.socket, 'gtk_logger', 'gtk1')
-        self.wait_for_clients(2)
+        gtk1 = wu.LoggedProcess(self.socket, 'gtk_logger', 'gtk1', 'keyboard')
+        self.wait_for_clients(10)
         if self._get_views() != ['gtk1']:
             return wt.Status.WRONG, 'Demo app did not open: ' + str(self._get_views())
+
+        if not gtk1.expect_line("keyboard-enter"):
+            return wt.Status.WRONG, 'gtk1 did not receive enter: ' + gtk1.last_line
 
         self.socket.press_key('S-KEY_E')
         self.wait_for_clients(2)
 
-        if not gtk1.expect_line("keyboard-enter"):
-            return wt.Status.WRONG, 'gtk1 did not receive enter: ' + gtk1.last_line
         if not gtk1.expect_line("key-press 125"):
             return wt.Status.WRONG, 'gtk1 did not receive <super>: ' + gtk1.last_line
         if not gtk1.expect_line("keyboard-leave"):

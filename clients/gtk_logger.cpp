@@ -7,6 +7,13 @@
 
 #include <pointer-constraints-unstable-v1-client-protocol.h>
 
+enum class log_features : int
+{
+    POINTER     = (1 << 0),
+    KEYBOARD    = (1 << 1),
+    CONSTRAINTS = (1 << 2),
+    CLICK_TO_X  = (1 << 3),
+};
 
 // ---------------------------- wl_pointer impl --------------------------------
 void handle_pointer_enter(void*, struct wl_pointer*, uint32_t,
@@ -199,7 +206,7 @@ void setup_constraint(Gtk::Window *win)
     wl_surface_commit(gdk_wayland_window_get_wl_surface(win->get_window()->gobj()));
 }
 
-static void setup_window(Gtk::Window *win, bool do_confine, bool click_to_close)
+static void setup_window(Gtk::Window *win, int flags)
 {
     auto btn = new Gtk::Button("Test");
     win->add(*btn);
@@ -211,11 +218,19 @@ static void setup_window(Gtk::Window *win, bool do_confine, bool click_to_close)
     auto gdk_pointer = disp->get_default_seat()->get_pointer();
     auto wl_seat = gdk_wayland_device_get_wl_seat(gdk_pointer->gobj());
     global_protocols.pointer = wl_seat_get_pointer(wl_seat);
-    wl_pointer_add_listener(global_protocols.pointer, &pointer_logger, NULL);
     global_protocols.keyboard = wl_seat_get_keyboard(wl_seat);
-    wl_keyboard_add_listener(global_protocols.keyboard, &keyboard_logger, NULL);
 
-    if (do_confine)
+    if (flags & (int)log_features::POINTER)
+    {
+        wl_pointer_add_listener(global_protocols.pointer, &pointer_logger, NULL);
+    }
+
+    if (flags & (int)log_features::KEYBOARD)
+    {
+        wl_keyboard_add_listener(global_protocols.keyboard, &keyboard_logger, NULL);
+    }
+
+    if (flags & (int)log_features::CONSTRAINTS)
     {
         wl_display *wl_disp = gdk_wayland_display_get_wl_display(disp->gobj());
         wl_registry *registry = wl_display_get_registry(wl_disp);
@@ -235,7 +250,7 @@ static void setup_window(Gtk::Window *win, bool do_confine, bool click_to_close)
         });
     }
 
-    if (click_to_close)
+    if (flags & (int)log_features::CLICK_TO_X)
     {
         btn->signal_button_press_event().connect_notify([=] (GdkEventButton*)
         {
@@ -253,10 +268,28 @@ int main(int argc, char **argv)
     a.set_default_size(200, 200);
     a.set_title(argv[1] ?: "null");
 
-    bool do_confine = (argc >= 4 && std::string(argv[3]) == "confine");
-    bool click_to_close = (argc >= 5 && std::string(argv[4]) == "click-to-close");
+    int flags = 0;
+    for (int i = 3; i < argc; i++)
+    {
+        if (!strcmp("confine", argv[i]))
+        {
+            flags |= (int)log_features::CONSTRAINTS;
+        }
+        if (!strcmp("pointer", argv[i]))
+        {
+            flags |= (int)log_features::POINTER;
+        }
+        if (!strcmp("keyboard", argv[i]))
+        {
+            flags |= (int)log_features::KEYBOARD;
+        }
+        if (!strcmp("click-to-close", argv[i]))
+        {
+            flags |= (int)log_features::CLICK_TO_X;
+        }
+    }
 
-    setup_window(&a, do_confine, click_to_close);
+    setup_window(&a, flags);
     app->run(a);
     return 0;
 }

@@ -24,7 +24,7 @@ class WTest(wt.WayfireTest):
 
     def _run(self):
         self.socket.move_cursor(500, 500) # Move out of the way of gtk1 so that pointer doesn't get immediately confined
-        gtk1 = wu.LoggedProcess(self.socket, 'WAYLAND_DEBUG=1 gtk_logger', 'gtk1', 'confine click-to-close &> /tmp/log')
+        gtk1 = wu.LoggedProcess(self.socket, 'gtk_logger', 'gtk1', 'pointer confine click-to-close')
         self.wait_for_clients(2)
         if self._get_views() != ['gtk1']:
             return wt.Status.WRONG, 'gtk_logger did not open: ' + str(self._get_views())
