@@ -36,6 +36,7 @@ class WTest(wt.WayfireTest):
 
         self.socket.move_cursor(999, 499) # Move out of test clients, bottom-right of WL-2
         self.socket.click_button('BTN_LEFT', 'full') # Focus WL-2
+        self.wait_for_clients(2) # Wait for messages to be flushed
         gtk1.reset_logs()
         gtk2.reset_logs()
 
