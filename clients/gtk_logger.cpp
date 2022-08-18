@@ -11,8 +11,9 @@ enum class log_features : int
 {
     POINTER     = (1 << 0),
     KEYBOARD    = (1 << 1),
-    CONSTRAINTS = (1 << 2),
-    CLICK_TO_X  = (1 << 3),
+    TOUCH       = (1 << 2),
+    CONSTRAINTS = (1 << 3),
+    CLICK_TO_X  = (1 << 4),
 };
 
 // ---------------------------- wl_pointer impl --------------------------------
@@ -106,7 +107,6 @@ static const struct zwp_confined_pointer_v1_listener confined_pointer_impl = {
 };
 
 // ----------------------------- wl_keyboard impl ------------------------------
-
 static void handle_keymap(void*, wl_keyboard*, uint32_t, int32_t, uint32_t)
 {
     // no-op
@@ -153,6 +153,60 @@ const struct wl_keyboard_listener keyboard_logger = {
     .modifiers = handle_keyboard_modifiers,
     .repeat_info = handle_keyboard_repeat_info,
 };
+// ------------------------------ wl_touch impl --------------------------------
+static void handle_touch_down(void*, wl_touch*, uint32_t, uint32_t, wl_surface *,
+    int32_t id, wl_fixed_t x, wl_fixed_t y)
+{
+    int xx = std::round(wl_fixed_to_double(x));
+    int yy = std::round(wl_fixed_to_double(y));
+    logger::log("touch-down " + std::to_string(id) + " " + std::to_string(xx)
+        + " " + std::to_string(yy));
+}
+
+static void handle_touch_up(void*, wl_touch*, uint32_t, uint32_t, int32_t id)
+{
+    logger::log("touch-up " + std::to_string(id));
+}
+
+static void handle_touch_motion(void*, wl_touch*, uint32_t,
+    int32_t id, wl_fixed_t x, wl_fixed_t y)
+{
+    int xx = std::round(wl_fixed_to_double(x));
+    int yy = std::round(wl_fixed_to_double(y));
+    logger::log("touch-motion " + std::to_string(id) + " " + std::to_string(xx)
+        + " " + std::to_string(yy));
+}
+
+static void handle_touch_frame(void*,
+    wl_touch*)
+{
+    // no-op
+}
+
+static void handle_touch_cancel(void*, wl_touch*)
+{
+    logger::log("touch-cancel");
+}
+
+static void handle_touch_shape(void*, wl_touch*, int32_t, wl_fixed_t, wl_fixed_t)
+{
+    // no-op
+}
+
+static void handle_touch_orientation(void*, wl_touch*, int32_t, wl_fixed_t)
+{
+    // no-op
+}
+
+const struct wl_touch_listener touch_logger = {
+	.down        = handle_touch_down,
+	.up          = handle_touch_up,
+	.motion      = handle_touch_motion,
+	.frame       = handle_touch_frame,
+	.cancel      = handle_touch_cancel,
+	.shape       = handle_touch_shape,
+	.orientation = handle_touch_orientation,
+};
 
 // ---------------------------- wl_registry impl -------------------------------
 zwp_pointer_constraints_v1 *pointer_constraints = NULL;
@@ -183,6 +237,7 @@ static struct
 {
     wl_pointer *pointer = NULL;
     wl_keyboard *keyboard = NULL;
+    wl_touch *touch = NULL;
     zwp_confined_pointer_v1 *confined = NULL;
 
 } global_protocols;
@@ -219,6 +274,7 @@ static void setup_window(Gtk::Window *win, int flags)
     auto wl_seat = gdk_wayland_device_get_wl_seat(gdk_pointer->gobj());
     global_protocols.pointer = wl_seat_get_pointer(wl_seat);
     global_protocols.keyboard = wl_seat_get_keyboard(wl_seat);
+    global_protocols.touch = wl_seat_get_touch(wl_seat);
 
     if (flags & (int)log_features::POINTER)
     {
@@ -228,6 +284,11 @@ static void setup_window(Gtk::Window *win, int flags)
     if (flags & (int)log_features::KEYBOARD)
     {
         wl_keyboard_add_listener(global_protocols.keyboard, &keyboard_logger, NULL);
+    }
+
+    if (flags & (int)log_features::TOUCH)
+    {
+        wl_touch_add_listener(global_protocols.touch, &touch_logger, NULL);
     }
 
     if (flags & (int)log_features::CONSTRAINTS)
@@ -278,6 +339,10 @@ int main(int argc, char **argv)
         if (!strcmp("pointer", argv[i]))
         {
             flags |= (int)log_features::POINTER;
+        }
+        if (!strcmp("touch", argv[i]))
+        {
+            flags |= (int)log_features::TOUCH;
         }
         if (!strcmp("keyboard", argv[i]))
         {
