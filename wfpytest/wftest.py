@@ -6,6 +6,7 @@ import signal
 import os
 import time
 import traceback
+import shutil
 
 class Status(Enum):
     OK = ("OK", "green")
@@ -32,6 +33,12 @@ class WayfireTest:
 
     def wait_for_clients(self, times=1):
         time.sleep(self._ipc_duration * times) # Wait for clients to start/process events
+
+    def require_test_clients(self, clients_list):
+        for client in clients_list:
+            if not shutil.which(client):
+                return Status.SKIPPED, "Missing {} (Did you compile test clients?)".format(client)
+        return Status.OK, None
 
     def prepare(self) -> Tuple[Status, Optional[str]]:
         return Status.OK, None
