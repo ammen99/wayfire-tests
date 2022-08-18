@@ -1,0 +1,3 @@
+[submodule "wleird"]
+	path = wleird
+	url = https://github.com/ammen99/wleird
