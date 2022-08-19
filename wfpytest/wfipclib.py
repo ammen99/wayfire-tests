@@ -100,6 +100,20 @@ class WayfireIPCClient:
         message["data"]["y"] = y
         return self.send_json(message)
 
+    def set_touch(self, id: int, x: int, y: int):
+        message = get_msg_template()
+        message["method"] = "core/touch"
+        message["data"]["finger"] = id
+        message["data"]["x"] = x
+        message["data"]["y"] = y
+        return self.send_json(message)
+
+    def release_touch(self, id: int):
+        message = get_msg_template()
+        message["method"] = "core/touch_release"
+        message["data"]["finger"] = id
+        return self.send_json(message)
+
     def click_button(self, btn_with_mod: str, mode: str):
         """
         btn_with_mod can be S-BTN_LEFT/BTN_RIGHT/etc. or just BTN_LEFT/...
