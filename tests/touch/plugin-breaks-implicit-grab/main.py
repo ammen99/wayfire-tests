@@ -1,6 +1,7 @@
 
 #!/bin/env python3
 
+import wfipclib as wi
 import wfutil as wu
 import wftest as wt
 import shutil
@@ -65,5 +66,17 @@ class WTest(wt.WayfireTest):
 
         if self._get_views() != ['gtk1']:
             return wt.Status.WRONG, 'Apps crashed? ' + str(self._get_views())
+
+        # Select workspace to verify expo has received the touch
+        for i in range(3):
+            self.socket.release_touch(i)
+
+        self.socket.set_touch(0, 450, 450) # Workspace 2,2
+        self.socket.release_touch(0)
+        self.wait_for_clients() # Wait for expo to close itself
+
+        view = self.socket.get_view_info_title('gtk1')
+        if not wi.check_geometry(-500, -500, 100, 100, view['geometry']):
+            return wt.Status.WRONG, 'Expo did not switch to workspace? ' + str(view)
 
         return wt.Status.OK, None
