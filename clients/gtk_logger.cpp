@@ -272,22 +272,22 @@ static void setup_window(Gtk::Window *win, int flags)
     auto disp = Gdk::Display::get_default();
     auto gdk_pointer = disp->get_default_seat()->get_pointer();
     auto wl_seat = gdk_wayland_device_get_wl_seat(gdk_pointer->gobj());
-    global_protocols.pointer = wl_seat_get_pointer(wl_seat);
-    global_protocols.keyboard = wl_seat_get_keyboard(wl_seat);
-    global_protocols.touch = wl_seat_get_touch(wl_seat);
 
     if (flags & (int)log_features::POINTER)
     {
+        global_protocols.pointer = wl_seat_get_pointer(wl_seat);
         wl_pointer_add_listener(global_protocols.pointer, &pointer_logger, NULL);
     }
 
     if (flags & (int)log_features::KEYBOARD)
     {
+        global_protocols.keyboard = wl_seat_get_keyboard(wl_seat);
         wl_keyboard_add_listener(global_protocols.keyboard, &keyboard_logger, NULL);
     }
 
     if (flags & (int)log_features::TOUCH)
     {
+        global_protocols.touch = wl_seat_get_touch(wl_seat);
         wl_touch_add_listener(global_protocols.touch, &touch_logger, NULL);
     }
 
