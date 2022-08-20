@@ -33,6 +33,11 @@ class WTest(wt.WayfireTest):
 
         NUM_ITERATIONS = 50
         self.socket.move_cursor(sx, sy)
+        # Focus the gtk client to workaround it starting with the wrong serial -
+        # if we directly start dragging, GTK will start the drag with the serial
+        # from wl_keyboard.enter
+        self.socket.click_button('BTN_LEFT', 'press')
+        self.socket.click_button('BTN_LEFT', 'release')
         self.socket.click_button('BTN_LEFT', 'press')
 
         for i in range(0, NUM_ITERATIONS):
