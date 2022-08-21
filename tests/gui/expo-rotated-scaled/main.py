@@ -1,0 +1,29 @@
+#!/bin/env python3
+
+import wftest as wt
+
+def is_gui() -> bool:
+    return True
+
+class WTest(wt.WayfireTest):
+    def prepare(self):
+        return self.require_test_clients(['wleird-cursor', 'wleird-gamma-blend', 'wleird-layer-shell'])
+
+    def _run(self):
+        self.socket.run('wleird-layer-shell -l bottom -a bottom -w 500 -h 500 -c green')
+        self.socket.run('wleird-layer-shell -l top -a left -c blue')
+        self.socket.run('wleird-layer-shell -l top -a right -c red')
+        self.socket.run('wleird-gamma-blend')
+        self.socket.run('wleird-cursor')
+        self.wait_for_clients(2) # Wait for cursor to start
+
+        layout = {}
+        layout['wleird-gamma-blend'] = (0, 0, 400, 400)
+        layout['wleird-cursor'] = (1200, 530, 100, 100)
+        self.socket.layout_views(layout)
+        self.socket.press_key('KEY_4')
+        self.wait_for_clients(1) # Wait for vswitch to exit
+        self.socket.press_key('KEY_E')
+        self.wait_for_clients(2) # Wait for expo to start
+
+        return wt.Status.OK, None
