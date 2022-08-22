@@ -90,7 +90,7 @@ def run_single_test(testMain) -> Tuple[wftest.Status, str | None]:
                 else:
                     status, msg = wftest.Status.WRONG, 'Screenshots are different.'
     else:
-        status, msg = run_test_once(foo.WTest, args.wayfire, 'wayfire.log') # type: ignore
+        status, msg = wftest.Status.SKIPPED, 'GUI test needs --compare-with'
 
     os.chdir(cwd)
     return status, msg
