@@ -4,7 +4,7 @@ import wftest as wt
 import shutil
 
 def is_gui() -> bool:
-    return True
+    return False
 
 # This test opens a terminal and a layer-shell view in the top layer.
 # It then proceeds to fullscreen the terminal and ensure that it is above the
