@@ -5,7 +5,7 @@ import wftest as wt
 import shutil
 
 def is_gui() -> bool:
-    return True
+    return False
 
 # This test opens a special gtk client twice, then proceeds to move the pointer to test that the correct
 # client receives motion events

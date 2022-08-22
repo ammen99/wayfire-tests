@@ -5,7 +5,7 @@ import wftest as wt
 import time
 
 def is_gui() -> bool:
-    return True
+    return False
 
 # This test opens a special gtk client twice (gtk1 and gtk2), then proceeds to check that
 # drag and drop works.

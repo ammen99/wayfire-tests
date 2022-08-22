@@ -7,7 +7,7 @@ import wftest as wt
 import shutil
 
 def is_gui() -> bool:
-    return True
+    return False
 
 # Test that during pinch in 3, the fingers are released when expo is activated
 class WTest(wt.WayfireTest):

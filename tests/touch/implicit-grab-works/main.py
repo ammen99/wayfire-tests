@@ -5,7 +5,7 @@ import wftest as wt
 import shutil
 
 def is_gui() -> bool:
-    return True
+    return False
 
 class WTest(wt.WayfireTest):
     def prepare(self):
