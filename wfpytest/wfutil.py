@@ -15,16 +15,19 @@ class ImageDiff(Enum):
     def __eq__(self, other):
         return self.value == other.value
 
-def compare_images(path1: str, path2: str, sensitivity:float = 0.001) -> ImageDiff:
+def compare_images(path1: str, path2: str, diff_log: str, sensitivity:float = 0.001) -> ImageDiff:
     img1 = lycon.load(path1)
     img2 = lycon.load(path2)
 
     if img1.shape != img2.shape:
         return ImageDiff.SIZE_MISMATCH
 
-    total_sqdiff = np.linalg.norm(img1 - img2)
+    diff = img1 - img2
+    total_sqdiff = np.linalg.norm(diff)
     w, h, _ = img1.shape
     if total_sqdiff > w * h * sensitivity:
+        print(total_sqdiff)
+        lycon.save(diff_log, diff)
         return ImageDiff.DIFFERENT
 
     return ImageDiff.SAME

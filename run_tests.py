@@ -82,13 +82,15 @@ def run_single_test(testMain) -> Tuple[wftest.Status, str | None]:
             status, msg = run_test_once(foo.WTest, args.compare_with, 'wayfireB.log', 'wayfireB.png') # type: ignore
             msg = 'wayfireB: ' + str(msg)
             if status == wftest.Status.OK:
-                code = wu.compare_images('wayfireA.png', 'wayfireB.png')
+                code = wu.compare_images('wayfireA.png', 'wayfireB.png', 'delta.png', 0.01)
                 if code == wu.ImageDiff.SAME:
                     status, msg = wftest.Status.OK, None
                 elif code == wu.ImageDiff.SIZE_MISMATCH:
                     status, msg = wftest.Status.WRONG, 'Screenshot sizes are different.'
                 else:
                     status, msg = wftest.Status.WRONG, 'Screenshots are different.'
+    elif not foo.is_gui():
+        status, msg = run_test_once(foo.WTest, args.wayfire, 'wayfire.log') # type: ignore
     else:
         status, msg = wftest.Status.SKIPPED, 'GUI test needs --compare-with'
 
