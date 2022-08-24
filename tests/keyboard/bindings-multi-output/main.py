@@ -4,7 +4,7 @@ import wftest as wt
 import shutil
 
 def is_gui() -> bool:
-    return True
+    return False
 
 # This test starts two clients on two different outputs.
 # It then proceeds to check that the active output (one last clicked on) receives

@@ -5,7 +5,7 @@ import wftest as wt
 import shutil
 
 def is_gui() -> bool:
-    return True
+    return False
 
 # This test opens a special gtk client which confines the pointer to itself with the pointer-constraints protocol.
 # Then it proceeds to check that:

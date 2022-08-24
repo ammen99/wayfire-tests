@@ -6,7 +6,7 @@ import wftest as wt
 import shutil
 
 def is_gui() -> bool:
-    return True
+    return False
 
 # This test open the DnD demo client, starts a DnD operation but breaks it by starting a plugin
 class WTest(wt.WayfireTest):

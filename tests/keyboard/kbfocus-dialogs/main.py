@@ -4,7 +4,7 @@ import wftest as wt
 import shutil
 
 def is_gui() -> bool:
-    return True
+    return False
 
 # This test opens the gtk special client and uses it to open dialogs and then close them with
 # simple keypresses. It also clicks a few times to attempt changing the focus, which should fail,

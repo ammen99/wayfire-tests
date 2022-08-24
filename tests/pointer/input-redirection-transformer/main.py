@@ -5,7 +5,7 @@ import wftest as wt
 import shutil
 
 def is_gui() -> bool:
-    return True
+    return False
 
 # This test opens the gtk_logger test client, rotates it 90 degrees ccw with wrot
 # and proceeds to test that input redirection works as expected.

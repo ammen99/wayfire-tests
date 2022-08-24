@@ -37,7 +37,7 @@ class WTest(wt.WayfireTest):
         # so, if we click on 1,1, the x11 demo should close.
         self.socket.move_cursor(1, 1)
         self.socket.click_button('BTN_RIGHT', 'full')
-        self.wait_for_clients()
+        self.wait_for_clients(2)
 
         if self._get_views() != ['demo', 'nil']:
             return wt.Status.WRONG, \

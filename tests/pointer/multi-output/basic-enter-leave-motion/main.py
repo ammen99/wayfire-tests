@@ -5,7 +5,7 @@ import wftest as wt
 import shutil
 
 def is_gui() -> bool:
-    return True
+    return False
 
 # This test opens a special gtk client twice on different outputs so that they overlap.
 # Then, it proceeds to check that despite the overlap, the correct view is focused every time,

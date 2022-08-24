@@ -6,7 +6,7 @@ import shutil
 import time
 
 def is_gui() -> bool:
-    return True
+    return False
 
 # This test opens a special gtk client twice (gtk1 and gtk2), and x11_click_to_close in addition.
 # The windows are then arranged next to each other.
