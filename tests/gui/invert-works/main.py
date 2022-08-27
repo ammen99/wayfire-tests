@@ -15,4 +15,6 @@ class WTest(wt.WayfireTest):
         self.socket.press_key('KEY_I')
         self.wait_for_clients()
 
+        if error := self.take_screenshot('final'):
+            return wt.Status.CRASHED, error
         return wt.Status.OK, None

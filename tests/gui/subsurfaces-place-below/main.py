@@ -17,4 +17,6 @@ class WTest(wt.WayfireTest):
         self.socket.move_cursor(101, 101) # Onto main surface
         self.socket.click_button('BTN_RIGHT', 'full') # Place red below main
         self.wait_for_clients(2) # Wait for subsurfaces to reoder
+        if error := self.take_screenshot('final'):
+            return wt.Status.CRASHED, error
         return wt.Status.OK, None

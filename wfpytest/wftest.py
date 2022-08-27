@@ -1,6 +1,8 @@
 from enum import Enum
 from typing import Tuple, Optional
 from wfipclib import WayfireIPCClient
+import wfutil as wu
+
 import subprocess
 import signal
 import os
@@ -30,6 +32,8 @@ class WayfireTest:
         self.socket: WayfireIPCClient = None #type:ignore
         self._socket_name = "/tmp/wt.socket"
         self._ipc_duration = 0.1
+        self.screenshots = []
+        self.screenshot_prefix = ""
 
     def wait_for_clients(self, times=1):
         time.sleep(self._ipc_duration * times) # Wait for clients to start/process events
@@ -39,6 +43,11 @@ class WayfireTest:
             if not shutil.which(client):
                 return Status.SKIPPED, "Missing {} (Did you compile test clients?)".format(client)
         return Status.OK, None
+
+    def take_screenshot(self, stage: str):
+        full_path = self.screenshot_prefix + "-" + stage + ".png"
+        self.screenshots.append(full_path)
+        return wu.take_screenshot(self.socket, full_path)
 
     def prepare(self) -> Tuple[Status, Optional[str]]:
         return Status.OK, None

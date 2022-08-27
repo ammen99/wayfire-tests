@@ -21,4 +21,6 @@ class WTest(wt.WayfireTest):
         self.wait_for_clients() # Wait for weston-terminal to open, so that x11 demo is above it
         self.socket.press_key('KEY_F11') # Make weston-terminal fullscreen, so on top of gtk demo
         self.wait_for_clients(2)
+        if error := self.take_screenshot('final'):
+            return wt.Status.CRASHED, error
         return wt.Status.OK, None

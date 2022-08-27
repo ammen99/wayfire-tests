@@ -27,4 +27,6 @@ class WTest(wt.WayfireTest):
         self.socket.move_cursor(50, 50)
         self.socket.click_button('BTN_LEFT', 'full')
         self.wait_for_clients(1)
+        if error := self.take_screenshot('final'):
+            return wt.Status.CRASHED, error
         return wt.Status.OK, None

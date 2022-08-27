@@ -25,5 +25,7 @@ class WTest(wt.WayfireTest):
         self.wait_for_clients(1) # Wait for vswitch to exit
         self.socket.press_key('KEY_E')
         self.wait_for_clients(2) # Wait for expo to start
+        if error := self.take_screenshot('final'):
+            return wt.Status.CRASHED, error
 
         return wt.Status.OK, None

@@ -23,4 +23,6 @@ class WTest(wt.WayfireTest):
         self.socket.click_button('BTN_MIDDLE', 'release')
 
         self.wait_for_clients() # Wait for everything to settle down
+        if error := self.take_screenshot('final'):
+            return wt.Status.CRASHED, error
         return wt.Status.OK, None

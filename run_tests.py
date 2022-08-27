@@ -32,33 +32,43 @@ def check_arguments():
     if args.compare_with:
         check_exec(args.compare_with)
 
-def _run_test_once(TestType, wayfire_exe, logfile: str, image_path: str | None = None):
+class TestResult:
+    def __init__(self, status, msg, file_list):
+        self.status = status
+        self.msg = msg
+        self.file_list = file_list
+
+def _run_test_once(TestType, wayfire_exe, logfile: str, image_prefix: str) -> TestResult:
     test = TestType()
 
+    test.screenshot_prefix = image_prefix
     test._set_ipc_duration(args.ipc_timeout)
     status, msg = test.prepare()
     if status != wftest.Status.OK:
-        return status, msg
+        return TestResult(status, msg, [])
 
     try:
-        result = test.run(wayfire_exe, logfile)
-        if image_path:
-            err_msg = wu.take_screenshot(test.socket, image_path)
-            if err_msg:
-                test.cleanup()
-                return wftest.Status.CRASHED, "Could not take a screenshot: " + err_msg
+        status, msg = test.run(wayfire_exe, logfile)
         test.cleanup()
-        return result
+        return TestResult(status, msg, test.screenshots)
     except KeyboardInterrupt:
         test.cleanup()
         raise
     except:
         test.cleanup()
-        return wftest.Status.CRASHED, "Test runner crashed " + traceback.format_exc()
+        return TestResult(wftest.Status.CRASHED, "Test runner crashed " + traceback.format_exc(), [])
 
-def run_test_once(TestType, wayfire_exe, logfile: str, image_path: str | None = None):
+def run_test_once(test_main_file, TestType, wayfire_exe, logfile: str, image_prefix: str) -> TestResult:
+    # Go to the directory of the test, so that any temporary files are stored there
+    # and so that the wayfire.ini file can be found easily
+    cwd = os.getcwd()
+    test_home_dir = test_main_file[:-7]
+    os.chdir(test_home_dir) # Ending is always main.py, so if we drop it, we get the test dir
+
     actual_log = '/dev/stdout' if args.show_log else logfile
-    return _run_test_once(TestType, wayfire_exe, actual_log, image_path)
+    result = _run_test_once(TestType, wayfire_exe, actual_log, os.getcwd() + '/' + image_prefix)
+    os.chdir(cwd)
+    return result
 
 def run_single_test(testMain) -> Tuple[wftest.Status, str | None]:
     spec = importlib.util.spec_from_file_location("main", testMain)
@@ -67,35 +77,33 @@ def run_single_test(testMain) -> Tuple[wftest.Status, str | None]:
     foo = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(foo) # type:ignore
 
-    # Go to the directory of the test, so that any temporary files are stored there
-    # and so that the wayfire.ini file can be found easily
-    cwd = os.getcwd()
-    os.chdir(testMain[:-7]) # Ending is always main.py, so if we drop it, we get the test dir
-
-    status = wftest.Status.OK
-    msg = None
-
     if foo.is_gui() and args.compare_with: # type: ignore
-        status, msg = run_test_once(foo.WTest, args.wayfire, 'wayfireA.log', 'wayfireA.png') # type: ignore
-        msg = 'wayfireA: ' + str(msg)
-        if status == wftest.Status.OK:
-            status, msg = run_test_once(foo.WTest, args.compare_with, 'wayfireB.log', 'wayfireB.png') # type: ignore
-            msg = 'wayfireB: ' + str(msg)
-            if status == wftest.Status.OK:
-                code = wu.compare_images('wayfireA.png', 'wayfireB.png', 'delta.png', 0.01)
-                if code == wu.ImageDiff.SAME:
-                    status, msg = wftest.Status.OK, None
-                elif code == wu.ImageDiff.SIZE_MISMATCH:
-                    status, msg = wftest.Status.WRONG, 'Screenshot sizes are different.'
-                else:
-                    status, msg = wftest.Status.WRONG, 'Screenshots are different.'
-    elif not foo.is_gui():
-        status, msg = run_test_once(foo.WTest, args.wayfire, 'wayfire.log') # type: ignore
-    else:
-        status, msg = wftest.Status.SKIPPED, 'GUI test needs --compare-with'
+        resultA = run_test_once(testMain, foo.WTest, args.wayfire, 'wayfireA.log', 'wayfireA') # type: ignore
+        if resultA.status != wftest.Status.OK:
+            return resultA.status, 'wayfireA: ' + str(resultA.msg)
 
-    os.chdir(cwd)
-    return status, msg
+        resultB = run_test_once(testMain, foo.WTest, args.compare_with, 'wayfireB.log', 'wayfireB') # type: ignore
+        if resultB.status != wftest.Status.OK:
+            return resultA.status, 'wayfireB: ' + str(resultA.msg)
+
+        if len(resultA.file_list) != len(resultB.file_list):
+            return wftest.Status.WRONG, 'Test returns different amount of images?' + \
+                    str(resultA.file_list) + ' vs. ' + str(resultB.file_list)
+
+        for (fileA, fileB) in zip(resultA.file_list, resultB.file_list):
+            code = wu.compare_images(fileA, fileB, fileA + '.delta.png', 0.01)
+            if code == wu.ImageDiff.SIZE_MISMATCH:
+                return wftest.Status.WRONG, 'Screenshot sizes are different: ' + fileA + ' vs. ' + fileB
+            elif code == wu.ImageDiff.DIFFERENT:
+                return wftest.Status.WRONG, 'Screenshots are different: ' + fileA + ' vs. ' + fileB
+
+        return wftest.Status.OK, None
+
+    elif not foo.is_gui():
+        result = run_test_once(testMain, foo.WTest, args.wayfire, 'wayfire.log', '') # type: ignore
+        return result.status, result.msg
+    else:
+        return wftest.Status.SKIPPED, 'GUI test needs --compare-with'
 
 tests_ok = 0
 tests_wrong = 0

@@ -18,4 +18,6 @@ class WTest(wt.WayfireTest):
         self.socket.layout_views(layout)
         self.wait_for_clients(2)
 
+        if error := self.take_screenshot('final'):
+            return wt.Status.CRASHED, error
         return wt.Status.OK, None
