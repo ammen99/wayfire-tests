@@ -126,11 +126,22 @@ class WayfireIPCClient:
         message["data"]["combo"] = btn_with_mod
         return self.send_json(message)
 
-    def press_key(self, key: str):
+    def set_key_state(self, key: str, state: bool):
         message = get_msg_template()
         message["method"] = "core/feed_key"
-        message["data"]["combo"] = key
+        message["data"]["key"] = key
+        message["data"]["state"] = state
         return self.send_json(message)
+
+    def press_key(self, key: str):
+        if key[:2] == 'S-':
+            self.set_key_state('KEY_LEFTMETA', True)
+            self.set_key_state(key[2:], True)
+            self.set_key_state(key[2:], False)
+            self.set_key_state('KEY_LEFTMETA', False)
+        else:
+            self.set_key_state(key, True)
+            self.set_key_state(key, False)
 
 # Helper functions
 def check_geometry(x: int, y: int, width: int, height: int, obj) -> bool:
