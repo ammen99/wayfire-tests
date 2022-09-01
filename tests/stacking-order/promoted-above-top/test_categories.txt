@@ -1,0 +1,5 @@
+layer-shell
+fullscreen
+pointer
+closing
+stacking
