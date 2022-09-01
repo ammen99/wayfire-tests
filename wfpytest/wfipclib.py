@@ -18,7 +18,7 @@ class WayfireIPCClient:
     def read_exact(self, n):
         response = bytes()
         while n > 0:
-            ready = select.select([self.client], [], [], 1) # Wait 1 second
+            ready = select.select([self.client], [], [], 5) # Wait 5 seconds
             if not ready[0]:
                 raise Exception("Failed to read from socket: timeout")
             read_this_time = self.client.recv(n)

@@ -13,6 +13,7 @@ import shutil
 class Status(Enum):
     OK = ("OK", "green")
     WRONG = ("WRONG", "red")
+    GUI_WRONG = ("GUI_WRONG", "red")
     CRASHED = ("CRASHED", "red")
     SKIPPED = ("SKIPPED", "yellow")
 

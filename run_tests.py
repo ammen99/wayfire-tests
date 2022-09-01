@@ -5,9 +5,10 @@ import os
 import sys
 import glob
 import importlib.util
+import subprocess
 
 from termcolor import colored
-from typing import Tuple
+from typing import Tuple, List
 from wfpytest import wftest
 import wfutil as wu
 import traceback
@@ -18,6 +19,7 @@ parser.add_argument('wayfire', type=str)
 parser.add_argument('--compare-with', type=str, required=False)
 parser.add_argument('--show-log', action='store_true', required=False)
 parser.add_argument('--ipc-timeout', type=float, default=0.1, required=False)
+parser.add_argument('--interactive', action='store_true', required=False)
 args = parser.parse_args()
 
 # Make tests execute slower or faster
@@ -58,17 +60,25 @@ def _run_test_once(TestType, wayfire_exe, logfile: str, image_prefix: str) -> Te
         test.cleanup()
         return TestResult(wftest.Status.CRASHED, "Test runner crashed " + traceback.format_exc(), [])
 
+def get_test_base_dir(test_main_file: str):
+    # Ending is always main.py, so if we drop it, we get the test dir
+    return test_main_file[:-7]
+
 def run_test_once(test_main_file, TestType, wayfire_exe, logfile: str, image_prefix: str) -> TestResult:
     # Go to the directory of the test, so that any temporary files are stored there
     # and so that the wayfire.ini file can be found easily
     cwd = os.getcwd()
-    test_home_dir = test_main_file[:-7]
-    os.chdir(test_home_dir) # Ending is always main.py, so if we drop it, we get the test dir
+    os.chdir(get_test_base_dir(test_main_file))
 
     actual_log = '/dev/stdout' if args.show_log else logfile
     result = _run_test_once(TestType, wayfire_exe, actual_log, os.getcwd() + '/' + image_prefix)
     os.chdir(cwd)
     return result
+
+class FailedTest:
+    def __init__(self, prefix: str, gui: bool):
+        self.prefix = prefix
+        self.gui = gui
 
 def run_single_test(testMain) -> Tuple[wftest.Status, str | None]:
     spec = importlib.util.spec_from_file_location("main", testMain)
@@ -87,15 +97,15 @@ def run_single_test(testMain) -> Tuple[wftest.Status, str | None]:
             return resultA.status, 'wayfireB: ' + str(resultA.msg)
 
         if len(resultA.file_list) != len(resultB.file_list):
-            return wftest.Status.WRONG, 'Test returns different amount of images?' + \
+            return wftest.Status.GUI_WRONG, 'Test returns different amount of images?' + \
                     str(resultA.file_list) + ' vs. ' + str(resultB.file_list)
 
         for (fileA, fileB) in zip(resultA.file_list, resultB.file_list):
             code = wu.compare_images(fileA, fileB, fileA + '.delta.png', 0.01)
             if code == wu.ImageDiff.SIZE_MISMATCH:
-                return wftest.Status.WRONG, 'Screenshot sizes are different: ' + fileA + ' vs. ' + fileB
+                return wftest.Status.GUI_WRONG, 'Screenshot sizes are different: ' + fileA + ' vs. ' + fileB
             elif code == wu.ImageDiff.DIFFERENT:
-                return wftest.Status.WRONG, 'Screenshots are different: ' + fileA + ' vs. ' + fileB
+                return wftest.Status.GUI_WRONG, 'Screenshots are different: ' + fileA + ' vs. ' + fileB
 
         return wftest.Status.OK, None
 
@@ -108,11 +118,13 @@ def run_single_test(testMain) -> Tuple[wftest.Status, str | None]:
 tests_ok = 0
 tests_wrong = 0
 tests_skip = 0
+failed_tests: List[FailedTest] = []
 
 def run_all_tests():
     global tests_ok
     global tests_wrong
     global tests_skip
+    global failed_tests
 
     print("Running tests in directory " + colored(args.testdir, "yellow"))
     for filename in glob.iglob(args.testdir + '/**/main.py', recursive=True):
@@ -123,8 +135,12 @@ def run_all_tests():
             tests_ok += 1
         elif status == wftest.Status.SKIPPED:
             tests_skip += 1
-        else:
+        elif status == wftest.Status.WRONG or status == wftest.Status.CRASHED:
             tests_wrong += 1
+            failed_tests.append(FailedTest(filename, False))
+        else: # GUI_WRONG
+            tests_wrong += 1
+            failed_tests.append(FailedTest(filename, True))
 
         message, color = status.value
         print(colored(message, color, attrs=['bold']), end='')
@@ -132,15 +148,40 @@ def run_all_tests():
             print(" (" + explanation + ")")
         else:
             print()
+# Interactively show Wayfire logs / image diffs / etc.
+def interact_show_logs():
+    global failed_tests
+    if not failed_tests:
+        return
+
+    print()
+    print()
+    print("Failed tests, enter number to see logs or image diffs:")
+    for i, test in enumerate(failed_tests):
+        print(colored(str(i) + '.', 'blue'),
+                colored(get_test_base_dir(test.prefix), 'red'))
+
+    while idx := input('Enter test number from the list above (ENTER to exit):'):
+        idx = int(idx)
+        path = get_test_base_dir(failed_tests[idx].prefix)
+        command = ""
+        if failed_tests[idx].gui:
+            command = 'eog {}/*.png'.format(path)
+        else:
+            command = '$EDITOR {}/*.log'.format(path)
+        p = subprocess.Popen(['/bin/sh', '-c', command])
+        p.communicate()
 
 check_arguments()
 run_all_tests()
 
 # Print summary
-
 tests_total = tests_ok + tests_skip + tests_wrong
 
 text_ok=colored(str(tests_ok) + " ok", 'green' if tests_wrong == 0 else 'blue', attrs=['bold'])
 text_wrong="0 not ok" if tests_wrong == 0 else colored(str(tests_wrong) + " not ok", 'red', attrs=['bold'])
 text_skipped="0 skipped" if tests_skip == 0 else colored(str(tests_skip) + " skipped", 'yellow', attrs=['bold'])
 print("Test summary: {} / {} / {}".format(text_ok, text_wrong, text_skipped))
+
+if args.interactive:
+    interact_show_logs()
