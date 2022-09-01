@@ -20,6 +20,7 @@ parser.add_argument('--compare-with', type=str, required=False)
 parser.add_argument('--show-log', action='store_true', required=False)
 parser.add_argument('--ipc-timeout', type=float, default=0.1, required=False)
 parser.add_argument('--interactive', action='store_true', required=False)
+parser.add_argument('--categories', type=str, default='', required=False)
 args = parser.parse_args()
 
 # Make tests execute slower or faster
@@ -120,6 +121,20 @@ tests_wrong = 0
 tests_skip = 0
 failed_tests: List[FailedTest] = []
 
+def shouldRunTest(test_main_file: str) -> bool:
+    base_dir = get_test_base_dir(test_main_file)
+    test_categories_file = base_dir + '/test_categories.txt'
+    if args.categories:
+        categories = args.categories.split(',')
+        if os.path.exists(test_categories_file):
+            with open(test_categories_file, 'r') as f:
+                for line in f:
+                    if line[:-1] in categories:
+                        return True
+        return False
+    else:
+        return True
+
 def run_all_tests():
     global tests_ok
     global tests_wrong
@@ -128,6 +143,9 @@ def run_all_tests():
 
     print("Running tests in directory " + colored(args.testdir, "yellow"))
     for filename in glob.iglob(args.testdir + '/**/main.py', recursive=True):
+        if not shouldRunTest(filename):
+            continue
+
         print("Running test " + colored(filename, 'blue') + " - ", end='')
         status, explanation = run_single_test(filename)
 
