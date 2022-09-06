@@ -1,5 +1,9 @@
 // A simple program which opens a window and logs pointer events on it.
 #include <gtkmm.h>
+#include "gtkmm/enums.h"
+#include "gtkmm/menubutton.h"
+#include "gtkmm/popover.h"
+#include "gtkmm/popovermenu.h"
 #include "log.hpp"
 
 #include <gdk/gdkwayland.h>
@@ -14,6 +18,7 @@ enum class log_features : int
     TOUCH       = (1 << 2),
     CONSTRAINTS = (1 << 3),
     CLICK_TO_X  = (1 << 4),
+    CLICK_TO_MENU = (1 << 5),
 };
 
 // ---------------------------- wl_pointer impl --------------------------------
@@ -263,8 +268,33 @@ void setup_constraint(Gtk::Window *win)
 
 static void setup_window(Gtk::Window *win, int flags)
 {
-    auto btn = new Gtk::Button("Test");
-    win->add(*btn);
+    if (flags & (int)log_features::CLICK_TO_MENU)
+    {
+        Gtk::MenuButton *mb = new Gtk::MenuButton();
+        mb->set_label("Menu");
+
+        Gtk::Popover *popover = new Gtk::Popover();
+        Gtk::Label *label = new Gtk::Label("Label");
+        label->show_all();
+        popover->add(*label);
+        popover->set_size_request(200, 200);
+        popover->set_position(Gtk::PositionType::POS_BOTTOM);
+        mb->set_popover(*popover);
+        win->add(*mb);
+    } else
+    {
+
+        auto btn = new Gtk::Button("Test");
+        win->add(*btn);
+
+        if (flags & (int)log_features::CLICK_TO_X)
+        {
+            btn->signal_button_press_event().connect_notify([=] (GdkEventButton*)
+            {
+                win->close();
+            });
+        }
+    }
 
     // Ensures all wayland stuff is set up
     win->show_all();
@@ -310,14 +340,6 @@ static void setup_window(Gtk::Window *win, int flags)
             setup_constraint(win);
         });
     }
-
-    if (flags & (int)log_features::CLICK_TO_X)
-    {
-        btn->signal_button_press_event().connect_notify([=] (GdkEventButton*)
-        {
-            win->close();
-        });
-    }
 }
 
 int main(int argc, char **argv)
@@ -352,6 +374,17 @@ int main(int argc, char **argv)
         {
             flags |= (int)log_features::CLICK_TO_X;
         }
+        if (!strcmp("click-to-menu", argv[i]))
+        {
+            flags |= (int)log_features::CLICK_TO_MENU;
+        }
+    }
+
+    if ((flags & (int)log_features::CLICK_TO_MENU) &&
+        (flags & (int)log_features::CLICK_TO_X))
+    {
+        std::cout << "Can't do click to x and click to menu at the same time!" << std::endl;
+        return EXIT_FAILURE;
     }
 
     setup_window(&a, flags);
