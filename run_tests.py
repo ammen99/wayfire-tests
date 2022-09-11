@@ -65,13 +65,13 @@ def get_test_base_dir(test_main_file: str):
     # Ending is always main.py, so if we drop it, we get the test dir
     return test_main_file[:-7]
 
-def run_test_once(test_main_file, TestType, wayfire_exe, logfile: str, image_prefix: str) -> TestResult:
+def run_test_once(test_main_file, TestType, wayfire_exe, logfile: str, image_prefix: str, is_wayfire_B = False) -> TestResult:
     # Go to the directory of the test, so that any temporary files are stored there
     # and so that the wayfire.ini file can be found easily
     cwd = os.getcwd()
     os.chdir(get_test_base_dir(test_main_file))
 
-    actual_log = '/dev/stdout' if args.show_log else logfile
+    actual_log = '/dev/stdout' if args.show_log and not is_wayfire_B else logfile
     result = _run_test_once(TestType, wayfire_exe, actual_log, os.getcwd() + '/' + image_prefix)
     os.chdir(cwd)
     return result
@@ -93,7 +93,7 @@ def run_single_test(testMain) -> Tuple[wftest.Status, str | None]:
         if resultA.status != wftest.Status.OK:
             return resultA.status, 'wayfireA: ' + str(resultA.msg)
 
-        resultB = run_test_once(testMain, foo.WTest, args.compare_with, 'wayfireB.log', 'wayfireB') # type: ignore
+        resultB = run_test_once(testMain, foo.WTest, args.compare_with, 'wayfireB.log', 'wayfireB', is_wayfire_B=True) # type: ignore
         if resultB.status != wftest.Status.OK:
             return resultA.status, 'wayfireB: ' + str(resultA.msg)
 
