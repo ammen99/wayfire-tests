@@ -37,7 +37,14 @@ class WTest(wt.WayfireTest):
         self.socket.move_cursor(350, 150)
         self.wait_for_clients(2)
 
-        if error := self.take_screenshot('final'):
+        if error := self.take_screenshot('dnd-icon-active'):
+            return wt.Status.CRASHED, error
+
+        # Cancel DnD
+        self.socket.click_button('BTN_LEFT', 'release')
+        self.socket.move_cursor(355, 150)
+        self.wait_for_clients()
+        if error := self.take_screenshot('dnd-destroyed'):
             return wt.Status.CRASHED, error
 
         return wt.Status.OK, None
