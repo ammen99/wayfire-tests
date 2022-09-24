@@ -39,6 +39,9 @@ class WayfireTest:
     def wait_for_clients(self, times=1):
         time.sleep(self._ipc_duration * times) # Wait for clients to start/process events
 
+    def wait_ms(self, ms):
+        time.sleep((self._ipc_duration / 0.1) * ms * 0.001)
+
     def require_test_clients(self, clients_list):
         for client in clients_list:
             if not shutil.which(client):
