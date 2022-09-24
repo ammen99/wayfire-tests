@@ -22,11 +22,10 @@ def compare_images(path1: str, path2: str, diff_log: str, sensitivity:float = 0.
     if img1.shape != img2.shape:
         return ImageDiff.SIZE_MISMATCH
 
-    diff = img1 - img2
-    total_sqdiff = np.linalg.norm(diff)
+    diff = np.abs(img1 - img2)
+    total_diff = np.count_nonzero(diff)
     w, h, _ = img1.shape
-    if total_sqdiff > w * h * sensitivity:
-        print(total_sqdiff)
+    if total_diff > w * h * sensitivity:
         lycon.save(diff_log, diff)
         return ImageDiff.DIFFERENT
 
