@@ -18,7 +18,7 @@ class WTest(wt.WayfireTest):
         self.socket.run('wleird-layer-shell -l top -c red')
         self.socket.run('wleird-layer-shell -l overlay -a bottom -c green')
         self.socket.run('terminator')
-        self.wait_for_clients(2)
+        self.wait_for_clients(4) # Wait a bit more, terminator is slow sometimes
         self.socket.press_key('KEY_F11')
         self.wait_for_clients(2)
         if error := self.take_screenshot('final'):
