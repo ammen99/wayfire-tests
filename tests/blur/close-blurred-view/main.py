@@ -13,15 +13,12 @@ class WTest(wt.WayfireTest):
         return self.require_test_clients(['terminator', 'wf-background'])
 
     def _run(self):
-        self.socket.run('terminator')
         self.socket.run('wf-background')
-        self.wait_for_clients(2)
+        self.socket.run('terminator')
+        self.wait_ms(1000)
 
-        self.socket.set_key_state('KEY_LEFTCTRL', True)
-        self.socket.set_key_state('KEY_D', True)
-        self.socket.set_key_state('KEY_D', False)
-        self.socket.set_key_state('KEY_LEFTCTRL', False)
-        self.wait_for_clients(20)
+        self.socket.press_key('KEY_Q')
+        self.wait_for_clients(2)
 
         if error := self.take_screenshot('final'):
             return wt.Status.CRASHED, error
