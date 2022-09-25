@@ -77,3 +77,7 @@ executable('gtk_logger', ['gtk_logger.cpp'],
     dependencies: [gtkmm, wayland_client, wl_protos],
     include_directories: logger_inc,
     install: false)
+
+executable('gtk_color_switcher', ['gtk_color_switcher.cpp'],
+    dependencies: [gtkmm],
+    install: false)
