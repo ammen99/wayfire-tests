@@ -8,6 +8,25 @@
 #include "glibmm/main.h"
 #include "glibmm/refptr.h"
 #include "log.hpp"
+#include <glib-unix.h>
+
+#include <glibmm.h>
+
+int cur_color = 0;
+
+std::string colors[] = {
+    "red",
+    "green",
+    "blue",
+};
+
+int handle_usr1(gpointer user_data)
+{
+    auto win = (Gtk::Window*)user_data;
+    win->override_background_color(Gdk::RGBA(colors[cur_color]));
+    cur_color = (cur_color + 1) % 3;
+    return G_SOURCE_CONTINUE;
+}
 
 int main(int, char **argv)
 {
@@ -18,12 +37,7 @@ int main(int, char **argv)
     a.set_title(argv[1] ?: "null");
 
     a.show_all();
-    Glib::signal_io().connect([&a] (Glib::IOCondition) -> bool {
-        std::string s;
-        std::cin >> s;
-        a.override_background_color(Gdk::RGBA(s));
-        return true;
-    }, STDIN_FILENO, Glib::IO_IN);
+    g_unix_signal_add_full(G_PRIORITY_DEFAULT, SIGUSR1, handle_usr1, &a, NULL);
     app->run(a);
     return 0;
 }
