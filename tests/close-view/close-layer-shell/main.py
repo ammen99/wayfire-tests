@@ -17,7 +17,7 @@ class WTest(wt.WayfireTest):
         pid = self.socket.run('swaylock')["pid"]
         self.wait_for_clients(2)
 
-        os.kill(pid, signal.SIGTERM)
+        os.kill(pid, signal.SIGKILL)
         self.wait_for_clients(2)
 
         if len(self.socket.list_views()) > 0:
