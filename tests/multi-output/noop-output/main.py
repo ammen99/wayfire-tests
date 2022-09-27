@@ -31,7 +31,7 @@ class WTest(wt.WayfireTest):
         self.socket.layout_views(layout)
         self.wait_for_clients(2)
 
-        print(self.socket.destroy_wayland_output('WL-1'))
+        self.socket.destroy_wayland_output('WL-1')
         self.wait_for_clients(2)
         if self._get_views() != ['', 'cs']:
             return wt.Status.WRONG, 'Demo app crashed after destroying WL-1: ' + str(self._get_views())
