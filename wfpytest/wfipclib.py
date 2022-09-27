@@ -50,6 +50,12 @@ class WayfireIPCClient:
         message["method"] = "core/create_wayland_output"
         self.send_json(message)
 
+    def destroy_wayland_output(self, output: str):
+        message = get_msg_template()
+        message["method"] = "core/destroy_wayland_output"
+        message["data"]["output"] = output
+        return self.send_json(message)
+
     def list_views(self):
         message = get_msg_template()
         message["method"] = "core/list_views"
