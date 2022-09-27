@@ -15,7 +15,7 @@ class ImageDiff(Enum):
     def __eq__(self, other):
         return self.value == other.value
 
-def compare_images(path1: str, path2: str, diff_log: str, sensitivity:float = 50.0) -> ImageDiff:
+def compare_images(path1: str, path2: str, diff_log: str, sensitivity: float) -> ImageDiff:
     img1 = lycon.load(path1)
     img2 = lycon.load(path2)
 
@@ -26,7 +26,6 @@ def compare_images(path1: str, path2: str, diff_log: str, sensitivity:float = 50
 
     total_diff = np.sqrt(np.sum(diff * diff))
     diff = (diff > 0) * 255.0
-
     if total_diff > sensitivity:
         lycon.save(diff_log, diff)
         return ImageDiff.DIFFERENT

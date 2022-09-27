@@ -2,12 +2,16 @@
 
 import wftest as wt
 
+# The test requires to compare two blur images.
+# The blur effect is not very stable, so wide, but small
+# changes are expected. Therefore, we need a higher sensitivity
+# for this test.
+def sensitivity():
+    return 200.0
+
 def is_gui() -> bool:
     return True
 
-# This client tiles weston-terminal two times and opens a view on top.
-# Then it proceeds to check that the whole sublayer is moved to the top
-# when clicking on the tiled views.
 class WTest(wt.WayfireTest):
     def prepare(self):
         return self.require_test_clients(['terminator', 'wf-background'])

@@ -102,7 +102,11 @@ def run_single_test(testMain) -> Tuple[wftest.Status, str | None]:
                     str(resultA.file_list) + ' vs. ' + str(resultB.file_list)
 
         for (fileA, fileB) in zip(resultA.file_list, resultB.file_list):
-            code = wu.compare_images(fileA, fileB, fileA + '.delta.png')
+            sensitivity = 50.0
+            if getattr(foo, 'sensitivity', None):
+                sensitivity = foo.sensitivity()
+
+            code = wu.compare_images(fileA, fileB, fileA + '.delta.png', sensitivity)
             if code == wu.ImageDiff.SIZE_MISMATCH:
                 return wftest.Status.GUI_WRONG, 'Screenshot sizes are different: ' + fileA + ' vs. ' + fileB
             elif code == wu.ImageDiff.DIFFERENT:
