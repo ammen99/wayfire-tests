@@ -15,15 +15,18 @@ class ImageDiff(Enum):
     def __eq__(self, other):
         return self.value == other.value
 
-def compare_images(path1: str, path2: str, diff_log: str, sensitivity:float = 1.0) -> ImageDiff:
+def compare_images(path1: str, path2: str, diff_log: str, sensitivity:float = 50.0) -> ImageDiff:
     img1 = lycon.load(path1)
     img2 = lycon.load(path2)
 
     if img1.shape != img2.shape:
         return ImageDiff.SIZE_MISMATCH
 
-    diff = np.abs(img1 - img2)
-    total_diff = np.mean(diff * diff)
+    diff = np.abs(img1 - img2) / 255
+
+    total_diff = np.sqrt(np.sum(diff * diff))
+    diff = (diff > 0) * 255.0
+
     if total_diff > sensitivity:
         lycon.save(diff_log, diff)
         return ImageDiff.DIFFERENT
@@ -36,7 +39,6 @@ def take_screenshot(socket: wi.WayfireIPCClient, path: str) -> str | None:
         # Start grim
         pid = socket.run("grim " + path)
         if not ("result", "ok") in pid.items():
-            print(pid)
             return "Failed to run grim command in core - " + pid["error"]
 
         # Now wait for grim to finish
