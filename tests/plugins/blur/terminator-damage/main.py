@@ -2,13 +2,6 @@
 
 import wftest as wt
 
-# The test requires to compare two blur images.
-# The blur effect is not very stable, so wide, but small
-# changes are expected. Therefore, we need a higher sensitivity
-# for this test.
-def sensitivity():
-    return 200.0
-
 def is_gui() -> bool:
     return True
 
