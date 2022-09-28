@@ -102,7 +102,7 @@ def run_single_test(testMain) -> Tuple[wftest.Status, str | None]:
                     str(resultA.file_list) + ' vs. ' + str(resultB.file_list)
 
         for (fileA, fileB) in zip(resultA.file_list, resultB.file_list):
-            sensitivity = 50.0
+            sensitivity = 20.0
             if getattr(foo, 'sensitivity', None):
                 sensitivity = foo.sensitivity()
 
