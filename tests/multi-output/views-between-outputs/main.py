@@ -16,6 +16,7 @@ class WTest(wt.WayfireTest):
         return sorted([v['title'] for v in self.socket.list_views()])
 
     def _run(self):
+        self.socket.move_cursor(0, 0)
         self.socket.run('gtk_logger gtk1 /tmp/a')
         self.socket.run('gtk_logger gtk2 /tmp/b')
         self.socket.run('wleird-gamma-blend')
