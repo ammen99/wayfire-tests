@@ -39,6 +39,16 @@ class WayfireTest:
     def wait_for_clients(self, times=1):
         time.sleep(self._ipc_duration * times) # Wait for clients to start/process events
 
+    def wait_for_clients_to_open(self, nr_clients: int, waits = 10):
+        for _ in range(waits):
+            if len(self.socket.list_views()) != nr_clients:
+                self.wait_ms(100)
+
+        if len(self.socket.list_views()) != nr_clients:
+            return False
+
+        return True
+
     def wait_ms(self, ms):
         time.sleep((self._ipc_duration / 0.1) * ms * 0.001)
 
