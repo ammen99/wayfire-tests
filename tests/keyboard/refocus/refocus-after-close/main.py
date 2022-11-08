@@ -32,11 +32,11 @@ class WTest(wt.WayfireTest):
 
         for gtk in [gtk1, gtk2]:
             if not gtk.expect_line("keyboard-enter"):
-                return wt.Status.WRONG, 'gtk1 did not receive enter: ' + gtk1.last_line
+                return wt.Status.WRONG, 'gtk1/2 did not receive enter: ' + gtk.last_line
             if not gtk.expect_line("keyboard-leave"):
-                return wt.Status.WRONG, 'gtk1 did not receive leave: ' + gtk1.last_line
+                return wt.Status.WRONG, 'gtk1/2 did not receive leave: ' + gtk.last_line
         if not gtk3.expect_line("keyboard-enter"):
-            return wt.Status.WRONG, 'gtk2 did not receive enter: ' + gtk1.last_line
+            return wt.Status.WRONG, 'gtk3 did not receive enter: ' + gtk3.last_line
 
         layout = {}
         layout['gtk2'] = (495, 495, 100, 100)
@@ -49,6 +49,6 @@ class WTest(wt.WayfireTest):
             return wt.Status.WRONG, 'gtk1 did not receive second enter: ' + gtk1.last_line
         for gtk in [gtk2, gtk3]:
             if not gtk.expect_none():
-                return wt.Status.WRONG, 'gtk2/3 has trailing output: ' + gtk1.last_line
+                return wt.Status.WRONG, 'gtk2/3 has trailing output: ' + gtk.last_line
 
         return wt.Status.OK, None
