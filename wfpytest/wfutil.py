@@ -50,7 +50,7 @@ def take_screenshot(socket: wi.WayfireIPCClient, path: str) -> str | None:
 
 class LoggedProcess:
     def __init__(self, socket: wi.WayfireIPCClient, cmd: str, app_id: str, add_arg: str = ""):
-        socket.run("{} {} {} {}".format(cmd, app_id, "/tmp/" + app_id, add_arg))
+        self.pid = socket.run("{} {} {} {}".format(cmd, app_id, "/tmp/" + app_id, add_arg))["pid"]
         self.logfile = open("/tmp/" + app_id, "a+")
         self.logfile = open("/tmp/" + app_id, "r")
         self.last_line = ""
