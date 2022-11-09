@@ -8,9 +8,9 @@ import signal
 def is_gui() -> bool:
     return False
 
-# This test opens the gtk special client and uses it to open dialogs and then close them with
-# simple keypresses. It also clicks a few times to attempt changing the focus, which should fail,
-# as dialogs are always focused and not the main view.
+# This test opens gtk_logger twice, and proceeds to check that when a view is
+# closed, windows which are barely visible on the current workspace are not focused in favor
+# of windows which are more fully visible.
 class WTest(wt.WayfireTest):
     def prepare(self):
         return self.require_test_clients(['gtk_logger'])
