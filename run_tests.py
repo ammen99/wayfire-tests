@@ -192,8 +192,12 @@ def rerun_test(input: str):
     else:
         args.ipc_timeout = 0.1
 
-    idx = int(cmds[-1])
-    run_test_from_path(failed_tests[idx].prefix, is_rerun=True)
+    if cmds[-1] == "all":
+        for i in range(len(failed_tests)):
+            run_test_from_path(failed_tests[i].prefix, is_rerun=True)
+    else:
+        idx = int(cmds[-1])
+        run_test_from_path(failed_tests[idx].prefix, is_rerun=True)
 
 def show_test_logs(tst: FailedTest):
     path = get_test_base_dir(tst.prefix)
