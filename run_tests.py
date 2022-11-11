@@ -81,7 +81,7 @@ class FailedTest:
         self.prefix = prefix
         self.gui = gui
 
-def run_single_test(testMain) -> Tuple[wftest.Status, str | None]:
+def run_single_test(testMain: str) -> Tuple[wftest.Status, str | None]:
     spec = importlib.util.spec_from_file_location("main", testMain)
     assert spec is not None
     assert spec.loader is not None
@@ -139,20 +139,16 @@ def shouldRunTest(test_main_file: str) -> bool:
     else:
         return True
 
-def run_all_tests():
+def run_test_from_path(filename: str, is_rerun: bool):
     global tests_ok
     global tests_wrong
     global tests_skip
     global failed_tests
 
-    print("Running tests in directory " + colored(args.testdir, "yellow"))
-    for filename in glob.iglob(args.testdir + '/**/main.py', recursive=True):
-        if not shouldRunTest(filename):
-            continue
+    print("Running test " + colored(filename, 'blue') + " - ", end='')
+    status, explanation = run_single_test(filename)
 
-        print("Running test " + colored(filename, 'blue') + " - ", end='')
-        status, explanation = run_single_test(filename)
-
+    if not is_rerun:
         if status == wftest.Status.OK:
             tests_ok += 1
         elif status == wftest.Status.SKIPPED:
@@ -164,12 +160,49 @@ def run_all_tests():
             tests_wrong += 1
             failed_tests.append(FailedTest(filename, True))
 
-        message, color = status.value
-        print(colored(message, color, attrs=['bold']), end='')
-        if explanation:
-            print(" (" + explanation + ")")
-        else:
-            print()
+    message, color = status.value
+    print(colored(message, color, attrs=['bold']), end='')
+    if explanation:
+        print(" (" + explanation + ")")
+    else:
+        print()
+
+def run_all_tests():
+    print("Running tests in directory " + colored(args.testdir, "yellow"))
+    for filename in glob.iglob(args.testdir + '/**/main.py', recursive=True):
+        if not shouldRunTest(filename):
+            continue
+
+        run_test_from_path(filename, is_rerun=False)
+
+def rerun_test(input: str):
+    global failed_tests
+    cmds = [x for x in input.split(' ') if x]
+    cmds = cmds[1:] # drop 'run'
+
+    if 'log' in cmds:
+        args.show_log = True
+    else:
+        args.show_log = False
+
+    if 'slow' in cmds:
+        args.ipc_timeout = 1
+    else:
+        args.ipc_timeout = 0.1
+
+    idx = int(cmds[-1])
+    run_test_from_path(failed_tests[idx].prefix, is_rerun=True)
+
+def show_test_logs(tst: FailedTest):
+    path = get_test_base_dir(tst.prefix)
+    command = ""
+    if tst.gui:
+        command = 'eog {}/*.png'.format(path)
+    else:
+        command = '$EDITOR {}/*.log'.format(path)
+    p = subprocess.Popen(['/bin/sh', '-c', command])
+    p.communicate()
+
 # Interactively show Wayfire logs / image diffs / etc.
 def interact_show_logs():
     global failed_tests
@@ -184,15 +217,14 @@ def interact_show_logs():
                 colored(get_test_base_dir(test.prefix), 'red'))
 
     while idx := input('Enter test number from the list above (ENTER to exit):'):
-        idx = int(idx)
-        path = get_test_base_dir(failed_tests[idx].prefix)
-        command = ""
-        if failed_tests[idx].gui:
-            command = 'eog {}/*.png'.format(path)
-        else:
-            command = '$EDITOR {}/*.log'.format(path)
-        p = subprocess.Popen(['/bin/sh', '-c', command])
-        p.communicate()
+        try:
+            if idx[:3] == "run":
+                rerun_test(idx)
+            else:
+                show_test_logs(failed_tests[int(idx)])
+                idx = int(idx)
+        except:
+            print("Wrong selection!")
 
 check_arguments()
 run_all_tests()
