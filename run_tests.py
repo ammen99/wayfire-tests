@@ -185,8 +185,10 @@ def rerun_test(input: str):
     else:
         args.show_log = False
 
-    if 'slow' in cmds:
+    if 'sloow' in cmds:
         args.ipc_timeout = 1
+    elif 'slow' in cmds:
+        args.ipc_timeout = 0.3
     else:
         args.ipc_timeout = 0.1
 
