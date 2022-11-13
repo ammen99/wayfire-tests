@@ -6,6 +6,8 @@ import traceback
 import psutil
 import time
 import os
+from pathlib import Path
+from uuid import uuid4
 
 class ImageDiff(Enum):
     SAME = 0
@@ -50,9 +52,11 @@ def take_screenshot(socket: wi.WayfireIPCClient, path: str) -> str | None:
 
 class LoggedProcess:
     def __init__(self, socket: wi.WayfireIPCClient, cmd: str, app_id: str, add_arg: str = ""):
-        self.pid = socket.run("{} {} {} {}".format(cmd, app_id, "/tmp/" + app_id, add_arg))["pid"]
-        self.logfile = open("/tmp/" + app_id, "a+")
-        self.logfile = open("/tmp/" + app_id, "r")
+        dir = "/tmp/wst/" + str(uuid4()) + "/";
+        Path(dir).mkdir(parents=True, exist_ok=True)
+        self.pid = socket.run("{} {} {} {}".format(cmd, app_id, dir + app_id, add_arg))["pid"]
+        self.logfile = open(dir + app_id, "a+")
+        self.logfile = open(dir + app_id, "r")
         self.last_line = ""
         os.set_blocking(self.logfile.fileno(), False)
 

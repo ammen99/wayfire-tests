@@ -1,6 +1,8 @@
 from enum import Enum
 from typing import Tuple, Optional
 from wfipclib import WayfireIPCClient
+from pathlib import Path
+from uuid import uuid4
 import wfutil as wu
 
 import subprocess
@@ -31,7 +33,10 @@ class WayfireTest:
     def __init__(self):
         self._wayfire_process = None
         self.socket: WayfireIPCClient = None #type:ignore
-        self._socket_name = "/tmp/wt.socket"
+
+        Path("/tmp/wst/").mkdir(parents=True, exist_ok=True)
+        id = str(uuid4())
+        self._socket_name = "/tmp/wst/wayfire-" + id + ".socket"
         self._ipc_duration = 0.1
         self.screenshots = []
         self.screenshot_prefix = ""

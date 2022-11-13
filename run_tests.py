@@ -6,6 +6,7 @@ import sys
 import glob
 import importlib.util
 import subprocess
+from multiprocessing import Pool
 
 from termcolor import colored
 from typing import Tuple, List
@@ -21,6 +22,7 @@ parser.add_argument('--show-log', action='store_true', required=False)
 parser.add_argument('--ipc-timeout', type=float, default=0.1, required=False)
 parser.add_argument('--interactive', action='store_true', required=False)
 parser.add_argument('--categories', type=str, default='', required=False)
+parser.add_argument('-j', type=int, default='1', required=False)
 args = parser.parse_args()
 
 # Make tests execute slower or faster
@@ -139,16 +141,38 @@ def shouldRunTest(test_main_file: str) -> bool:
     else:
         return True
 
-def run_test_from_path(filename: str, is_rerun: bool):
+def run_test_from_path(filename: str) -> Tuple[wftest.Status, str | None]:
+    print("Running test " + colored(filename, 'blue') + " - ", end='')
+    status, explanation = run_single_test(filename)
+
+    message, color = status.value
+    print(colored(message, color, attrs=['bold']), end='')
+    if explanation:
+        print(" (" + explanation + ")")
+    else:
+        print()
+
+    return status, explanation
+
+def run_all_tests():
+    print("Running tests in directory " + colored(args.testdir, "yellow"))
+    test_list = []
+
+    for filename in glob.iglob(args.testdir + '/**/main.py', recursive=True):
+        if not shouldRunTest(filename):
+            continue
+        test_list.append(filename)
+
+    results_list = []
+    with Pool(args.j) as pool:
+        results_list = pool.map(run_test_from_path, test_list)
+
+    # Calculate statistics
     global tests_ok
     global tests_wrong
     global tests_skip
     global failed_tests
-
-    print("Running test " + colored(filename, 'blue') + " - ", end='')
-    status, explanation = run_single_test(filename)
-
-    if not is_rerun:
+    for (filename, (status, _)) in zip(test_list, results_list):
         if status == wftest.Status.OK:
             tests_ok += 1
         elif status == wftest.Status.SKIPPED:
@@ -159,21 +183,6 @@ def run_test_from_path(filename: str, is_rerun: bool):
         else: # GUI_WRONG
             tests_wrong += 1
             failed_tests.append(FailedTest(filename, True))
-
-    message, color = status.value
-    print(colored(message, color, attrs=['bold']), end='')
-    if explanation:
-        print(" (" + explanation + ")")
-    else:
-        print()
-
-def run_all_tests():
-    print("Running tests in directory " + colored(args.testdir, "yellow"))
-    for filename in glob.iglob(args.testdir + '/**/main.py', recursive=True):
-        if not shouldRunTest(filename):
-            continue
-
-        run_test_from_path(filename, is_rerun=False)
 
 def rerun_test(input: str):
     global failed_tests
@@ -194,10 +203,10 @@ def rerun_test(input: str):
 
     if cmds[-1] == "all":
         for i in range(len(failed_tests)):
-            run_test_from_path(failed_tests[i].prefix, is_rerun=True)
+            run_test_from_path(failed_tests[i].prefix)
     else:
         idx = int(cmds[-1])
-        run_test_from_path(failed_tests[idx].prefix, is_rerun=True)
+        run_test_from_path(failed_tests[idx].prefix)
 
 def show_test_logs(tst: FailedTest):
     path = get_test_base_dir(tst.prefix)
