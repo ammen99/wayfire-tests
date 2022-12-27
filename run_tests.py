@@ -97,7 +97,7 @@ def run_single_test(testMain: str) -> Tuple[wftest.Status, str | None]:
 
         resultB = run_test_once(testMain, foo.WTest, args.compare_with, 'wayfireB.log', 'wayfireB', is_wayfire_B=True) # type: ignore
         if resultB.status != wftest.Status.OK:
-            return resultA.status, 'wayfireB: ' + str(resultA.msg)
+            return resultB.status, 'wayfireB: ' + str(resultB.msg)
 
         if len(resultA.file_list) != len(resultB.file_list):
             return wftest.Status.GUI_WRONG, 'Test returns different amount of images?' + \

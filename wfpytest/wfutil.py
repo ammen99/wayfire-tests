@@ -1,4 +1,4 @@
-import lycon
+import imageio
 import numpy as np
 from enum import Enum
 import wfipclib as wi
@@ -18,8 +18,8 @@ class ImageDiff(Enum):
         return self.value == other.value
 
 def compare_images(path1: str, path2: str, diff_log: str, sensitivity: float) -> ImageDiff:
-    img1 = lycon.load(path1)
-    img2 = lycon.load(path2)
+    img1 = imageio.imread(path1)
+    img2 = imageio.imread(path2)
 
     if img1.shape != img2.shape:
         return ImageDiff.SIZE_MISMATCH
@@ -30,7 +30,7 @@ def compare_images(path1: str, path2: str, diff_log: str, sensitivity: float) ->
     diff = np.abs(img1 - img2) / 255
     total_diff = np.sqrt(np.sum(diff * diff))
     if total_diff > sensitivity:
-        lycon.save(diff_log, diff * 255.0)
+        imageio.imwrite(diff_log, (diff * 255.0).astype(np.uint8))
         return ImageDiff.DIFFERENT
 
     return ImageDiff.SAME
