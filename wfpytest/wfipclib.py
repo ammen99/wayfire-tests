@@ -149,6 +149,44 @@ class WayfireIPCClient:
             self.set_key_state(key, True)
             self.set_key_state(key, False)
 
+    def tablet_tool_proximity(self, x, y, prox_in):
+        message = get_msg_template()
+        message["method"] = "core/tablet/tool_proximity"
+        message["data"]["x"] = x
+        message["data"]["y"] = y
+        message["data"]["proximity_in"] = prox_in
+        return self.send_json(message)
+
+    def tablet_tool_tip(self, x, y, state):
+        message = get_msg_template()
+        message["method"] = "core/tablet/tool_tip"
+        message["data"]["x"] = x
+        message["data"]["y"] = y
+        message["data"]["state"] = state
+        return self.send_json(message)
+
+    def tablet_tool_axis(self, x, y, pressure):
+        message = get_msg_template()
+        message["method"] = "core/tablet/tool_axis"
+        message["data"]["x"] = x
+        message["data"]["y"] = y
+        message["data"]["pressure"] = pressure
+        return self.send_json(message)
+
+    def tablet_tool_button(self, btn, state):
+        message = get_msg_template()
+        message["method"] = "core/tablet/tool_button"
+        message["data"]["button"] = btn
+        message["data"]["state"] = state
+        return self.send_json(message)
+
+    def tablet_pad_button(self, btn, state):
+        message = get_msg_template()
+        message["method"] = "core/tablet/pad_button"
+        message["data"]["button"] = btn
+        message["data"]["state"] = state
+        return self.send_json(message)
+
 # Helper functions
 def check_geometry(x: int, y: int, width: int, height: int, obj) -> bool:
     if obj['x'] == x and obj['y'] == y and \
