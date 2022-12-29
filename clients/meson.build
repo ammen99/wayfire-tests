@@ -38,6 +38,7 @@ wayland_scanner_client = generator(
 
 protocols = [
     [wl_protocol_dir, 'unstable/pointer-constraints/pointer-constraints-unstable-v1.xml'],
+    [wl_protocol_dir, 'unstable/tablet/tablet-unstable-v2.xml'],
 ]
 
 wl_protos_src = []

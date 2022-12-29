@@ -7,9 +7,11 @@
 #include "log.hpp"
 
 #include <gdk/gdkwayland.h>
+#include <string>
 #include <wayland-client.h>
 
 #include <pointer-constraints-unstable-v1-client-protocol.h>
+#include <tablet-unstable-v2-client-protocol.h>
 
 enum class log_features : int
 {
@@ -19,6 +21,7 @@ enum class log_features : int
     CONSTRAINTS = (1 << 3),
     CLICK_TO_X  = (1 << 4),
     CLICK_TO_MENU = (1 << 5),
+    TABLET        = (1 << 6),
 };
 
 // ---------------------------- wl_pointer impl --------------------------------
@@ -83,6 +86,11 @@ void handle_pointer_axis_discrete(void*, struct wl_pointer*,
     // no-op
 }
 
+void handle_pointer_axis120(void*, struct wl_pointer*, uint32_t, int32_t)
+{
+    // no-op
+}
+
 const struct wl_pointer_listener pointer_logger = {
     .enter = handle_pointer_enter,
     .leave = handle_pointer_leave,
@@ -93,6 +101,7 @@ const struct wl_pointer_listener pointer_logger = {
     .axis_source = handle_pointer_axis_source,
     .axis_stop = handle_pointer_axis_stop,
     .axis_discrete = handle_pointer_axis_discrete,
+    .axis_value120 = handle_pointer_axis120,
 };
 
 // ------------------------ zwp_confined_pointer_v1 impl -----------------------
@@ -213,17 +222,228 @@ const struct wl_touch_listener touch_logger = {
 	.orientation = handle_touch_orientation,
 };
 
+// ----------------------------- tablet-v2 impl --------------------------------
+
+void handle_tablet_tool_type(void*, zwp_tablet_tool_v2 *, uint32_t)
+{
+    // nothing
+}
+
+void handle_tablet_tool_hardware_serial(void*, zwp_tablet_tool_v2*, uint32_t, uint32_t)
+{
+    // nothing
+}
+
+void handle_tablet_tool_hardware_id_wacom(void*, zwp_tablet_tool_v2*, uint32_t, uint32_t)
+{
+    // nothing
+}
+
+void handle_tablet_tool_capability(void*, zwp_tablet_tool_v2*, uint32_t)
+{
+    // nothing
+}
+
+void handle_tablet_tool_done(void*, zwp_tablet_tool_v2*)
+{
+    // nothing
+}
+
+void handle_tablet_tool_removed(void*, zwp_tablet_tool_v2*)
+{
+    // nothing
+}
+
+void handle_tablet_tool_proximity_in(void*, zwp_tablet_tool_v2*, uint32_t, zwp_tablet_v2*, wl_surface*)
+{
+    logger::log("tool-proximity-in");
+}
+
+void handle_tablet_tool_proximity_out(void*, zwp_tablet_tool_v2*)
+{
+    logger::log("tool-proximity-out");
+}
+
+void handle_tablet_tool_down(void*, zwp_tablet_tool_v2*, uint32_t)
+{
+    logger::log("tool-down");
+}
+
+void handle_tablet_tool_up(void*, zwp_tablet_tool_v2*)
+{
+    logger::log("tool-up");
+}
+
+void handle_tablet_tool_motion(void*, zwp_tablet_tool_v2*, wl_fixed_t surface_x, wl_fixed_t surface_y)
+{
+    int x = std::round(wl_fixed_to_double(surface_x));
+    int y = std::round(wl_fixed_to_double(surface_y));
+    logger::log("tool-motion " + std::to_string(x) + "," + std::to_string(y));
+}
+
+void handle_tablet_tool_pressure(void*, zwp_tablet_tool_v2*, uint32_t pressure)
+{
+    logger::log("tool-pressure " + std::to_string(pressure));
+}
+
+void handle_tablet_tool_distance(void*, zwp_tablet_tool_v2*, uint32_t)
+{
+    //nothing
+}
+
+void handle_tablet_tool_tilt(void*, zwp_tablet_tool_v2*, wl_fixed_t, wl_fixed_t)
+{
+    //nothing
+}
+
+void handle_tablet_tool_rotation(void*, zwp_tablet_tool_v2*, wl_fixed_t)
+{
+    //nothing
+}
+
+void handle_tablet_tool_slider(void*, zwp_tablet_tool_v2*, int32_t)
+{
+    //nothing
+}
+
+void handle_tablet_tool_wheel(void*, zwp_tablet_tool_v2*, wl_fixed_t, int32_t)
+{
+    //nothing
+}
+
+void handle_tablet_tool_button(void*, zwp_tablet_tool_v2*, uint32_t, uint32_t button, uint32_t state)
+{
+    if (state != ZWP_TABLET_TOOL_V2_BUTTON_STATE_RELEASED)
+    {
+        logger::log("tool-button-press " + std::to_string(button));
+    } else
+    {
+        logger::log("tool-button-release " + std::to_string(button));
+    }
+}
+
+void handle_tablet_tool_frame(void*, zwp_tablet_tool_v2*, uint32_t)
+{
+    // nothing
+}
+
+const zwp_tablet_tool_v2_listener tool_listener = {
+	.type = handle_tablet_tool_type,
+	.hardware_serial = handle_tablet_tool_hardware_serial,
+	.hardware_id_wacom = handle_tablet_tool_hardware_id_wacom,
+	.capability = handle_tablet_tool_capability,
+	.done = handle_tablet_tool_done,
+	.removed = handle_tablet_tool_removed,
+	.proximity_in = handle_tablet_tool_proximity_in,
+	.proximity_out = handle_tablet_tool_proximity_out,
+	.down = handle_tablet_tool_down,
+	.up = handle_tablet_tool_up,
+	.motion = handle_tablet_tool_motion,
+	.pressure = handle_tablet_tool_pressure,
+	.distance = handle_tablet_tool_distance,
+	.tilt = handle_tablet_tool_tilt,
+	.rotation = handle_tablet_tool_rotation,
+	.slider = handle_tablet_tool_slider,
+	.wheel = handle_tablet_tool_wheel,
+	.button = handle_tablet_tool_button,
+	.frame = handle_tablet_tool_frame,
+};
+
+void handle_tablet_pad_group(void*, zwp_tablet_pad_v2*, zwp_tablet_pad_group_v2*)
+{
+    // nothing to do
+}
+
+void handle_tablet_pad_path(void*, zwp_tablet_pad_v2*, const char*)
+{
+    // nothing to do
+}
+
+void handle_tablet_pad_buttons(void*, zwp_tablet_pad_v2*, uint32_t)
+{
+    // nothing to do
+}
+
+void handle_tablet_pad_done(void*, zwp_tablet_pad_v2*)
+{
+    // nothing to do
+}
+
+void handle_tablet_pad_button(void*, zwp_tablet_pad_v2*, uint32_t, uint32_t button, uint32_t state)
+{
+    if (state == ZWP_TABLET_PAD_V2_BUTTON_STATE_PRESSED)
+    {
+        logger::log("pad-button-press " + std::to_string(button));
+    } else
+    {
+        logger::log("pad-button-release " + std::to_string(button));
+    }
+}
+
+void handle_tablet_pad_enter(void*, zwp_tablet_pad_v2*, uint32_t, zwp_tablet_v2*, wl_surface*)
+{
+    logger::log("pad-enter");
+}
+
+void handle_tablet_pad_leave(void*, zwp_tablet_pad_v2*, uint32_t, wl_surface*)
+{
+    logger::log("pad-leave");
+}
+
+void handle_tablet_pad_removed(void*, zwp_tablet_pad_v2*)
+{
+    // nothing to do
+}
+
+static const zwp_tablet_pad_v2_listener pad_listener = {
+	.group = handle_tablet_pad_group,
+	.path = handle_tablet_pad_path,
+	.buttons = handle_tablet_pad_buttons,
+	.done = handle_tablet_pad_done,
+	.button = handle_tablet_pad_button,
+	.enter = handle_tablet_pad_enter,
+	.leave = handle_tablet_pad_leave,
+	.removed = handle_tablet_pad_removed,
+};
+
+void handle_tablet_added(void*, zwp_tablet_seat_v2*, zwp_tablet_v2*)
+{
+    // nothing to do
+}
+
+void handle_tablet_tool_added(void*, zwp_tablet_seat_v2*, zwp_tablet_tool_v2* tool)
+{
+    zwp_tablet_tool_v2_add_listener(tool, &tool_listener, NULL);
+}
+
+void handle_tablet_pad_added(void*, zwp_tablet_seat_v2*, zwp_tablet_pad_v2* pad)
+{
+    zwp_tablet_pad_v2_add_listener(pad, &pad_listener, NULL);
+}
+
+static const zwp_tablet_seat_v2_listener tablet_seat_listener = {
+    .tablet_added = handle_tablet_added,
+    .tool_added = handle_tablet_tool_added,
+    .pad_added = handle_tablet_pad_added,
+};
+
 // ---------------------------- wl_registry impl -------------------------------
 zwp_pointer_constraints_v1 *pointer_constraints = NULL;
+zwp_tablet_manager_v2 *tablet_manager = NULL;
 
 static void registry_add_object(void*, struct wl_registry *registry,
     uint32_t name, const char *interface, uint32_t version)
 {
     if (strcmp(interface, zwp_pointer_constraints_v1_interface.name) == 0)
     {
-        pointer_constraints = (zwp_pointer_constraints_v1*) wl_registry_bind(
-            registry, name, &zwp_pointer_constraints_v1_interface,
-            std::min(version, 1u));
+        pointer_constraints = (zwp_pointer_constraints_v1*)
+            wl_registry_bind(registry, name, &zwp_pointer_constraints_v1_interface, std::min(version, 1u));
+    }
+
+    if (strcmp(interface, zwp_tablet_manager_v2_interface.name) == 0)
+    {
+        tablet_manager = (zwp_tablet_manager_v2*)
+            wl_registry_bind(registry, name, &zwp_tablet_manager_v2_interface, 1u);
     }
 }
 
@@ -244,6 +464,7 @@ static struct
     wl_keyboard *keyboard = NULL;
     wl_touch *touch = NULL;
     zwp_confined_pointer_v1 *confined = NULL;
+    zwp_tablet_seat_v2 *tablet = NULL;
 
 } global_protocols;
 
@@ -303,6 +524,11 @@ static void setup_window(Gtk::Window *win, int flags)
     auto gdk_pointer = disp->get_default_seat()->get_pointer();
     auto wl_seat = gdk_wayland_device_get_wl_seat(gdk_pointer->gobj());
 
+    wl_display *wl_disp = gdk_wayland_display_get_wl_display(disp->gobj());
+    wl_registry *registry = wl_display_get_registry(wl_disp);
+    wl_registry_add_listener(registry, &registry_listener, NULL);
+    wl_display_roundtrip(wl_disp);
+
     if (flags & (int)log_features::POINTER)
     {
         global_protocols.pointer = wl_seat_get_pointer(wl_seat);
@@ -321,13 +547,14 @@ static void setup_window(Gtk::Window *win, int flags)
         wl_touch_add_listener(global_protocols.touch, &touch_logger, NULL);
     }
 
+    if (flags & (int)log_features::TABLET)
+    {
+        global_protocols.tablet = zwp_tablet_manager_v2_get_tablet_seat(tablet_manager, wl_seat);
+        zwp_tablet_seat_v2_add_listener(global_protocols.tablet, &tablet_seat_listener, NULL);
+    }
+
     if (flags & (int)log_features::CONSTRAINTS)
     {
-        wl_display *wl_disp = gdk_wayland_display_get_wl_display(disp->gobj());
-        wl_registry *registry = wl_display_get_registry(wl_disp);
-        wl_registry_add_listener(registry, &registry_listener, NULL);
-        wl_display_roundtrip(wl_disp);
-
         auto region = get_region_for_window(win);
         auto wl_surf = gdk_wayland_window_get_wl_surface(win->get_window()->gobj());
         global_protocols.confined = zwp_pointer_constraints_v1_confine_pointer(pointer_constraints,
@@ -377,6 +604,10 @@ int main(int argc, char **argv)
         if (!strcmp("click-to-menu", argv[i]))
         {
             flags |= (int)log_features::CLICK_TO_MENU;
+        }
+        if (!strcmp("tablet", argv[i]))
+        {
+            flags |= (int)log_features::TABLET;
         }
     }
 
