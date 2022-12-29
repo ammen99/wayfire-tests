@@ -50,6 +50,9 @@ def take_screenshot(socket: wi.WayfireIPCClient, path: str) -> str | None:
     except:
         return "Failed to wait for grim: " + traceback.format_exc()
 
+class WrongLogLine(Exception):
+    pass
+
 class LoggedProcess:
     def __init__(self, socket: wi.WayfireIPCClient, cmd: str, app_id: str, add_arg: str = ""):
         dir = "/tmp/wst/" + str(uuid4()) + "/";
@@ -58,6 +61,7 @@ class LoggedProcess:
         self.logfile = open(dir + app_id, "a+")
         self.logfile = open(dir + app_id, "r")
         self.last_line = ""
+        self.app_id = app_id
         os.set_blocking(self.logfile.fileno(), False)
 
     def reset_logs(self):
@@ -79,3 +83,11 @@ class LoggedProcess:
     def expect_none(self):
         self._read_next()
         return self.last_line == "<empty>"
+
+    def expect_line_throw(self, line: str):
+        if not self.expect_line(line):
+            raise WrongLogLine('{} did not receive {}: {}'.format(self.app_id, line, self.last_line))
+
+    def expect_none_throw(self, details=""):
+        if not self.expect_none():
+            raise WrongLogLine('{} has trailing output {}: {}'.format(self.app_id, details, self.last_line))
