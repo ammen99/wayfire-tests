@@ -1,0 +1,30 @@
+#!/bin/env python3
+
+import wftest as wt
+import shutil
+import os
+import signal
+
+def is_gui() -> bool:
+    return False
+
+# Simple test which starts weston-terminal maximized, then closes it by clicking on the close button
+
+class WTest(wt.WayfireTest):
+    def prepare(self):
+        if not shutil.which('weston-terminal'):
+            return wt.Status.SKIPPED, "weston-terminal binary not found in $PATH"
+        return wt.Status.OK, None
+
+    def _run(self):
+        pid = self.socket.run('swaylock')['pid']
+        self.wait_for_clients()
+
+        os.kill(pid, signal.SIGINT)
+        self.wait_ms(200)
+
+        if len(self.socket.list_views()) > 0:
+            print(self.socket.list_views())
+            return wt.Status.WRONG, "weston-terminal is still open"
+
+        return wt.Status.OK, None
