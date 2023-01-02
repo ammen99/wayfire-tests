@@ -88,6 +88,13 @@ class LoggedProcess:
         if not self.expect_line(line):
             raise WrongLogLine('{} did not receive {}: {}'.format(self.app_id, line, self.last_line))
 
+    def expect_unordered_lines_throw(self, lines):
+        while lines:
+            self._read_next()
+            if self.last_line not in lines:
+                raise WrongLogLine('{} did not receive one of {}: {}'.format(self.app_id, str(lines), self.last_line))
+            lines.remove(self.last_line)
+
     def expect_none_throw(self, details=""):
         if not self.expect_none():
             raise WrongLogLine('{} has trailing output {}: {}'.format(self.app_id, details, self.last_line))

@@ -17,7 +17,7 @@ class WTest(wt.WayfireTest):
     def _run(self):
         gtk1 = wu.LoggedProcess(self.socket, 'gtk_logger', 'gtk1', 'tablet')
         self.wait_for_clients(2)
-        gtk2 = wu.LoggedProcess(self.socket, 'gtk_logger', 'gtk2', 'tablet')
+        gtk2 = wu.LoggedProcess(self.socket, 'gtk_logger', 'gtk2', 'tablet &> /tmp/g2')
         self.wait_for_clients(2)
         if self._get_views() != ['gtk1', 'gtk2']:
             return wt.Status.WRONG, 'Demo apps did not open: ' + str(self._get_views())
@@ -44,9 +44,7 @@ class WTest(wt.WayfireTest):
             gtk1.expect_none_throw("(after kill)")
             self.socket.tablet_tool_tip(50, 50, False)
 
-            gtk2.expect_line_throw("pad-enter")
-            gtk2.expect_line_throw("tool-proximity-in")
-            gtk2.expect_line_throw("tool-motion 50,50")
+            gtk2.expect_unordered_lines_throw(["pad-enter", "tool-proximity-in", "tool-motion 50,50"])
             gtk2.expect_none_throw("(trailing)")
             self.wait_for_clients(2)
         except wu.WrongLogLine as e:
