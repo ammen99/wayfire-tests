@@ -25,28 +25,24 @@ class WTest(wt.WayfireTest):
         if self._get_views() != ['gtk1']:
             return wt.Status.WRONG, 'Demo app did not open: ' + str(self._get_views())
 
-        if not gtk1.expect_line("keyboard-enter"):
-            return wt.Status.WRONG, 'gtk1 did not receive enter: ' + gtk1.last_line
+        try:
+            gtk1.expect_line_throw("keyboard-enter")
+            self.socket.press_key('S-KEY_E')
+            self.wait_for_clients(2)
 
-        self.socket.press_key('S-KEY_E')
-        self.wait_for_clients(2)
+            gtk1.expect_line_throw("key-press 125", "(super mod)")
+            gtk1.expect_line_throw("key-release 125", "(super mod)")
+            gtk1.expect_line_throw("keyboard-leave")
+            gtk1.expect_none_throw("after starting expo")
 
-        if not gtk1.expect_line("key-press 125"):
-            return wt.Status.WRONG, 'gtk1 did not receive <super>: ' + gtk1.last_line
-        if not gtk1.expect_line("keyboard-leave"):
-            return wt.Status.WRONG, 'gtk1 did not receive leave: ' + gtk1.last_line
-        if not gtk1.expect_none():
-            return wt.Status.WRONG, 'gtk1 has trailing ouptut from expo bindings: ' + gtk1.last_line
+            self.socket.press_key('KEY_T')
+            gtk1.expect_none_throw("during expo")
 
-        self.socket.press_key('KEY_T')
-        self.wait_for_clients(2)
-        if not gtk1.expect_none():
-            return wt.Status.WRONG, 'gtk1 received an event while expo is active: ' + gtk1.last_line
-
-        self.socket.press_key('S-KEY_E')
-        self.wait_for_clients(2)
-        if not gtk1.expect_line("keyboard-enter"):
-            return wt.Status.WRONG, 'gtk1 did not receive enter2: ' + gtk1.last_line
+            self.socket.press_key('S-KEY_E')
+            self.wait_for_clients(2)
+            gtk1.expect_line_throw("keyboard-enter", "(after expo)")
+        except wu.WrongLogLine as e:
+            return wt.Status.WRONG, e.args[0]
 
         self.wait_for_clients(2)
         if self._get_views() != ['gtk1']:

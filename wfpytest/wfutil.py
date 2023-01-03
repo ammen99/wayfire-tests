@@ -84,9 +84,9 @@ class LoggedProcess:
         self._read_next()
         return self.last_line == "<empty>"
 
-    def expect_line_throw(self, line: str):
+    def expect_line_throw(self, line: str, details=""):
         if not self.expect_line(line):
-            raise WrongLogLine('{} did not receive {}: {}'.format(self.app_id, line, self.last_line))
+            raise WrongLogLine('{} did not receive {}{}: {}'.format(self.app_id, line, details, self.last_line))
 
     def expect_unordered_lines_throw(self, lines):
         while lines:
