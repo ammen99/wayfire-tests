@@ -29,7 +29,7 @@ class WayfireIPCClient:
 
         return response
 
-    def send_json(self, msg):
+    def _send_json(self, msg):
         data = js.dumps(msg).encode('utf8')
         header = len(data).to_bytes(4, byteorder="little")
         self.client.send(header)
@@ -39,32 +39,42 @@ class WayfireIPCClient:
         response_message = self.read_exact(rlen)
         return js.loads(response_message)
 
+    def send_json(self, msg):
+        response = self._send_json(msg)
+        if 'error' in response:
+            msg["method"] = "core" + msg["method"][5:]
+            response2 = self._send_json(msg)
+            if 'error' in response2:
+                return response
+            return response2
+        return response
+
     def ping(self):
         message = get_msg_template()
-        message["method"] = "core/ping"
+        message["method"] = "stipc/ping"
         response = self.send_json(message)
         return ("result", "ok") in response.items()
 
     def create_wayland_output(self):
         message = get_msg_template()
-        message["method"] = "core/create_wayland_output"
+        message["method"] = "stipc/create_wayland_output"
         self.send_json(message)
 
     def destroy_wayland_output(self, output: str):
         message = get_msg_template()
-        message["method"] = "core/destroy_wayland_output"
+        message["method"] = "stipc/destroy_wayland_output"
         message["data"]["output"] = output
         return self.send_json(message)
 
     def list_views(self):
         message = get_msg_template()
-        message["method"] = "core/list_views"
+        message["method"] = "stipc/list_views"
         return self.send_json(message)
 
     def layout_views(self, layout):
         views = self.list_views()
         message = get_msg_template()
-        message["method"] = "core/layout_views"
+        message["method"] = "stipc/layout_views"
         msg_layout = []
 
         for ident in layout:
@@ -95,20 +105,20 @@ class WayfireIPCClient:
 
     def run(self, cmd):
         message = get_msg_template()
-        message["method"] = "core/run"
+        message["method"] = "stipc/run"
         message["data"]["cmd"] = cmd
         return self.send_json(message)
 
     def move_cursor(self, x: int, y: int):
         message = get_msg_template()
-        message["method"] = "core/move_cursor"
+        message["method"] = "stipc/move_cursor"
         message["data"]["x"] = x
         message["data"]["y"] = y
         return self.send_json(message)
 
     def set_touch(self, id: int, x: int, y: int):
         message = get_msg_template()
-        message["method"] = "core/touch"
+        message["method"] = "stipc/touch"
         message["data"]["finger"] = id
         message["data"]["x"] = x
         message["data"]["y"] = y
@@ -116,7 +126,7 @@ class WayfireIPCClient:
 
     def release_touch(self, id: int):
         message = get_msg_template()
-        message["method"] = "core/touch_release"
+        message["method"] = "stipc/touch_release"
         message["data"]["finger"] = id
         return self.send_json(message)
 
@@ -127,14 +137,14 @@ class WayfireIPCClient:
         mode is full, press or release
         """
         message = get_msg_template()
-        message["method"] = "core/feed_button"
+        message["method"] = "stipc/feed_button"
         message["data"]["mode"] = mode
         message["data"]["combo"] = btn_with_mod
         return self.send_json(message)
 
     def set_key_state(self, key: str, state: bool):
         message = get_msg_template()
-        message["method"] = "core/feed_key"
+        message["method"] = "stipc/feed_key"
         message["data"]["key"] = key
         message["data"]["state"] = state
         return self.send_json(message)
@@ -151,7 +161,7 @@ class WayfireIPCClient:
 
     def tablet_tool_proximity(self, x, y, prox_in):
         message = get_msg_template()
-        message["method"] = "core/tablet/tool_proximity"
+        message["method"] = "stipc/tablet/tool_proximity"
         message["data"]["x"] = x
         message["data"]["y"] = y
         message["data"]["proximity_in"] = prox_in
@@ -159,7 +169,7 @@ class WayfireIPCClient:
 
     def tablet_tool_tip(self, x, y, state):
         message = get_msg_template()
-        message["method"] = "core/tablet/tool_tip"
+        message["method"] = "stipc/tablet/tool_tip"
         message["data"]["x"] = x
         message["data"]["y"] = y
         message["data"]["state"] = state
@@ -167,7 +177,7 @@ class WayfireIPCClient:
 
     def tablet_tool_axis(self, x, y, pressure):
         message = get_msg_template()
-        message["method"] = "core/tablet/tool_axis"
+        message["method"] = "stipc/tablet/tool_axis"
         message["data"]["x"] = x
         message["data"]["y"] = y
         message["data"]["pressure"] = pressure
@@ -175,14 +185,14 @@ class WayfireIPCClient:
 
     def tablet_tool_button(self, btn, state):
         message = get_msg_template()
-        message["method"] = "core/tablet/tool_button"
+        message["method"] = "stipc/tablet/tool_button"
         message["data"]["button"] = btn
         message["data"]["state"] = state
         return self.send_json(message)
 
     def tablet_pad_button(self, btn, state):
         message = get_msg_template()
-        message["method"] = "core/tablet/pad_button"
+        message["method"] = "stipc/tablet/pad_button"
         message["data"]["button"] = btn
         message["data"]["state"] = state
         return self.send_json(message)
