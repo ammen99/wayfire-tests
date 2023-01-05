@@ -24,9 +24,15 @@ class WTest(wt.WayfireTest):
         self.socket.move_cursor(10, 10)
         self.socket.click_button('BTN_LEFT', 'full')
         self.wait_for_clients(2)
-        self.socket.move_cursor(100, 10)
-        self.wait_for_clients(2)
 
+        for i in range(1, 10):
+            self.socket.move_cursor(i * 10, 10)
+            self.wait_for_clients()
+        for i in range(10, 0, -1):
+            self.socket.move_cursor(i * 10, 10)
+            self.wait_for_clients()
+
+        self.wait_for_clients(2)
         if not self.socket.get_view_info('Gitk'):
             return wt.Status.WRONG, 'Gitk not running?'
 
