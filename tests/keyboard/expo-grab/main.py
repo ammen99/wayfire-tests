@@ -41,6 +41,7 @@ class WTest(wt.WayfireTest):
             self.socket.press_key('S-KEY_E')
             self.wait_for_clients(2)
             gtk1.expect_line_throw("keyboard-enter", "(after expo)")
+            gtk1.expect_none_throw("(after expo)")
         except wu.WrongLogLine as e:
             return wt.Status.WRONG, e.args[0]
 
