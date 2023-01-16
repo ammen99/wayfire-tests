@@ -69,6 +69,11 @@ executable('x11_map_unmap', ['x11_map_unmap.cpp'],
     include_directories: logger_inc,
     install: false)
 
+executable('x11_logger', ['x11_logger.cpp'],
+    dependencies: x11,
+    include_directories: logger_inc,
+    install: false)
+
 executable('gtk_special', ['gtk_special.cpp'],
     dependencies: gtkmm,
     include_directories: logger_inc,
