@@ -126,9 +126,18 @@ static void handle_keymap(void*, wl_keyboard*, uint32_t, int32_t, uint32_t)
     // no-op
 }
 
-static void handle_keyboard_enter(void*, wl_keyboard*, uint32_t, wl_surface*, wl_array*)
+#undef wl_array_for_each
+#define wl_array_for_each(pos, array) for (pos = (uint32_t*)(array)->data; \
+        (const char *) pos < ((const char *) (array)->data + (array)->size); (pos)++)
+
+static void handle_keyboard_enter(void*, wl_keyboard*, uint32_t, wl_surface*, wl_array* array)
 {
     logger::log("keyboard-enter");
+    uint32_t *item;
+    wl_array_for_each(item, array)
+    {
+        logger::log("key-enter " + std::to_string(*item));
+    }
 }
 
 void handle_keyboard_leave(void*, wl_keyboard*, uint32_t, wl_surface*)
