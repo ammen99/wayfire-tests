@@ -33,6 +33,4 @@ class WTest(wt.WayfireTest):
         if error := self.take_screenshot('2-scale-exited'):
             return wt.Status.CRASHED, error
 
-        self.wait_for_clients(2000)
-
         return wt.Status.OK, None
