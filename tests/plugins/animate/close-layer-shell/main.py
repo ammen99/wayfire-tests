@@ -1,7 +1,6 @@
 #!/bin/env python3
 
 import wftest as wt
-import shutil
 import os
 import signal
 
@@ -12,12 +11,10 @@ def is_gui() -> bool:
 
 class WTest(wt.WayfireTest):
     def prepare(self):
-        if not shutil.which('weston-terminal'):
-            return wt.Status.SKIPPED, "weston-terminal binary not found in $PATH"
-        return wt.Status.OK, None
+        return self.require_test_clients(['wleird-layer-shell'])
 
     def _run(self):
-        pid = self.socket.run('swaylock')['pid']
+        pid = self.socket.run('wleird-layer-shell')['pid']
         self.wait_for_clients()
 
         os.kill(pid, signal.SIGINT)
@@ -25,6 +22,6 @@ class WTest(wt.WayfireTest):
 
         if len(self.socket.list_views()) > 0:
             print(self.socket.list_views())
-            return wt.Status.WRONG, "weston-terminal is still open"
+            return wt.Status.WRONG, "wleird-layer-shell is still open"
 
         return wt.Status.OK, None
