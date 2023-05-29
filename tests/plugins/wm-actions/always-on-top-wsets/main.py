@@ -8,6 +8,7 @@ def is_gui() -> bool:
     return True
 
 # This test activates the second workspace set and ensures that always-on-top state works as intended.
+# Then it goes back to the first workspace and checks that always-on-top is hidden, and then shown again.
 class WTest(wt.WayfireTest):
     def prepare(self):
         return self.require_test_clients(['gtk_color_switcher', 'gtk_special'])
@@ -44,10 +45,18 @@ class WTest(wt.WayfireTest):
         self.socket.move_cursor(50, 50) # hover gtk_color_switcher
         self.socket.click_button('BTN_LEFT', 'full') # bring gtk_color_switcher to front => should fail
 
-        if err := self.take_screenshot('1-final'):
+        if err := self.take_screenshot('1-setup'):
             return wt.Status.CRASHED, "Failed to take screenshot " + err
 
         if self._get_views() != ['gtk_color_switcher', 'gtk_special']:
             return wt.Status.WRONG, 'Demo apps crashed?'
+
+        self.socket.press_key('KEY_1')
+        if err := self.take_screenshot('2-empty-wset'):
+            return wt.Status.CRASHED, "Failed to take screenshot " + err
+
+        self.socket.press_key('KEY_2')
+        if err := self.take_screenshot('3-back-to-wset2'):
+            return wt.Status.CRASHED, "Failed to take screenshot " + err
 
         return wt.Status.OK, None
