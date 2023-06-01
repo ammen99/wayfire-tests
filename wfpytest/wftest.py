@@ -92,6 +92,17 @@ class WayfireTest:
         except Exception as _:
             return Status.CRASHED, "Wayfire or client socket crashed, " + traceback.format_exc()
 
+    def click_and_drag(self, button, start_x, start_y, end_x, end_y, release=True):
+        dx = end_x - start_x
+        dy = end_y - start_y
+
+        self.socket.move_cursor(start_x, start_y)
+        self.socket.click_button(button, 'press')
+        for i in range(11):
+            self.socket.move_cursor(start_x + dx * i // 10, start_y + dy * i // 10)
+        if release:
+            self.socket.click_button(button, 'release')
+
     def run_wayfire(self, wayfire_path: str, logfile: str):
         # Run wayfire with specified socket name for IPC communication
         env = os.environ.copy()

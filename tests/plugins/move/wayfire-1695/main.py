@@ -10,16 +10,6 @@ class WTest(wt.WayfireTest):
     def prepare(self):
         return self.require_test_clients(['weston-terminal'])
 
-    def click_and_drag(self, button, start_x, start_y, end_x, end_y):
-        dx = end_x - start_x
-        dy = end_y - start_y
-
-        self.socket.move_cursor(start_x, start_y)
-        self.socket.click_button(button, 'press')
-        for i in range(11):
-            self.socket.move_cursor(start_x + dx * i // 10, start_y + dy * i // 10)
-        self.socket.click_button(button, 'release')
-
     def _run(self):
         self.socket.create_wayland_output()
         self.socket.run('weston-terminal')
