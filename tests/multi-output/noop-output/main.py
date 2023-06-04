@@ -8,9 +8,6 @@ import signal
 def is_gui() -> bool:
     return False
 
-# This test opens a special gtk client twice on different outputs so that they overlap.
-# Then, it proceeds to check that despite the overlap, the correct view is focused every time,
-# i.e. it checks that a view's input region is confined to its output.
 class WTest(wt.WayfireTest):
     def prepare(self):
         return self.require_test_clients(['gtk_color_switcher', 'wf-background'])
@@ -22,7 +19,7 @@ class WTest(wt.WayfireTest):
         pid = self.socket.run('gtk_color_switcher cs')["pid"]
         self.socket.run('wf-background')
         self.wait_for_clients(4)
-        if self._get_views() != ['', 'cs']:
+        if self._get_views() != ['cs', 'layer-shell']:
             return wt.Status.WRONG, 'Demo apps did not open: ' + str(self._get_views())
 
         # position the views
@@ -33,7 +30,7 @@ class WTest(wt.WayfireTest):
 
         self.socket.destroy_wayland_output('WL-1')
         self.wait_for_clients(2)
-        if self._get_views() != ['', 'cs']:
+        if self._get_views() != ['cs', 'layer-shell']:
             return wt.Status.WRONG, 'Demo app crashed after destroying WL-1: ' + str(self._get_views())
 
         # Check that view was scaled to match the NOOP-1 resolution
@@ -45,7 +42,7 @@ class WTest(wt.WayfireTest):
         os.kill(pid, signal.SIGUSR1)
         self.socket.move_cursor(10, 10)
         self.wait_for_clients(2)
-        if self._get_views() != ['', 'cs']:
+        if self._get_views() != ['cs', 'layer-shell']:
             return wt.Status.WRONG, 'Demo app crashed after playing around with NOOP-1: ' + str(self._get_views())
 
         self.socket.create_wayland_output()
@@ -54,7 +51,7 @@ class WTest(wt.WayfireTest):
         # Currently, the timer is set to 1s in Wayfire.
 
         # Check that view was scaled to match the WL-2 resolution
-        if self._get_views() != ['', 'cs']:
+        if self._get_views() != ['cs', 'layer-shell']:
             return wt.Status.WRONG, 'Demo app crashed after restoring to WL-2: ' + str(self._get_views())
 
         cs_geometry = self.socket.get_view_info_title('cs')["geometry"]
