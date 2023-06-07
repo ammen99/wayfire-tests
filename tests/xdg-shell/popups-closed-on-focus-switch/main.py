@@ -20,7 +20,7 @@ class WTest(wt.WayfireTest):
         self.socket.click_button('BTN_LEFT', 'full')
 
     def _run(self):
-        gtk = wu.LoggedProcess(self.socket, 'gtk_logger', 'gtk1', 'keyboard')
+        gtk = wu.LoggedProcess(self.socket, 'gtk_logger', 'gtk1', 'keyboard pointer')
         self.socket.run('gedit')
         self.wait_for_clients(2)
         if self._get_views() != ['gedit', 'gtk_logger']:
@@ -42,14 +42,14 @@ class WTest(wt.WayfireTest):
 
         gtk.reset_logs()
         self.socket.move_cursor(750, 250)
-        self.socket.click_button('BTN_LEFT', 'full')
+        self.socket.click_button('BTN_LEFT', 'press')
         self.wait_for_clients()
 
         if self._get_views() != ['gedit', 'gtk_logger']:
             return wt.Status.WRONG, 'Popup menu did not close! ' + str(self._get_views())
 
         try:
-            gtk.expect_line_throw('keyboard-enter')
+            gtk.expect_unordered_lines_throw(['keyboard-enter', 'pointer-enter'])
         except wu.WrongLogLine as e:
             return wt.Status.WRONG, e.args[0]
 
