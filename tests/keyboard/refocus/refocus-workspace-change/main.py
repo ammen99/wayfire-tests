@@ -31,6 +31,7 @@ class WTest(wt.WayfireTest):
         layout['gtk1'] = (400, 400, 100, 100) # Workspace 1
         layout['gtk2'] = (500, 0, 100, 100) # Workspace 2
         self.socket.layout_views(layout)
+        self.wait_for_clients(2) # Wait for transaction to settle down
         self._click_on(self.socket.get_view_info_title('gtk1'))
         self.wait_for_clients(2)
         gtk1.reset_logs()
