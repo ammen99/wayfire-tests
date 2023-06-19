@@ -17,7 +17,7 @@ class WTest(wt.WayfireTest):
 
     def _run(self):
         self.socket.run('terminator -M')
-        self.wait_for_clients(2)
+        self.wait_for_clients(4)
         if self._get_views() != ['terminator']:
             return wt.Status.WRONG, 'Terminator did not open: ' + str(self._get_views())
 
