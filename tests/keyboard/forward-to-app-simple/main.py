@@ -34,12 +34,14 @@ class WTest(wt.WayfireTest):
 
         # Focus should be xterm
         self._click_on(self.socket.get_view_info_title('x11'))
+        self.wait_for_clients()
         self.socket.press_key('KEY_Q')
         self.wait_for_clients(3)
         if self._get_views() != ['a', 'b', 'x11']:
             return wt.Status.WRONG, 'Demo did not get keyboard input: ' + str(self._get_views())
 
         self._click_on(self.socket.get_view_info_title('b'))
+        self.wait_for_clients()
         self.socket.press_key('KEY_Q')
         self.wait_for_clients(3)
         if self._get_views() != ['b', 'x11'] and self._get_views() != ['a', 'x11']:
