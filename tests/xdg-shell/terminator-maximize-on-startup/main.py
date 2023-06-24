@@ -4,7 +4,7 @@ import wftest as wt
 import wfipclib as wi
 
 def is_gui() -> bool:
-    return False
+    return True
 
 # This test opens gedit and a gtk keyboard logger client side by side.
 # Then, it opens a menu in gedit (xdg-popup) which should be automatically closed when clicking on the gtk logger client.
@@ -27,5 +27,8 @@ class WTest(wt.WayfireTest):
 
         if not wi.check_geometry(10, 20, 980, 470, info['base-geometry']):
             return wt.Status.WRONG, 'Terminators base geometry is not correct: ' + str(info['base-geometry'])
+
+        if err := self.take_screenshot('maximized'):
+            return wt.Status.CRASHED, str(err)
 
         return wt.Status.OK, None
