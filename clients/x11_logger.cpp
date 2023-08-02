@@ -1,8 +1,3 @@
-// Simple program which closes itself on right click.
-// Supports either starting with a particular geometry or fullscreen:
-//
-// ./x11_click_to_close <class> X Y W H
-// ./x11_click_to_close <class> fullscreen
 #include <X11/X.h>
 #include <X11/Xlib.h>
 #include <X11/Xatom.h>
@@ -11,6 +6,7 @@
 #include <string.h>
 #include <iostream>
 #include <unistd.h>
+#include <cstdint>
 
 #include "log.hpp"
 
@@ -18,14 +14,10 @@ int main(int argc, char **argv) {
     auto display = XOpenDisplay(NULL);
     auto screen = DefaultScreen(display);
 
-    XSetWindowAttributes attrs;
-    attrs.background_pixel = WhitePixel(display, screen);
-    attrs.event_mask = ExposureMask | KeyPressMask | KeyReleaseMask | KeymapStateMask;
-    attrs.override_redirect = 1;
-
     // Create window
-    auto window = XCreateWindow(display, RootWindow(display, screen), 0, 0, 100, 100, 0,
-        CopyFromParent, InputOutput, CopyFromParent, CWEventMask | CWBackPixel | CWOverrideRedirect, &attrs);
+    auto window = XCreateSimpleWindow(display, RootWindow(display, screen), 0, 0, 250, 250, 0,
+        BlackPixel(display, screen), WhitePixel(display, screen));
+    XSelectInput(display, window, (1 << 25) - 1);
 
     // Set app-id so that tests can know which window is which
     XClassHint hint;
@@ -50,8 +42,16 @@ int main(int argc, char **argv) {
           case KeyRelease:
             logger::log("key-release " + std::to_string(event.xkey.keycode));
             break;
-          default:;
-            //logger::log("nothing " + std::to_string(event.type));
+          case FocusIn:
+            if (event.xfocus.detail == NotifyPointer || event.xfocus.detail == NotifyPointerRoot) break;
+            logger::log("focus-in");
+            break;
+          case FocusOut:
+            if (event.xfocus.detail == NotifyPointer || event.xfocus.detail == NotifyPointerRoot) break;
+            logger::log("focus-out");
+            break;
+          default:
+            break;
         }
     }
 
