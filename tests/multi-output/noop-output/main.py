@@ -6,7 +6,7 @@ import os
 import signal
 
 def is_gui() -> bool:
-    return False
+    return True
 
 class WTest(wt.WayfireTest):
     def prepare(self):
