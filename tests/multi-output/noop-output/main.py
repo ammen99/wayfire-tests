@@ -58,4 +58,7 @@ class WTest(wt.WayfireTest):
         if not wi.check_geometry(10, 10, 400, 400, cs_geometry):
             return wt.Status.WRONG, 'Demo app has wrong size after restoring to WL-2: ' + str(cs_geometry)
 
+        if err := self.take_screenshot('1-final'):
+            return wt.Status.WRONG, "Failed to take screenshot: " + str(err)
+
         return wt.Status.OK, None
