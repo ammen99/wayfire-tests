@@ -5,6 +5,7 @@ import wftest as wt
 def is_gui() -> bool:
     return True
 
+# Wayfire #1852
 class WTest(wt.WayfireTest):
     def prepare(self):
         return self.require_test_clients(['wleird-slow-ack-configure'])
