@@ -11,7 +11,7 @@ class WTest(wt.WayfireTest):
         return self.require_test_clients(['wleird-slow-ack-configure'])
 
     def _run(self):
-        self.socket.run('wleird-slow-ack-configure')
+        self.socket.run('wleird-slow-ack-configure 0 0') # default size 0, 0 means unmap on default size ...
         self.wait_ms(1000)
 
         if err := self.take_screenshot('1-map-unmap'):
