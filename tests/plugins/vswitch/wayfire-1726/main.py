@@ -5,7 +5,7 @@ import wftest as wt
 def is_gui() -> bool:
     return False
 
-# Wayfire #1695
+# Wayfire #1726: vswitch send_* + sticky
 class WTest(wt.WayfireTest):
     def prepare(self):
         return self.require_test_clients(['weston-terminal'])
