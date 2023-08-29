@@ -197,6 +197,16 @@ class WayfireIPCClient:
         message["data"]["state"] = state
         return self.send_json(message)
 
+    def delay_next_tx(self):
+        message = get_msg_template()
+        message["method"] = "stipc/delay_next_tx"
+        return self.send_json(message)
+
+    def xwayland_pid(self):
+        message = get_msg_template()
+        message["method"] = "stipc/get_xwayland_pid"
+        return self.send_json(message)
+
 # Helper functions
 def check_geometry(x: int, y: int, width: int, height: int, obj) -> bool:
     if obj['x'] == x and obj['y'] == y and \
