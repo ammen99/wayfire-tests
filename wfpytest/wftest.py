@@ -11,6 +11,7 @@ import os
 import time
 import traceback
 import shutil
+import random
 
 class Status(Enum):
     OK = ("OK", "green")
@@ -111,7 +112,7 @@ class WayfireTest:
         with open(logfile, "w") as log:
             self._wayfire_process = subprocess.Popen([wayfire_path, '-c', self.locate_cfgfile()],
                     env=env, stdout=log, stderr=log, preexec_fn=os.setsid)
-            time.sleep(0.5) # Leave a bit of time for Wayfire to initialize
+            time.sleep(0.5 + random.uniform(0, 1)) # Leave a bit of time for Wayfire to initialize + add random offset to desync multiple tests in parallel
             self.socket = WayfireIPCClient(self._socket_name)
 
     def locate_cfgfile(self) -> str:
