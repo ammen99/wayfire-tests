@@ -17,12 +17,16 @@ int main(int argc, char **argv) {
     double delay;
     int x, y, width, height, reps;
     char *app_id;
+    bool override_redirect = false;
 
     int opt;
-    while ((opt = getopt(argc, argv, "a:x:y:w:h:d:r:")) != -1) {
+    while ((opt = getopt(argc, argv, "a:x:y:w:h:d:r:o")) != -1) {
         switch (opt) {
           case 'a':
             app_id = strdup(optarg);
+            break;
+          case 'o':
+            override_redirect = true;
             break;
           case 'x':
             x = atoi(optarg);
@@ -53,10 +57,11 @@ int main(int argc, char **argv) {
     XSetWindowAttributes attrs;
     attrs.background_pixel = WhitePixel(display, screen);
     attrs.event_mask = ExposureMask;
+    attrs.override_redirect = override_redirect;
 
     // Create window
     auto window = XCreateWindow(display, RootWindow(display, screen), x, y, width, height, 0,
-        CopyFromParent, InputOutput, CopyFromParent, CWEventMask | CWBackPixel, &attrs);
+        CopyFromParent, InputOutput, CopyFromParent, CWEventMask | CWBackPixel | CWOverrideRedirect, &attrs);
 
     // Set app-id so that tests can know which window is which
     XClassHint hint;

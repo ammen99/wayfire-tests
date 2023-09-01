@@ -207,6 +207,11 @@ class WayfireIPCClient:
         message["method"] = "stipc/get_xwayland_pid"
         return self.send_json(message)
 
+    def xwayland_display(self):
+        message = get_msg_template()
+        message["method"] = "stipc/get_xwayland_display"
+        return self.send_json(message)
+
 # Helper functions
 def check_geometry(x: int, y: int, width: int, height: int, obj) -> bool:
     if obj['x'] == x and obj['y'] == y and \
