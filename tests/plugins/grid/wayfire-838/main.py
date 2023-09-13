@@ -6,7 +6,7 @@ import wftest as wt
 def is_gui() -> bool:
     return False
 
-# Wayfire #1850
+# Wayfire #838
 class WTest(wt.WayfireTest):
     def prepare(self):
         return self.require_test_clients(['gtk_color_switcher'])
