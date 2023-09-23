@@ -20,6 +20,7 @@ class WTest(wt.WayfireTest):
     def _run(self):
         self.socket.run('python3 client.py')
         self.wait_for_clients_to_open(nr_clients=1)
+        self.wait_for_clients(2)
 
         maximized = self.socket.get_view_info_title('test')['geometry']
         if not wi.check_geometry(0, 0, 1000, 500, maximized):
