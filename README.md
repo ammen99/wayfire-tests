@@ -21,6 +21,15 @@ To make these tests independent of things like GTK themes, etc., these tests req
 Both versions are executed with the same configuration and the same IPC commands are fed to them.
 At the end, screenshots of both sessions are taken and compared.
 
+### Tips and tricks
+
+The test runner supports running multiple tests in parallel with the `-j <N>` option.
+Running many tests in parallel puts a lot of stress on the system (esp. during Wayfire's and client initialization, since these often depend on system calls and the GPU hardware).
+To avoid this happening:
+
+- Do not run too many tests in parallel (personal rule of a thumb is to use a bit less than the physical core count, but of course this depends on the system).
+- Use the `--interactive` flag. After the tests are run, you will be presented with a list of tests that failed. You can rerun all of them sequentially by typing `run all` at the prompt, most of the tests should now become green. You can also rerun a particular failed test by typing `run <test number>`, or `run <test number> slow` to add extra timeouts.
+
 # How to write a new test
 
 Tests are a combination a python test file and a Wayfire config file.
