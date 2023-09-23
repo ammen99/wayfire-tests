@@ -23,12 +23,23 @@ At the end, screenshots of both sessions are taken and compared.
 
 ### Tips and tricks
 
+##### IPC timeout
+If many tests are failing, this could be because your system runs slower than mine.
+You can try increasing the lengths of the timeouts using in tests (which of course will make them run more slowly) with the `--ipc-timeout` option.
+Its default value is `0.1`.
+
+##### Parallel running
 The test runner supports running multiple tests in parallel with the `-j <N>` option.
 Running many tests in parallel puts a lot of stress on the system (esp. during Wayfire's and client initialization, since these often depend on system calls and the GPU hardware).
 To avoid this happening:
 
 - Do not run too many tests in parallel (personal rule of a thumb is to use a bit less than the physical core count, but of course this depends on the system).
 - Use the `--interactive` flag. After the tests are run, you will be presented with a list of tests that failed. You can rerun all of them sequentially by typing `run all` at the prompt, most of the tests should now become green. You can also rerun a particular failed test by typing `run <test number>`, or `run <test number> slow` to add extra timeouts.
+
+##### Run tests in the background
+
+You can also run tests in the background by using a headless Wayfire session, the `run_nested.sh` script can be used for that.
+This is particularly useful for regression testing, where you can just leave all the tests to run and do something else in the meantime.
 
 # How to write a new test
 
