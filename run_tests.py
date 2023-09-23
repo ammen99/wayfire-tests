@@ -184,8 +184,34 @@ def run_all_tests():
             tests_wrong += 1
             failed_tests.append(FailedTest(filename, True))
 
-def rerun_test(input: str):
+def print_test_summary():
+    # Print summary
+    text_ok=colored(str(tests_ok) + " ok", 'green' if tests_wrong == 0 else 'blue', attrs=['bold'])
+    text_wrong="0 not ok" if tests_wrong == 0 else colored(str(tests_wrong) + " not ok", 'red', attrs=['bold'])
+    text_skipped="0 skipped" if tests_skip == 0 else colored(str(tests_skip) + " skipped", 'yellow', attrs=['bold'])
+    print("Test summary: {} / {} / {}".format(text_ok, text_wrong, text_skipped))
+
+def rerun_all_tests(threads: int):
     global failed_tests
+    tests_to_rerun = [x.prefix for x in failed_tests]
+
+    with Pool(threads) as pool:
+        results_list = pool.map(run_test_from_path, tests_to_rerun)
+
+    still_failing = []
+    for i in range(len(failed_tests)):
+        if results_list[i][0] != wftest.Status.OK:
+            still_failing.append(failed_tests[i])
+        else:
+            global tests_ok
+            global tests_wrong
+            tests_wrong -= 1
+            tests_ok += 1
+
+    failed_tests = still_failing
+    print_test_summary()
+
+def rerun_test(input: str):
     cmds = [x for x in input.split(' ') if x]
     cmds = cmds[1:] # drop 'run'
 
@@ -202,8 +228,9 @@ def rerun_test(input: str):
         args.ipc_timeout = 0.1
 
     if cmds[-1] == "all":
-        for i in range(len(failed_tests)):
-            run_test_from_path(failed_tests[i].prefix)
+        rerun_all_tests(1)
+    elif cmds[-1] == "all-parallel":
+        rerun_all_tests(args.j)
     else:
         idx = int(cmds[-1])
         run_test_from_path(failed_tests[idx].prefix)
@@ -243,14 +270,8 @@ def interact_show_logs():
 
 check_arguments()
 run_all_tests()
-
-# Print summary
 tests_total = tests_ok + tests_skip + tests_wrong
 
-text_ok=colored(str(tests_ok) + " ok", 'green' if tests_wrong == 0 else 'blue', attrs=['bold'])
-text_wrong="0 not ok" if tests_wrong == 0 else colored(str(tests_wrong) + " not ok", 'red', attrs=['bold'])
-text_skipped="0 skipped" if tests_skip == 0 else colored(str(tests_skip) + " skipped", 'yellow', attrs=['bold'])
-print("Test summary: {} / {} / {}".format(text_ok, text_wrong, text_skipped))
-
+print_test_summary()
 if args.interactive:
     interact_show_logs()

@@ -34,7 +34,21 @@ Running many tests in parallel puts a lot of stress on the system (esp. during W
 To avoid this happening:
 
 - Do not run too many tests in parallel (personal rule of a thumb is to use a bit less than the physical core count, but of course this depends on the system).
-- Use the `--interactive` flag. After the tests are run, you will be presented with a list of tests that failed. You can rerun all of them sequentially by typing `run all` at the prompt, most of the tests should now become green. You can also rerun a particular failed test by typing `run <test number>`, or `run <test number> slow` to add extra timeouts.
+- Use the `--interactive` flag. After the tests are run, you will be presented with a list of tests that failed.
+You can rerun all of them sequentially by typing `run all` or in parallel with `run all-parallel` at the prompt.
+Most of the tests should now become green.
+You can also rerun a particular failed test by typing `run <test number>`, or `run slow <test number>` to add extra timeouts.
+
+My personal workflow is like this:
+
+```sh
+./run_tests.sh tests/ <wayfire A> --compare_with <wayfire B> -j 10 --interactive
+# At the prompt:
+run slow all-parallel
+run slow all
+```
+
+After this, all tests are usually green :)
 
 ##### Run tests in the background
 
