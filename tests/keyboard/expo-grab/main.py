@@ -37,10 +37,17 @@ class WTest(wt.WayfireTest):
             self.socket.press_key('KEY_T')
             gtk1.expect_none_throw("during expo")
 
-            self.socket.press_key('S-KEY_E')
+            # Toggle out of Expo, but make a pause after pressing the binding and releasing it.
+            # This will make sure that the gtk client gets key-enter events
+            self.socket.set_key_state('KEY_LEFTMETA', True)
+            self.socket.set_key_state('KEY_E', True)
             self.wait_for_clients(2)
             gtk1.expect_line_throw("keyboard-enter", "(after expo)")
             gtk1.expect_line_throw("key-enter 125", "(after expo)")
+
+            self.socket.set_key_state('KEY_E', False)
+            self.socket.set_key_state('KEY_LEFTMETA', False)
+            self.wait_for_clients(2)
             gtk1.expect_line_throw("key-release 125", "(after expo)")
             gtk1.expect_none_throw("(after expo)")
         except wu.WrongLogLine as e:
