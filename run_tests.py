@@ -191,6 +191,18 @@ def print_test_summary():
     text_skipped="0 skipped" if tests_skip == 0 else colored(str(tests_skip) + " skipped", 'yellow', attrs=['bold'])
     print("Test summary: {} / {} / {}".format(text_ok, text_wrong, text_skipped))
 
+def show_failed_tests():
+    global failed_tests
+    if not failed_tests:
+        return
+
+    print()
+    print()
+    print("Failed tests, enter number to see logs or image diffs:")
+    for i, test in enumerate(failed_tests):
+        print(colored(str(i) + '.', 'blue'),
+                colored(get_test_base_dir(test.prefix), 'red'))
+
 def rerun_all_tests(threads: int):
     global failed_tests
     tests_to_rerun = [x.prefix for x in failed_tests]
@@ -251,14 +263,12 @@ def interact_show_logs():
     if not failed_tests:
         return
 
-    print()
-    print()
-    print("Failed tests, enter number to see logs or image diffs:")
-    for i, test in enumerate(failed_tests):
-        print(colored(str(i) + '.', 'blue'),
-                colored(get_test_base_dir(test.prefix), 'red'))
+    while True:
+        show_failed_tests()
+        idx = input('Enter test number from the list above (ENTER to exit):')
+        if not idx:
+            break
 
-    while idx := input('Enter test number from the list above (ENTER to exit):'):
         try:
             if idx[:3] == "run":
                 rerun_test(idx)
