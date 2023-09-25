@@ -19,9 +19,6 @@ class WTest(wt.WayfireTest):
         self.wait_for_clients(2)
         self.socket.press_key('KEY_B')
         self.wait_for_clients(2)
-
-        print(self.socket.list_views())
-
         if not wi.check_geometry(0, 0, 500, 500, self.socket.get_view_info('gtk_color_switcher')['geometry']):
             return wt.Status.WRONG, 'The size of gtk-color-switcher has not been updated after selecting the wset!'
 

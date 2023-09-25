@@ -17,12 +17,11 @@ class WTest(wt.WayfireTest):
 
         layout = {}
         layout['XTerm'] = (100, 200, 500, 500)
-        print(self.socket.layout_views(layout))
+        self.socket.layout_views(layout)
         self.wait_for_clients(4)
 
         if error := self.take_screenshot('setup'):
             return wt.Status.CRASHED, error
-        return wt.Status.OK, None
 
         self.socket.move_cursor(100, 200)
         self.socket.click_button('BTN_RIGHT', 'press')

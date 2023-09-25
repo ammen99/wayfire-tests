@@ -27,7 +27,6 @@ class WTest(wt.WayfireTest):
 
         # Wait for transaction to finish
         self.wait_ms(150)
-        print(self.socket.list_views())
 
         # Click on weston-terminal
         self.socket.move_cursor(100, 100)

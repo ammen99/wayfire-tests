@@ -30,9 +30,7 @@ class WTest(wt.WayfireTest):
     def _run(self):
         self.socket.run('python3 client.py')
         self.wait_for_clients_to_open(nr_clients=1)
-
         self.socket.move_cursor(20, 40)
-        print(self.socket.list_views())
 
         # Try to wait for the first popup. If it does not flicker, we will 'catch it'
         if not self.wait_for_clients_to_open(nr_clients=2, interval=16, waits=60):
