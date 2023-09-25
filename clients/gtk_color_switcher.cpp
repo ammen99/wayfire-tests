@@ -28,7 +28,7 @@ int handle_usr1(gpointer user_data)
     return G_SOURCE_CONTINUE;
 }
 
-int main(int, char **argv)
+int main(int argc, char **argv)
 {
     auto app = Gtk::Application::create();
 
@@ -38,6 +38,17 @@ int main(int, char **argv)
 
     a.show_all();
     g_unix_signal_add_full(G_PRIORITY_DEFAULT, SIGUSR1, handle_usr1, &a, NULL);
+
+    if (argc >= 3)
+    {
+        // We have logging enabled
+        logger::init(argc, argv);
+        a.signal_draw().connect_notify([=] (auto)
+        {
+            logger::log("signal-draw");
+        });
+    }
+
     app->run(a);
     return 0;
 }
