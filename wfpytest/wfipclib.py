@@ -212,6 +212,11 @@ class WayfireIPCClient:
         message["method"] = "stipc/get_xwayland_display"
         return self.send_json(message)
 
+    def ipc_rules_get_focused(self):
+        message = get_msg_template()
+        message["method"] = "window-rules/get-focused-view"
+        return self.send_json(message)
+
 # Helper functions
 def check_geometry(x: int, y: int, width: int, height: int, obj) -> bool:
     if obj['x'] == x and obj['y'] == y and \
