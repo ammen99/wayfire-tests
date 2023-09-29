@@ -13,12 +13,13 @@ class WTest(wt.WayfireTest):
 
     def _run(self):
         self.socket.run('weston-terminal')
-        self.wait_for_clients(1) # Wait for terminals to start and be tiled
+        self.wait_for_clients_to_open(nr_clients=1)
+        self.wait_for_clients(2)
 
         layout = {}
         layout['nil'] = (100, 200, 500, 500)
         self.socket.layout_views(layout)
-        self.wait_for_clients(10)
+        self.wait_for_clients(2)
 
         self.socket.move_cursor(100, 200)
         self.socket.click_button('BTN_RIGHT', 'press')

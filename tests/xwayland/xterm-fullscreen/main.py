@@ -15,7 +15,8 @@ class WTest(wt.WayfireTest):
 
     def _run(self):
         self.socket.run('xterm -fullscreen')
-        self.wait_for_clients(2)
+        self.wait_for_clients_to_open(nr_clients=1)
+        self.wait_for_clients(2) # fullscreening
 
         xterm = self.socket.get_view_info('XTerm')
         if not xterm:

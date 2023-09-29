@@ -13,7 +13,7 @@ class WTest(wt.WayfireTest):
 
     def _run(self):
         self.socket.run('xterm')
-        self.wait_for_clients(2)
+        self.wait_for_clients_to_open(nr_clients=1)
 
         layout = {}
         layout['XTerm'] = (100, 200, 500, 500)
