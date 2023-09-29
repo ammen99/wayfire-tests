@@ -64,8 +64,9 @@ int main(int argc, char **argv)
     a = new Gtk::Window;
     a->set_default_size(200, 200);
     setup_window(a);
-
     a->set_title(argv[1]);
+    a->show_all();
+
     if (argc >= 3) {
         b = new Gtk::MessageDialog(*a, "Test");
         b->set_title(argv[2]);
