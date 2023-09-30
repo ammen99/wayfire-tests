@@ -26,10 +26,7 @@ class WTest(wt.WayfireTest):
 
         # Start keylogger
         x11 = wu.LoggedProcess(self.socket, 'x11_logger', 'x11', '&> /tmp/log')
-
-        self.wait_for_clients(2)
-        if self._get_views() != ['x11']:
-            return wt.Status.WRONG, 'x11_logger did not open: ' + str(self._get_views())
+        self.wait_for_clients_to_open(nr_clients=1)
 
         try:
             x11.expect_line_throw('focus-in')
