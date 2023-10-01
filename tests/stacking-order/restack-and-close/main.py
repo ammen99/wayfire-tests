@@ -24,7 +24,7 @@ class WTest(wt.WayfireTest):
         self.socket.run('x11_click_to_close 1 0 0 100 100')
         self.socket.run('x11_click_to_close 2 50 50 100 100')
         self.socket.run('x11_click_to_close 3 0 50 100 100')
-        self.wait_for_clients()
+        self.wait_for_clients_to_open(nr_clients=3)
 
         # Bring 3 to front
         self.socket.move_cursor(1, 140)
