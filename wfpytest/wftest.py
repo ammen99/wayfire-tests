@@ -47,10 +47,14 @@ class WayfireTest:
         try:
             parent = psutil.Process(parent_pid)
         except psutil.NoSuchProcess:
-            return
+            raise Exception("No such process!")
+
         children = parent.children(recursive=True)
-        for process in children:
-            process.send_signal(sig)
+        if not children:
+            os.kill(parent_pid, sig)
+        else:
+            for process in children:
+                os.kill(process.pid, sig)
 
     def wait_for_clients(self, times=1):
         time.sleep(self._ipc_duration * times) # Wait for clients to start/process events
