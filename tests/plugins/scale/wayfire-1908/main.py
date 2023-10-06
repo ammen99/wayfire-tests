@@ -32,7 +32,7 @@ class WTest(wt.WayfireTest):
         self.wait_ms(150) # Wait for animation
 
         gcs.reset_logs()
-        os.kill(gcs.pid, signal.SIGUSR1);
+        self.send_signal(gcs.pid, signal.SIGUSR1);
         self.wait_for_clients(2)
 
         try:

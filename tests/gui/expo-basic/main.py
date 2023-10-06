@@ -32,7 +32,7 @@ class WTest(wt.WayfireTest):
         if error := self.take_screenshot('expo-start'):
             return wt.Status.CRASHED, error
 
-        os.kill(pid, signal.SIGUSR1);
+        self.send_signal(pid, signal.SIGUSR1);
         self.wait_for_clients(2) # Wait for color-switcher to change color
         if error := self.take_screenshot('expo-damage'):
             return wt.Status.CRASHED, error

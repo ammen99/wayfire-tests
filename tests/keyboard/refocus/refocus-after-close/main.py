@@ -43,7 +43,7 @@ class WTest(wt.WayfireTest):
         self.socket.layout_views(layout)
         self.wait_for_clients(2)
 
-        os.kill(gtk3.pid, signal.SIGKILL)
+        self.send_signal(gtk3.pid, signal.SIGKILL)
         self.wait_for_clients(2)
         if not gtk1.expect_line("keyboard-enter"):
             return wt.Status.WRONG, 'gtk1 did not receive second enter: ' + gtk1.last_line

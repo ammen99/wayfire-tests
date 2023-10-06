@@ -22,7 +22,7 @@ class WTest(wt.WayfireTest):
         layout['gcs'] = (0, 0, 500, 500)
         self.socket.layout_views(layout)
         self.wait_for_clients()
-        os.kill(pid, signal.SIGKILL)
+        self.send_signal(pid, signal.SIGKILL)
 
         # Wait for transaction to finish
         self.wait_ms(400)

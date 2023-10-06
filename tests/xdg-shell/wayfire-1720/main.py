@@ -2,7 +2,6 @@
 
 import wftest as wt
 import wfutil as wu
-import os
 import signal
 
 def is_gui() -> bool:
@@ -41,7 +40,7 @@ class WTest(wt.WayfireTest):
         if self._get_views() != ['', 'gedit', 'gtk_logger']:
             return wt.Status.WRONG, 'Popup menu did not open! ' + str(self._get_views())
 
-        os.kill(pid, signal.SIGKILL)
+        self.send_signal(pid, signal.SIGKILL)
         self.wait_for_clients(2)
 
         self.socket.run('weston-terminal')

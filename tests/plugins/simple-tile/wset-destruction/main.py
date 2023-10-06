@@ -19,7 +19,7 @@ class WTest(wt.WayfireTest):
         self.wait_for_clients(2)
 
         # Close the client
-        os.kill(pid, signal.SIGKILL)
+        self.send_signal(pid, signal.SIGKILL)
         self.wait_for_clients()
 
         # Go to wset 1 => wset 2 should be cleaned up

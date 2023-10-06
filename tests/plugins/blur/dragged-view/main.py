@@ -49,7 +49,7 @@ class WTest(wt.WayfireTest):
         if error := self.take_screenshot('in-flight'):
             return wt.Status.CRASHED, error
 
-        os.kill(wt_pid, signal.SIGKILL)
+        self.send_signal(wt_pid, signal.SIGKILL)
         self.wait_for_clients(2)
         if error := self.take_screenshot('force-closed'):
             return wt.Status.CRASHED, error

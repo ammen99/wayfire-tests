@@ -34,7 +34,7 @@ class WTest(wt.WayfireTest):
             return wt.Status.CRASHED, error
 
         # Damage behind terminator and see that blur expands damage
-        os.kill(gcs_pid, signal.SIGUSR1)
+        self.send_signal(gcs_pid, signal.SIGUSR1)
         self.wait_for_clients(2)
 
         if error := self.take_screenshot('final'):

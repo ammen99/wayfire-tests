@@ -17,7 +17,7 @@ class WTest(wt.WayfireTest):
         pid = self.socket.run('wleird-layer-shell')['pid']
         self.wait_for_clients()
 
-        os.kill(pid, signal.SIGINT)
+        self.send_signal(pid, signal.SIGINT)
         self.wait_ms(200)
 
         if len(self.socket.list_views()) > 0:

@@ -7,6 +7,7 @@ import wfutil as wu
 
 import subprocess
 import signal
+import psutil
 import os
 import time
 import traceback
@@ -41,6 +42,15 @@ class WayfireTest:
         self._ipc_duration = 0.1
         self.screenshots = []
         self.screenshot_prefix = ""
+
+    def send_signal(self, parent_pid, sig=signal.SIGTERM):
+        try:
+            parent = psutil.Process(parent_pid)
+        except psutil.NoSuchProcess:
+            return
+        children = parent.children(recursive=True)
+        for process in children:
+            process.send_signal(sig)
 
     def wait_for_clients(self, times=1):
         time.sleep(self._ipc_duration * times) # Wait for clients to start/process events

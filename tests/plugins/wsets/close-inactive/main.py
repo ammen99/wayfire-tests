@@ -18,7 +18,7 @@ class WTest(wt.WayfireTest):
         self.wait_for_clients(2)
 
         self.socket.press_key('KEY_2')
-        os.kill(pid, signal.SIGKILL)
+        self.send_signal(pid, signal.SIGKILL)
         self.wait_for_clients(2)
 
         if self.socket.list_views():

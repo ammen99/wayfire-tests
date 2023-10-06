@@ -23,7 +23,7 @@ class WTest(wt.WayfireTest):
         layout = {}
         layout['wleird-slow-ack-configure'] = (0, 0, 500, 500)
         self.socket.layout_views(layout)
-        os.kill(slowack, signal.SIGKILL)
+        self.send_signal(slowack, signal.SIGKILL)
 
         # Wait for transaction to finish
         self.wait_ms(150)
