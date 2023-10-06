@@ -1,7 +1,6 @@
 
 #!/bin/env python3
 
-import wfipclib as wi
 import wfutil as wu
 import wftest as wt
 import shutil
