@@ -17,7 +17,7 @@ class WTest(wt.WayfireTest):
         self.wait_for_clients(2)
 
         self.send_signal(pid, signal.SIGKILL)
-        self.wait_for_clients(2)
+        self.wait_ms(150) # Wait for animation to end
 
         if len(self.socket.list_views()) > 0:
             print(self.socket.list_views())
