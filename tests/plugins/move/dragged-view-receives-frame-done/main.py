@@ -25,10 +25,10 @@ class WTest(wt.WayfireTest):
         self.socket.move_cursor(200, 200)
 
         self.wait_for_clients(2)
-        os.kill(pid, signal.SIGUSR1)
+        self.send_signal(pid, signal.SIGUSR1)
         self.wait_for_clients(2)
         # Change color a second time. This forces gcs to wait for a frame done event
-        os.kill(pid, signal.SIGUSR1)
+        self.send_signal(pid, signal.SIGUSR1)
         self.wait_for_clients(2)
 
         if error := self.take_screenshot('in-drag'):
@@ -36,7 +36,7 @@ class WTest(wt.WayfireTest):
 
         self.socket.click_button('BTN_LEFT', 'release')
         self.wait_for_clients()
-        os.kill(pid, signal.SIGUSR1)
+        self.send_signal(pid, signal.SIGUSR1)
         self.wait_for_clients(2)
 
         if error := self.take_screenshot('released'):

@@ -38,7 +38,7 @@ class WTest(wt.WayfireTest):
             gtk1.reset_logs()
             gtk2.reset_logs()
 
-            os.kill(gtk1.pid, signal.SIGKILL)
+            self.send_signal(gtk1.pid, signal.SIGKILL)
             self.wait_for_clients(2)
 
             gtk1.expect_none_throw("(after kill)")

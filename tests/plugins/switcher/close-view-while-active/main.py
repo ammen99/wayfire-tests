@@ -20,7 +20,7 @@ class WTest(wt.WayfireTest):
         if error := self.take_screenshot('switcher-active'):
             return wt.Status.CRASHED, error
 
-        os.kill(wt_pid, signal.SIGKILL)
+        self.send_signal(wt_pid, signal.SIGKILL)
         self.wait_for_clients()
 
         if error := self.take_screenshot('switcher-active-one-fewer'):

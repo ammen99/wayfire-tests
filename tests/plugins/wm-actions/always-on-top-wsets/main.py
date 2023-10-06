@@ -24,7 +24,7 @@ class WTest(wt.WayfireTest):
         pid = self.socket.run('gtk_color_switcher')['pid']
         self.socket.run('gtk_special a')
         self.wait_for_clients(2)
-        os.kill(pid, signal.SIGUSR1)
+        self.send_signal(pid, signal.SIGUSR1)
         if self._get_views() != ['gtk_color_switcher', 'gtk_special']:
             return wt.Status.WRONG, 'Demo apps did not open!'
 

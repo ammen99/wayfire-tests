@@ -39,7 +39,7 @@ class WTest(wt.WayfireTest):
             return wt.Status.WRONG, 'Demo app has wrong size on NOOP-1: ' + str(cs_geometry)
 
         # Trigger damage, move cursor, any action to see that wayfire can handle it
-        os.kill(pid, signal.SIGUSR1)
+        self.send_signal(pid, signal.SIGUSR1)
         self.socket.move_cursor(10, 10)
         self.wait_for_clients(2)
         if self._get_views() != ['cs', 'layer-shell']:

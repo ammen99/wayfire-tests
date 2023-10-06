@@ -37,7 +37,7 @@ class WTest(wt.WayfireTest):
         if not gtk2.expect_line("keyboard-leave"):
             return wt.Status.WRONG, 'gtk2 did not receive leave: ' + gtk2.last_line
 
-        os.kill(gtk2.pid, signal.SIGINT)
+        self.send_signal(gtk2.pid, signal.SIGINT)
         self.wait_for_clients(2)
 
         self._click_on(self.socket.get_view_info_title('gtk1'))

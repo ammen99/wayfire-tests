@@ -20,7 +20,7 @@ class WTest(wt.WayfireTest):
         self.socket.press_key('KEY_S')
         self.wait_for_clients()
 
-        os.kill(pid, signal.SIGKILL)
+        self.send_signal(pid, signal.SIGKILL)
         self.wait_for_clients(10)
 
         # Open a new window
