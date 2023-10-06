@@ -1,7 +1,6 @@
 #!/bin/env python3
 
 import wftest as wt
-import os
 import signal
 
 # The test requires to compare two blur images.

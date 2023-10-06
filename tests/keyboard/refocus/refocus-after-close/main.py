@@ -2,7 +2,6 @@
 
 import wftest as wt
 import wfutil as wu
-import os
 import signal
 
 def is_gui() -> bool:
