@@ -42,10 +42,10 @@ class WTest(wt.WayfireTest):
 
         self.send_signal(pid, signal.SIGKILL)
         self.wait_for_clients(2)
-
         self.socket.run('weston-terminal')
-        self.wait_for_clients(2)
-        if self._get_views() != ['', 'gtk_logger', 'nil']:
-            return wt.Status.WRONG, 'weston-terminal did not open! ' + str(self._get_views())
+        self.wait_ms(600) # wait for unmap animation to end, the unmap animation is important, weston-terminal should run while it is active
+
+        if self._get_views() != ['gtk_logger', 'nil']:
+            return wt.Status.WRONG, 'Wrong views are open: ' + str(self._get_views())
 
         return wt.Status.OK, None
