@@ -50,11 +50,9 @@ class WayfireTest:
             raise Exception("No such process!")
 
         children = parent.children(recursive=True)
-        if not children:
-            os.kill(parent_pid, sig)
-        else:
-            for process in children:
-                os.kill(process.pid, sig)
+        os.kill(parent_pid, sig)
+        for process in children:
+            os.kill(process.pid, sig)
 
     def wait_for_clients(self, times=1):
         time.sleep(self._ipc_duration * times) # Wait for clients to start/process events
