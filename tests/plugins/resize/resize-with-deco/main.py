@@ -9,14 +9,14 @@ def is_gui() -> bool:
 # It is expected that the window gravity is set to bottom-right.
 class WTest(wt.WayfireTest):
     def prepare(self):
-        return self.require_test_clients(['xterm'])
+        return self.require_test_clients(['x11_click_to_close'])
 
     def _run(self):
-        self.socket.run('xterm')
+        self.socket.run('x11_click_to_close a 0 0 100 100')
         self.wait_for_clients_to_open(nr_clients=1)
 
         layout = {}
-        layout['XTerm'] = (100, 200, 500, 500)
+        layout['a'] = (100, 200, 500, 500)
         self.socket.layout_views(layout)
         self.wait_for_clients(4)
 
@@ -27,6 +27,7 @@ class WTest(wt.WayfireTest):
         self.socket.click_button('BTN_RIGHT', 'press')
         self.socket.move_cursor(200, 350)
         self.wait_for_clients(3)
+
         if error := self.take_screenshot('resized'):
             return wt.Status.CRASHED, error
 
