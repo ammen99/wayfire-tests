@@ -22,6 +22,7 @@ parser.add_argument('--show-log', action='store_true', required=False)
 parser.add_argument('--ipc-timeout', type=float, default=0.1, required=False)
 parser.add_argument('--interactive', action='store_true', required=False)
 parser.add_argument('--categories', type=str, default='', required=False)
+parser.add_argument('--force-gui', action='store_true', required=False)
 parser.add_argument('-j', type=int, default='1', required=False)
 args = parser.parse_args()
 
@@ -116,7 +117,7 @@ def run_single_test(testMain: str) -> Tuple[wftest.Status, str | None]:
 
         return wftest.Status.OK, None
 
-    elif not foo.is_gui():
+    elif not foo.is_gui() or args.force_gui:
         result = run_test_once(testMain, foo.WTest, args.wayfire, 'wayfire.log', '') # type: ignore
         return result.status, result.msg
     else:
