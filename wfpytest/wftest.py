@@ -105,14 +105,14 @@ class WayfireTest:
         except Exception as _:
             return Status.CRASHED, "Wayfire or client socket crashed, " + traceback.format_exc()
 
-    def click_and_drag(self, button, start_x, start_y, end_x, end_y, release=True):
+    def click_and_drag(self, button, start_x, start_y, end_x, end_y, release=True, steps = 10):
         dx = end_x - start_x
         dy = end_y - start_y
 
         self.socket.move_cursor(start_x, start_y)
         self.socket.click_button(button, 'press')
-        for i in range(11):
-            self.socket.move_cursor(start_x + dx * i // 10, start_y + dy * i // 10)
+        for i in range(steps+1):
+            self.socket.move_cursor(start_x + dx * i // steps, start_y + dy * i // steps)
         if release:
             self.socket.click_button(button, 'release')
 
