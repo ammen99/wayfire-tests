@@ -69,7 +69,11 @@ class WayfireIPCClient:
     def list_views(self):
         message = get_msg_template()
         message["method"] = "stipc/list_views"
-        return self.send_json(message)
+        js = self.send_json(message)
+        if "error" in js:
+            message["method"] = "window-rules/list-views"
+            js = self.send_json(message)
+        return js
 
     def layout_views(self, layout):
         views = self.list_views()
