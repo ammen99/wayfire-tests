@@ -26,7 +26,7 @@ class WTest(wt.WayfireTest):
         self.wait_for_clients(2)
 
         v = self.socket.get_view_info_title("#bar#file")
-        if v and 'focusable' in v['state'] and v['state']['focusable']:
+        if v and v['state'] and 'focusable' in v['state'] and v['state']['focusable']:
             return wt.Status.WRONG, "Wrong focusable state for gitk menu, should be false! (Wayfire #2007)"
 
         for i in range(1, 10):
