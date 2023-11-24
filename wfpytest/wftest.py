@@ -4,6 +4,7 @@ from wfipclib import WayfireIPCClient
 from pathlib import Path
 from uuid import uuid4
 import wfutil as wu
+from datetime import datetime
 
 import subprocess
 import signal
@@ -23,6 +24,9 @@ class Status(Enum):
 
     def __eq__(self, other):
         return self.value == other.value
+
+def get_now():
+    return datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S.%f')[:-3]
 
 class WayfireTest:
     # An approximation of how long clients take to start and communicate with Wayfire
@@ -116,15 +120,22 @@ class WayfireTest:
         if release:
             self.socket.click_button(button, 'release')
 
+
     def run_wayfire(self, wayfire_path: str, logfile: str):
         # Run wayfire with specified socket name for IPC communication
         env = os.environ.copy()
         env['_WAYFIRE_SOCKET'] = self._socket_name
 
         with open(logfile, "w") as log:
+            log.write(f'Wayfire instance starting at {get_now()} with socket {self._socket_name}\n')
+            log.flush()
+
             self._wayfire_process = subprocess.Popen([wayfire_path, '-c', self.locate_cfgfile()],
                     env=env, stdout=log, stderr=log, preexec_fn=os.setsid)
             time.sleep(0.5 + random.uniform(0, 1)) # Leave a bit of time for Wayfire to initialize + add random offset to desync multiple tests in parallel
+
+            log.write(f'Test code starting: {get_now()}\n')
+            log.flush()
             self.socket = WayfireIPCClient(self._socket_name)
 
     def locate_cfgfile(self) -> str:
