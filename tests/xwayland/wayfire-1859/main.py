@@ -41,7 +41,7 @@ class WTest(wt.WayfireTest):
         self.socket.click_button('BTN_LEFT', 'full')
 
         self.socket.run('x11_map_unmap -a x11 -x 800 -y 200 -w 200 -h 300 -r 0 -o') # Geometry on WL-2
-        self.wait_for_clients(3)
+        self.wait_for_clients_to_open(nr_clients=1)
 
         if err := self.take_screenshot('1-on-wl2'):
             return wt.Status.CRASHED, "Failed screenshot: ", str(err)

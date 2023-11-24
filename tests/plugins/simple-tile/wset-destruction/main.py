@@ -15,7 +15,7 @@ class WTest(wt.WayfireTest):
         # Go to wset 2 and initialize the simple-tile state for it by opening a client
         self.socket.press_key('KEY_2')
         pid = self.socket.run('gtk_color_switcher a')['pid']
-        self.wait_for_clients(2)
+        self.wait_for_clients_to_open(nr_clients=1)
 
         # Close the client
         self.send_signal(pid, signal.SIGKILL)

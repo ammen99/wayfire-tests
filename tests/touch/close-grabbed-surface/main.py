@@ -20,7 +20,7 @@ class WTest(wt.WayfireTest):
     def _run(self):
         gtk1 = wu.LoggedProcess(self.socket, 'gtk_logger', 'gtk1', 'touch click-to-close')
         gtk2 = wu.LoggedProcess(self.socket, 'gtk_logger', 'gtk2', 'touch')
-        self.wait_for_clients(2)
+        self.wait_for_clients_to_open(nr_clients=2)
         if self._get_views() != ['gtk1', 'gtk2']:
             return wt.Status.WRONG, 'Demo apps did not open: ' + str(self._get_views())
 

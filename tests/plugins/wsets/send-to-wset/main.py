@@ -18,7 +18,7 @@ class WTest(wt.WayfireTest):
             self.socket.click_button('BTN_LEFT', 'full') # Ensure focus on WL-1
 
             gtk1 = wu.LoggedProcess(self.socket, 'gtk_logger', 'gtk1', 'keyboard')
-            self.wait_for_clients(2)
+            self.wait_for_clients_to_open(nr_clients=1)
 
             layout = {}
             layout['gtk1'] = (100, 100, 300, 300)

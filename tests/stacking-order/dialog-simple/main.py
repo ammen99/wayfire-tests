@@ -20,7 +20,7 @@ class WTest(wt.WayfireTest):
 
     def _run(self):
         self.socket.run('gtk_special a b')
-        self.wait_for_clients(5)
+        self.wait_for_clients_to_open(nr_clients=2)
 
         if self._get_views() != ['a', 'b']:
             return wt.Status.WRONG, 'Missing views: ' + str(self._get_views())

@@ -11,7 +11,7 @@ class WTest(wt.WayfireTest):
 
     def _run(self):
         self.socket.run('wleird-subsurfaces nest-subsurfaces')
-        self.wait_for_clients(2) # Wait for subsurfaces to start
+        self.wait_for_clients_to_open(nr_clients=1)
         if error := self.take_screenshot('final'):
             return wt.Status.CRASHED, error
         return wt.Status.OK, None

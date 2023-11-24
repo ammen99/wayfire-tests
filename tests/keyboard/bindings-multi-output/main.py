@@ -25,7 +25,7 @@ class WTest(wt.WayfireTest):
     def _run(self):
         self.socket.run('gtk_special a')
         self.socket.run('gtk_special b')
-        self.wait_for_clients(2)
+        self.wait_for_clients_to_open(nr_clients=2)
         if self._get_views() != ['a', 'b']:
             return wt.Status.WRONG, 'Demo apps did not open: ' + str(self._get_views())
 

@@ -14,7 +14,7 @@ class WTest(wt.WayfireTest):
 
     def _run(self):
         pid = self.socket.run('weston-terminal')['pid']
-        self.wait_for_clients(2)
+        self.wait_for_clients_to_open(nr_clients=1)
 
         self.socket.press_key('KEY_2')
         self.send_signal(pid, signal.SIGKILL)

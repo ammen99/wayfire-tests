@@ -25,7 +25,7 @@ class WTest(wt.WayfireTest):
         self.socket.click_button('BTN_LEFT', 'full')
 
         # Start keylogger
-        x11 = wu.LoggedProcess(self.socket, 'x11_logger', 'x11', '&> /tmp/log')
+        x11 = wu.LoggedProcess(self.socket, 'x11_logger', 'x11')
         self.wait_for_clients_to_open(nr_clients=1)
 
         try:

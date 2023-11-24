@@ -14,7 +14,8 @@ class WTest(wt.WayfireTest):
     def _run(self):
         self.socket.run('weston-terminal')
         self.socket.run('weston-terminal')
-        self.wait_for_clients(4)
+        self.wait_for_clients_to_open(nr_clients=2)
+        self.wait_for_clients(2)
 
         self.socket.move_cursor(150, 150)
         self.socket.click_button('BTN_LEFT', 'press')

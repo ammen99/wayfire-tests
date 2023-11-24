@@ -16,7 +16,8 @@ class WTest(wt.WayfireTest):
 
     def _run(self):
         self.socket.run('weston-terminal -m')
-        self.wait_for_clients()
+        self.wait_for_clients_to_open(nr_clients=1)
+        self.wait_for_clients(2) # for resize
 
         terminal = self.socket.get_view_info('nil')
         x = terminal['geometry']['x'] + terminal['geometry']['width'] - 16
