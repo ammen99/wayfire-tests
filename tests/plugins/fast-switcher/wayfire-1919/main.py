@@ -25,6 +25,7 @@ class WTest(wt.WayfireTest):
         # Focus gtk1 on the left
         self.socket.move_cursor(100, 100)
         self.socket.click_button('BTN_LEFT', 'full')
+        self.wait_for_clients(2)
 
         gtk1.reset_logs()
         gtk2.reset_logs()
