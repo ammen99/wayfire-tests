@@ -31,6 +31,7 @@ class WTest(wt.WayfireTest):
         self.socket.move_cursor(300, 300) # Middle of gtk1
 
         self.socket.press_key('KEY_B') # move to workspace 2
+        self.wait_for_clients(2)
         gtk.reset_logs()
 
         try:
