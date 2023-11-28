@@ -3,7 +3,6 @@
 #include "gtkmm/enums.h"
 #include "gtkmm/menubutton.h"
 #include "gtkmm/popover.h"
-#include "gtkmm/popovermenu.h"
 #include "log.hpp"
 
 #include <gdk/gdkwayland.h>
@@ -20,21 +19,42 @@ enum class log_features : int
     TOUCH       = (1 << 2),
     CONSTRAINTS = (1 << 3),
     CLICK_TO_X  = (1 << 4),
-    CLICK_TO_MENU = (1 << 5),
-    TABLET        = (1 << 6),
+    CLICK_TO_MENU    = (1 << 5),
+    TABLET           = (1 << 6),
+    DIALOG_SHORTCUT  = (1 << 7),
 };
 
 // ---------------------------- wl_pointer impl --------------------------------
+wl_surface *dialog_wl_surface = NULL;
+wl_surface *current_surface = NULL;
+bool emit_enter_coords = false; // for compat with older tests
+
 void handle_pointer_enter(void*, struct wl_pointer*, uint32_t,
-    struct wl_surface*, wl_fixed_t, wl_fixed_t)
+    struct wl_surface* surface, wl_fixed_t surface_x, wl_fixed_t surface_y)
 {
-    logger::log("pointer-enter");
+    int x = std::round(wl_fixed_to_double(surface_x));
+    int y = std::round(wl_fixed_to_double(surface_y));
+    std::string suffix = emit_enter_coords ? (" " + std::to_string(x) + "," + std::to_string(y)) : "";
+
+    if (surface == dialog_wl_surface) {
+        current_surface = dialog_wl_surface;
+        logger::log("pointer-enter-dialog" + suffix);
+    } else {
+        current_surface = NULL;
+        logger::log("pointer-enter" + suffix);
+    }
 }
 
 void handle_pointer_leave(void*, struct wl_pointer*, uint32_t,
-    struct wl_surface*)
+    struct wl_surface* surface)
 {
-    logger::log("pointer-leave");
+    if (surface == dialog_wl_surface) {
+        logger::log("pointer-leave-dialog");
+    } else {
+        logger::log("pointer-leave");
+    }
+
+    current_surface = NULL;
 }
 
 void handle_pointer_motion(void*, struct wl_pointer*, uint32_t,
@@ -42,18 +62,21 @@ void handle_pointer_motion(void*, struct wl_pointer*, uint32_t,
 {
     int x = std::round(wl_fixed_to_double(surface_x));
     int y = std::round(wl_fixed_to_double(surface_y));
-    logger::log("pointer-motion " + std::to_string(x) + "," + std::to_string(y));
+
+    std::string prefix = (current_surface == dialog_wl_surface) ? "dialog-" : "";
+    logger::log(prefix + "pointer-motion " + std::to_string(x) + "," + std::to_string(y));
 }
 
 void handle_pointer_button(void*, struct wl_pointer*,
     uint32_t, uint32_t, uint32_t button, uint32_t state)
 {
+    std::string prefix = (current_surface == dialog_wl_surface) ? "dialog-" : "";
     if (state == WL_POINTER_BUTTON_STATE_PRESSED)
     {
-        logger::log("button-press " + std::to_string(button));
+        logger::log(prefix + "button-press " + std::to_string(button));
     } else
     {
-        logger::log("button-release " + std::to_string(button));
+        logger::log(prefix + "button-release " + std::to_string(button));
     }
 }
 
@@ -576,6 +599,22 @@ static void setup_window(Gtk::Window *win, int flags)
             setup_constraint(win);
         });
     }
+
+    if (flags & (int)log_features::DIALOG_SHORTCUT)
+    {
+        win->signal_key_press_event().connect_notify([win] (GdkEventKey *button)
+        {
+            if (button->keyval == GDK_KEY_o)
+            {
+                Glib::signal_timeout().connect_once([=] () {
+                    auto dialog = new Gtk::MessageDialog(*win, "TestDialog");
+                    dialog->set_title("TestDialog");
+                    dialog->show_all();
+                    dialog_wl_surface = gdk_wayland_window_get_wl_surface(dialog->get_window()->gobj());
+                }, 50);
+            }
+        });
+    }
 }
 
 int main(int argc, char **argv)
@@ -617,6 +656,14 @@ int main(int argc, char **argv)
         if (!strcmp("tablet", argv[i]))
         {
             flags |= (int)log_features::TABLET;
+        }
+        if (!strcmp("dialog-shortcut", argv[i]))
+        {
+            flags |= (int)log_features::DIALOG_SHORTCUT;
+        }
+        if (!strcmp("emit-enter-coords", argv[i]))
+        {
+            emit_enter_coords = true;
         }
     }
 
