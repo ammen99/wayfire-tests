@@ -54,6 +54,7 @@ class WrongLogLine(Exception):
     pass
 
 class LoggedProcess:
+    EMPTY = "<empty>"
     def __init__(self, socket: wi.WayfireIPCClient, cmd: str, app_id: str, add_arg: str = ""):
         dir = "/tmp/wst/" + str(uuid4()) + "/";
         Path(dir).mkdir(parents=True, exist_ok=True)
@@ -72,9 +73,18 @@ class LoggedProcess:
     def _read_next(self):
         self.last_line = self.logfile.readline()
         if not self.last_line:
-            self.last_line = "<empty>"
+            self.last_line = LoggedProcess.EMPTY
         else:
             self.last_line = self.last_line[:-1] # Remove trailing newline
+
+    def skip_to_last_line(self):
+        last = LoggedProcess.EMPTY
+        while self.last_line != LoggedProcess.EMPTY:
+            last = self.last_line
+            self._read_next()
+
+        self.last_line = last
+        return last
 
     def expect_line(self, line: str):
         self._read_next()
@@ -82,7 +92,7 @@ class LoggedProcess:
 
     def expect_none(self):
         self._read_next()
-        return self.last_line == "<empty>"
+        return self.last_line == LoggedProcess.EMPTY
 
     def expect_line_throw(self, line: str, details=""):
         if not self.expect_line(line):
