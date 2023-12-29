@@ -159,6 +159,11 @@ class WayfireIPCClient:
             self.set_key_state(key[2:], True)
             self.set_key_state(key[2:], False)
             self.set_key_state('KEY_LEFTMETA', False)
+        elif key[:2] == 'C-':
+            self.set_key_state('KEY_LEFTCTRL', True)
+            self.set_key_state(key[2:], True)
+            self.set_key_state(key[2:], False)
+            self.set_key_state('KEY_LEFTCTRL', False)
         else:
             self.set_key_state(key, True)
             self.set_key_state(key, False)
