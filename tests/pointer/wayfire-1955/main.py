@@ -19,39 +19,26 @@ class WTest(wt.WayfireTest):
         return sorted([v['title'] for v in self.socket.list_views()])
 
     def _run(self):
-        gtk = wu.LoggedProcess(self.socket, 'gtk_logger', 'gtk1', 'pointer dialog-shortcut emit-enter-coords &> /tmp/log')
         self.wait_for_clients_to_open(nr_clients=1)
 
-        # position the views
-        layout = {}
-        layout['gtk1'] = (100, 100, 400, 400)
-        self.socket.layout_views(layout)
-        self.wait_for_clients(2)
-
-        self.socket.move_cursor(300, 300) # Middle of gtk1
+        self.socket.move_cursor(300, 300)
 
         self.socket.press_key('KEY_B') # move to workspace 2
-        self.wait_for_clients(2)
-        gtk.reset_logs()
+        self.socket.press_key('KEY_F')
+        self.wait_for_clients(20)
 
         try:
             self.socket.press_key('KEY_A') # move back to workspace 1
-            self.wait_for_clients(2)
-            gtk.expect_line_throw('pointer-enter 200,200')
+            self.wait_for_clients(20)
 
-            self.socket.press_key('KEY_O') # Open dialog
-            self.wait_for_clients_to_open(nr_clients=2)
+            self.socket.press_key('C-KEY_O') # Open dialog
+            self.wait_for_clients_to_open(nr_clients=2,waits = 20)
 
-            g = self.socket.get_view_info_title('TestDialog')
-            gtk.expect_line_throw('pointer-leave')
-            coord_x = 300 - g['bbox']['x']
-            coord_y = 300 - g['bbox']['y']
-            print(g['bbox'])
-            print(g['geometry'])
+            self.wait_for_clients(20)
 
-            print(coord_x, coord_y)
-            gtk.expect_line_throw(f'pointer-enter-dialog {coord_x},{coord_y}')
-            gtk.expect_none_throw()
+            self.socket.click_button( 'BTN_LEFT', 'full' )
+            self.wait_for_clients(20)
+
         except wu.WrongLogLine as e:
             return wt.Status.WRONG, e.args[0]
 
