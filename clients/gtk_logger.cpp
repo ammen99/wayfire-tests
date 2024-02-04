@@ -36,11 +36,10 @@ void handle_pointer_enter(void*, struct wl_pointer*, uint32_t,
     int y = std::round(wl_fixed_to_double(surface_y));
     std::string suffix = emit_enter_coords ? (" " + std::to_string(x) + "," + std::to_string(y)) : "";
 
+    current_surface = surface;
     if (surface == dialog_wl_surface) {
-        current_surface = dialog_wl_surface;
         logger::log("pointer-enter-dialog" + suffix);
     } else {
-        current_surface = NULL;
         logger::log("pointer-enter" + suffix);
     }
 }
