@@ -20,7 +20,6 @@ class WTest(wt.WayfireTest):
         # weston-terminal should be at the center
         self.socket.move_cursor(250, 250)
         self.socket.click_button('BTN_LEFT', 'press')
-        self.socket.move_cursor(251, 250) # Trigger movement
         self.socket.move_cursor(450, 450)
         self.wait_for_clients()
 
