@@ -24,6 +24,7 @@ parser.add_argument('--interactive', action='store_true', required=False)
 parser.add_argument('--categories', type=str, default='', required=False)
 parser.add_argument('--force-gui', action='store_true', required=False)
 parser.add_argument('-j', type=int, default='1', required=False)
+parser.add_argument('--maxretries', type=int, default='1', required=False)
 args = parser.parse_args()
 
 # Make tests execute slower or faster
@@ -44,11 +45,11 @@ class TestResult:
         self.msg = msg
         self.file_list = file_list
 
-def _run_test_once(TestType, wayfire_exe, logfile: str, image_prefix: str) -> TestResult:
+def _run_test_once(TestType, wayfire_exe, logfile: str, image_prefix: str, timeoutMultiplier: float) -> TestResult:
     test = TestType()
 
     test.screenshot_prefix = image_prefix
-    test._set_ipc_duration(args.ipc_timeout)
+    test._set_ipc_duration(args.ipc_timeout * timeoutMultiplier)
     status, msg = test.prepare()
     if status != wftest.Status.OK:
         return TestResult(status, msg, [])
@@ -68,14 +69,14 @@ def get_test_base_dir(test_main_file: str):
     # Ending is always main.py, so if we drop it, we get the test dir
     return test_main_file[:-7]
 
-def run_test_once(test_main_file, TestType, wayfire_exe, logfile: str, image_prefix: str, is_wayfire_B = False) -> TestResult:
+def run_test_once(test_main_file, TestType, wayfire_exe, logfile: str, timeoutMultiplier: float, image_prefix: str, is_wayfire_B = False) -> TestResult:
     # Go to the directory of the test, so that any temporary files are stored there
     # and so that the wayfire.ini file can be found easily
     cwd = os.getcwd()
     os.chdir(get_test_base_dir(test_main_file))
 
     actual_log = '/dev/stdout' if args.show_log and not is_wayfire_B else logfile
-    result = _run_test_once(TestType, wayfire_exe, actual_log, os.getcwd() + '/' + image_prefix)
+    result = _run_test_once(TestType, wayfire_exe, actual_log, os.getcwd() + '/' + image_prefix, timeoutMultiplier)
     os.chdir(cwd)
     return result
 
@@ -84,7 +85,7 @@ class FailedTest:
         self.prefix = prefix
         self.gui = gui
 
-def run_single_test(testMain: str) -> Tuple[wftest.Status, str | None]:
+def run_single_test(testMain: str, timeoutMultiplier: float) -> Tuple[wftest.Status, str | None]:
     spec = importlib.util.spec_from_file_location("main", testMain)
     assert spec is not None
     assert spec.loader is not None
@@ -92,11 +93,11 @@ def run_single_test(testMain: str) -> Tuple[wftest.Status, str | None]:
     spec.loader.exec_module(foo) # type:ignore
 
     if foo.is_gui() and args.compare_with: # type: ignore
-        resultA = run_test_once(testMain, foo.WTest, args.wayfire, 'wayfireA.log', 'wayfireA') # type: ignore
+        resultA = run_test_once(testMain, foo.WTest, args.wayfire, 'wayfireA.log', timeoutMultiplier, 'wayfireA') # type: ignore
         if resultA.status != wftest.Status.OK:
             return resultA.status, 'wayfireA: ' + str(resultA.msg)
 
-        resultB = run_test_once(testMain, foo.WTest, args.compare_with, 'wayfireB.log', 'wayfireB', is_wayfire_B=True) # type: ignore
+        resultB = run_test_once(testMain, foo.WTest, args.compare_with, 'wayfireB.log', timeoutMultiplier, 'wayfireB', is_wayfire_B=True) # type: ignore
         if resultB.status != wftest.Status.OK:
             return resultB.status, 'wayfireB: ' + str(resultB.msg)
 
@@ -118,7 +119,7 @@ def run_single_test(testMain: str) -> Tuple[wftest.Status, str | None]:
         return wftest.Status.OK, None
 
     elif not foo.is_gui() or args.force_gui:
-        result = run_test_once(testMain, foo.WTest, args.wayfire, 'wayfire.log', '') # type: ignore
+        result = run_test_once(testMain, foo.WTest, args.wayfire, 'wayfire.log', timeoutMultiplier, '') # type: ignore
         return result.status, result.msg
     else:
         return wftest.Status.SKIPPED, 'GUI test needs --compare-with'
@@ -142,16 +143,28 @@ def shouldRunTest(test_main_file: str) -> bool:
     else:
         return True
 
+def run_single_test_retry(filename: str) -> Tuple[wftest.Status, str | None, int]:
+    status = wftest.Status.SKIPPED
+    explanation = "Retries <= 0?"
+    for i in range(args.maxretries):
+        status, explanation = run_single_test(filename, float(i+1))
+        if status == wftest.Status.OK:
+            return status, explanation, i+1
+
+    return status, explanation, args.maxretries
+
 def run_test_from_path(filename: str) -> Tuple[wftest.Status, str | None]:
     print("Running test " + colored(filename, 'blue') + " - ", end='')
-    status, explanation = run_single_test(filename)
+    status, explanation, tryIdx = run_single_test_retry(filename)
 
     message, color = status.value
+    tryColor = 'green' if status == wftest.Status.OK and tryIdx == 1 else 'magenta'
+
     print(colored(message, color, attrs=['bold']), end='')
     if explanation:
-        print(" (" + explanation + ")")
+        print(f" ({explanation}, try #{colored(tryIdx, tryColor)})")
     else:
-        print()
+        print(f" (try #{colored(tryIdx, tryColor)})")
 
     return status, explanation
 
