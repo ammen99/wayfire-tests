@@ -34,10 +34,10 @@ class WTest(wt.WayfireTest):
         gcs1 = self.socket.get_view_info_title('gcs1')
         gcs2 = self.socket.get_view_info_title('gcs2')
 
-        if not gcs1['state']['activated']:
+        if not gcs1['activated']:
             return wt.Status.WRONG, 'GCS1 is not active!'
 
-        if gcs2['state']['activated']:
+        if gcs2['activated']:
             return wt.Status.WRONG, 'GCS2 is active!'
 
         return wt.Status.OK, None

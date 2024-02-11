@@ -2,6 +2,7 @@ from typing import Any
 import socket
 import json as js
 import select
+import sys
 
 def get_msg_template():
     # Create generic message template
@@ -69,11 +70,23 @@ class WayfireIPCClient:
     def list_views(self):
         message = get_msg_template()
         message["method"] = "stipc/list_views"
-        js = self.send_json(message)
-        if "error" in js:
+        views = self.send_json(message)
+        if "error" in views:
             message["method"] = "window-rules/list-views"
-            js = self.send_json(message)
-        return js
+            views = self.send_json(message)
+
+        # Support for older Wayfire versions (pre-0.8.1)
+        for i in range(len(views)):
+            for field in ['minimized', 'activated', 'focusable']:
+                if 'state' in views[i] and field in views[i]['state']:
+                    views[i][field] = views[i]['state'][field]
+                elif field not in views[i]:
+                    views[i][field] = False
+
+            if 'output' in views[i]:
+                views[i]['output-name'] = views[i]['output']
+
+        return views
 
     def layout_views(self, layout):
         views = self.list_views()

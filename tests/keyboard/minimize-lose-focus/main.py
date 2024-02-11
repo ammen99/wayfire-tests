@@ -29,7 +29,7 @@ class WTest(wt.WayfireTest):
             return wt.Status.WRONG, str(e)
 
         state = self.socket.get_view_info_title('x11')
-        if state['state']['activated']:
+        if state['activated']:
             return wt.Status.WRONG, 'View is still activated after minimization!'
 
         return wt.Status.OK, None

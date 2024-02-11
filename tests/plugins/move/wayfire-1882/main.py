@@ -24,7 +24,7 @@ class WTest(wt.WayfireTest):
         info = self.socket.get_view_info('nil')
         if not wi.check_geometry(0, 0, 500, 500, info['geometry']):
             return wt.Status.WRONG, f'weston-terminal has invalid geometry after dragging with binding: {str(info["geometry"])}'
-        if info['output'] != 'WL-2':
+        if info['output-name'] != 'WL-2':
             return wt.Status.WRONG, f'weston-terminal is on the wrong output after dragging with binding: {info["output"]}'
 
         # Drag via titlebar this time, back to the first output, but less than snap-off threshold
@@ -36,7 +36,7 @@ class WTest(wt.WayfireTest):
         info = self.socket.get_view_info('nil')
         if not wi.check_geometry(0, 0, 500, 500, info['geometry']):
             return wt.Status.WRONG, f'Try 1: weston-terminal has invalid geometry after dragging by titlebar: {str(info["geometry"])}'
-        if info['output'] != 'WL-2':
+        if info['output-name'] != 'WL-2':
             return wt.Status.WRONG, f'Try 1: weston-terminal is on the wrong output after dragging by titlebar: {info["output"]}'
 
         # Drag via titlebar this time, back to the first output, this time exceed the snap-off threshold
@@ -50,7 +50,7 @@ class WTest(wt.WayfireTest):
         info = self.socket.get_view_info('nil')
         if not wi.check_geometry(0, 0, 500, 500, info['geometry']):
             return wt.Status.WRONG, f'Try 2: weston-terminal has invalid geometry after dragging by titlebar: {str(info["geometry"])}'
-        if info['output'] != 'WL-1':
+        if info['output-name'] != 'WL-1':
             return wt.Status.WRONG, f'Try 2: weston-terminal is on the wrong output after dragging by titlebar: {info["output"]}'
 
         return wt.Status.OK, None

@@ -11,8 +11,8 @@ class WTest(wt.WayfireTest):
         return self.require_test_clients(['weston-terminal', 'gtk_color_switcher'])
 
     def _check_focus(self, terminal_focused: bool, msg: str):
-        gcs = self.socket.get_view_info_title('gcs')['state']['activated']
-        terminal = self.socket.get_view_info('nil')['state']['activated']
+        gcs = self.socket.get_view_info_title('gcs')['activated']
+        terminal = self.socket.get_view_info('nil')['activated']
 
         if terminal != terminal_focused:
             return f'weston-terminal has wrong activated state {terminal} {msg}'

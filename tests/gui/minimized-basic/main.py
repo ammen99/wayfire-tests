@@ -27,7 +27,7 @@ class WTest(wt.WayfireTest):
         self.socket.click_button('BTN_LEFT', 'full')
         self.wait_for_clients(2)
 
-        if not self.socket.get_view_info('nil')['state']['minimized']:
+        if not self.socket.get_view_info('nil')['minimized']:
             return wt.Status.WRONG, 'weston-terminal was not minimized!'
 
         if err := self.take_screenshot('minimized-does-not-show'):

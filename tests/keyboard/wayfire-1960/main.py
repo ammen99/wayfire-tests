@@ -27,7 +27,7 @@ class WTest(wt.WayfireTest):
         views = self.socket.list_views()
         for v in views:
             title = v['title']
-            if title in states and states[title] != v['state']['activated']:
+            if title in states and states[title] != v['activated']:
                 return f"Wrong state of view {v['title']}: expected {states[title]}"
 
         return None
