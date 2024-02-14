@@ -22,6 +22,7 @@ enum class log_features : int
     CLICK_TO_MENU    = (1 << 5),
     TABLET           = (1 << 6),
     DIALOG_SHORTCUT  = (1 << 7),
+    DELAY_DIALOG     = (1 << 8),
 };
 
 // ---------------------------- wl_pointer impl --------------------------------
@@ -601,7 +602,7 @@ static void setup_window(Gtk::Window *win, int flags)
 
     if (flags & (int)log_features::DIALOG_SHORTCUT)
     {
-        win->signal_key_press_event().connect_notify([win] (GdkEventKey *button)
+        win->signal_key_press_event().connect_notify([flags, win] (GdkEventKey *button)
         {
             if (button->keyval == GDK_KEY_o)
             {
@@ -609,9 +610,20 @@ static void setup_window(Gtk::Window *win, int flags)
                     auto dialog = new Gtk::Dialog();
                     dialog->set_title("TestDialog");
                     dialog->set_default_size(100, 100);
-                    dialog->set_transient_for(*win);
+                    const bool delay_dialog = (flags & (int)log_features::DELAY_DIALOG);
+                    if (!delay_dialog)
+                    {
+                        dialog->set_transient_for(*win);
+                    }
+
                     dialog->show_all();
                     dialog_wl_surface = gdk_wayland_window_get_wl_surface(dialog->get_window()->gobj());
+                    if (delay_dialog)
+                    {
+                        Glib::signal_timeout().connect_once([dialog, win] () {
+                            dialog->set_transient_for(*win);
+                        }, 100);
+                    }
                 }, 50);
             }
         });
@@ -665,6 +677,10 @@ int main(int argc, char **argv)
         if (!strcmp("emit-enter-coords", argv[i]))
         {
             emit_enter_coords = true;
+        }
+        if (!strcmp("delay-dialog", argv[i]))
+        {
+            flags |= (int)log_features::DELAY_DIALOG;
         }
     }
 
