@@ -606,8 +606,10 @@ static void setup_window(Gtk::Window *win, int flags)
             if (button->keyval == GDK_KEY_o)
             {
                 Glib::signal_timeout().connect_once([=] () {
-                    auto dialog = new Gtk::MessageDialog(*win, "TestDialog");
+                    auto dialog = new Gtk::Dialog();
                     dialog->set_title("TestDialog");
+                    dialog->set_default_size(100, 100);
+                    dialog->set_transient_for(*win);
                     dialog->show_all();
                     dialog_wl_surface = gdk_wayland_window_get_wl_surface(dialog->get_window()->gobj());
                 }, 50);

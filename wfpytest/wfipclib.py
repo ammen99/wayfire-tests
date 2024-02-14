@@ -2,7 +2,6 @@ from typing import Any
 import socket
 import json as js
 import select
-import sys
 
 def get_msg_template():
     # Create generic message template
@@ -77,7 +76,7 @@ class WayfireIPCClient:
 
         # Support for older Wayfire versions (pre-0.8.1)
         for i in range(len(views)):
-            for field in ['minimized', 'activated', 'focusable']:
+            for field in ['minimized', 'activated', 'focusable', 'mapped']:
                 if 'state' in views[i] and field in views[i]['state']:
                     views[i][field] = views[i]['state'][field]
                 elif field not in views[i]:
@@ -106,10 +105,10 @@ class WayfireIPCClient:
         message["data"]["views"] = msg_layout
         return self.send_json(message)
 
-    def get_view_info(self, app_id: str) -> Any:
+    def get_view_info(self, app_id: str, mappedOnly: bool = False) -> Any:
         views = self.list_views()
         for v in views:
-            if v['app-id'] == app_id:
+            if v['app-id'] == app_id and (not mappedOnly or v['mapped']) :
                 return v
         return None
 

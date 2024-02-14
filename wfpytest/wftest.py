@@ -61,12 +61,15 @@ class WayfireTest:
     def wait_for_clients(self, times=1):
         time.sleep(self._ipc_duration * times) # Wait for clients to start/process events
 
+    def _get_mapped_views(self):
+        return [v for v in self.socket.list_views() if v['mapped']]
+
     def wait_for_clients_to_open(self, nr_clients: int, waits = 10, interval = 100):
         for _ in range(waits):
-            if len(self.socket.list_views()) != nr_clients:
+            if len(self._get_mapped_views()) != nr_clients:
                 self.wait_ms(interval)
 
-        if len(self.socket.list_views()) != nr_clients:
+        if len(self._get_mapped_views()) != nr_clients:
             return False
 
         return True
