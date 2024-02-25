@@ -15,7 +15,7 @@ class WTest(wt.WayfireTest):
         self.socket.run('dbus-launch --exit-with-session ./script.sh')
         self.wait_for_clients_to_open(nr_clients=2)
 
-        # Press next twice => focus should remain on weston-terminal
+        # Press next twice => focus should remain on Gedit
         self.socket.set_key_state('KEY_LEFTALT', True)
         self.socket.set_key_state('KEY_TAB', True)
         self.socket.set_key_state('KEY_N', False)
