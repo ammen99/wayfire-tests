@@ -3,10 +3,12 @@ import socket
 import json as js
 import select
 
-def get_msg_template():
+def get_msg_template(cmd: str | None = None):
     # Create generic message template
     message = {}
     message["data"] = {}
+    if str is not None:
+        message["method"] = cmd
     return message
 
 class WayfireIPCClient:
@@ -15,12 +17,16 @@ class WayfireIPCClient:
         self.client.connect(socket_name)
         self.client.setblocking(False)
 
-    def read_exact(self, n):
+    def read_exact(self, n, timeout: float | None = None):
         response = bytes()
         while n > 0:
-            ready = select.select([self.client], [], [], 5) # Wait 5 seconds
+            ready = select.select([self.client], [], [], 5 if timeout is None else timeout) # Wait 5 seconds
             if not ready[0]:
-                raise Exception("Failed to read from socket: timeout")
+                if timeout is None:
+                    raise Exception("Failed to read from socket: timeout")
+                else:
+                    return None
+
             read_this_time = self.client.recv(n)
             if not read_this_time:
                 raise Exception("Failed to read anything from the socket!")
@@ -29,15 +35,24 @@ class WayfireIPCClient:
 
         return response
 
+    def read_message(self, timeout: float = 5):
+        length = self.read_exact(4, timeout)
+        if not length:
+            return None
+
+        rlen = int.from_bytes(length, byteorder="little")
+        response_message = self.read_exact(rlen)
+        assert response_message is not None
+        return js.loads(response_message)
+
     def _send_json(self, msg):
         data = js.dumps(msg).encode('utf8')
         header = len(data).to_bytes(4, byteorder="little")
         self.client.send(header)
         self.client.send(data)
-
-        rlen = int.from_bytes(self.read_exact(4), byteorder="little")
-        response_message = self.read_exact(rlen)
-        return js.loads(response_message)
+        resp = self.read_message()
+        assert resp is not None
+        return resp
 
     def send_json(self, msg):
         response = self._send_json(msg)
