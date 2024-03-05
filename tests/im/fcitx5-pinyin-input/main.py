@@ -12,6 +12,7 @@ class WTest(wt.WayfireTest):
     def _run(self):
         self.socket.run('dbus-launch --exit-with-session ./script.sh')
         self.wait_for_clients_to_open(nr_clients=1)
+        self.wait_for_clients(2) # wait for im
 
         # Default layout is pinyin => enter a few chinese symbols
         self.socket.press_key('KEY_F')
