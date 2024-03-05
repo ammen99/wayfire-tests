@@ -1,4 +1,4 @@
 #!/bin/sh
 
-fcitx5 &
+../fcitx-wrapper/start-fcitx5.sh &
 gedit
