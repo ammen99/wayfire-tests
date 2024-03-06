@@ -1,6 +1,7 @@
 #!/bin/env python3
 
 import wftest as wt
+import wfutil as wu
 
 def is_gui() -> bool:
     return False
@@ -50,17 +51,8 @@ class WTest(wt.WayfireTest):
         self.wait_for_clients()
 
         # Select all, copy
-        self.socket.press_key('C-KEY_A')
-        self.wait_for_clients()
-        self.socket.press_key('C-KEY_C')
-        self.wait_for_clients()
-
-        self.socket.run('wl-paste > gedit-state.txt')
-        self.wait_for_clients(4)
-
-        with open('gedit-state.txt') as f:
-            state = f.read()
-            if state != '\\u98ce\\u683c\\u8fd4\\u56deab \\u554a \n':
-                return wt.Status.WRONG, f'Wrong input in Gedit: ${state}$'
+        state = wu.copy_paste_gedit_state(self)
+        if state != '\\u98ce\\u683c\\u8fd4\\u56deab \\u554a \n':
+            return wt.Status.WRONG, f'Wrong input in Gedit: ${state}$'
 
         return wt.Status.OK, None

@@ -1,7 +1,9 @@
 # Log files & screenshots
 *.log
 *.png
-tests/im/fcitx5-pinyin-input/gedit-state.txt
+**/gedit-state.txt
+tests/im/fcitx-wrapper/fcitx/*
+tests/im/fcitx-wrapper/ibus/*
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

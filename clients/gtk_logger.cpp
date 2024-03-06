@@ -23,6 +23,7 @@ enum class log_features : int
     TABLET           = (1 << 6),
     DIALOG_SHORTCUT  = (1 << 7),
     DELAY_DIALOG     = (1 << 8),
+    TEXT_INPUT       = (1 << 9),
 };
 
 // ---------------------------- wl_pointer impl --------------------------------
@@ -521,7 +522,12 @@ void setup_constraint(Gtk::Window *win)
 
 static void setup_window(Gtk::Window *win, int flags)
 {
-    if (flags & (int)log_features::CLICK_TO_MENU)
+    if (flags & (int)log_features::TEXT_INPUT)
+    {
+        Gtk::Entry *entry = new Gtk::Entry();
+        entry->set_text("");
+        win->add(*entry);
+    } else if (flags & (int)log_features::CLICK_TO_MENU)
     {
         Gtk::MenuButton *mb = new Gtk::MenuButton();
         mb->set_label("Menu");
@@ -536,7 +542,6 @@ static void setup_window(Gtk::Window *win, int flags)
         win->add(*mb);
     } else
     {
-
         auto btn = new Gtk::Button("Test");
         win->add(*btn);
 
@@ -681,6 +686,10 @@ int main(int argc, char **argv)
         if (!strcmp("delay-dialog", argv[i]))
         {
             flags |= (int)log_features::DELAY_DIALOG;
+        }
+        if (!strcmp("text-input", argv[i]))
+        {
+            flags |= (int)log_features::TEXT_INPUT;
         }
     }
 

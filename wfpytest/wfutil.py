@@ -8,6 +8,7 @@ import time
 import os
 from pathlib import Path
 from uuid import uuid4
+from wftest import WayfireTest
 
 class ImageDiff(Enum):
     SAME = 0
@@ -108,3 +109,17 @@ class LoggedProcess:
     def expect_none_throw(self, details=""):
         if not self.expect_none():
             raise WrongLogLine('{} has trailing output {}: {}'.format(self.app_id, details, self.last_line))
+
+def copy_paste_gedit_state(self: WayfireTest):
+        # Select all, copy
+        self.socket.press_key('C-KEY_A')
+        self.wait_for_clients()
+        self.socket.press_key('C-KEY_C')
+        self.wait_for_clients()
+
+        self.socket.run('wl-paste > gedit-state.txt')
+        self.wait_for_clients(4)
+
+        with open('gedit-state.txt') as f:
+            state = f.read()
+            return state
