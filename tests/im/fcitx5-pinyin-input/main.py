@@ -11,7 +11,8 @@ class WTest(wt.WayfireTest):
         return self.require_test_clients(['gedit', 'fcitx5', 'wl-paste'])
 
     def _run(self):
-        self.socket.run('./script.sh')
+        self.socket.run('../fcitx-wrapper/start-fcitx5.sh')
+        self.socket.run('gedit')
         self.wait_for_clients_to_open(nr_clients=1)
         self.wait_for_clients(2) # wait for im
 

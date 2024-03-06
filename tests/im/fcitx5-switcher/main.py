@@ -24,7 +24,8 @@ class WTest(wt.WayfireTest):
     def _run(self):
         self.socket.run('weston-terminal')
         self.wait_for_clients_to_open(nr_clients=1)
-        self.socket.run('./script.sh')
+        self.socket.run('../fcitx-wrapper/start-fcitx5.sh')
+        self.socket.run('gedit')
         self.wait_for_clients_to_open(nr_clients=2)
 
         self.wait_for_clients(2) # Wait for IM
