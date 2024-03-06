@@ -12,7 +12,7 @@ class WTest(wt.WayfireTest):
 
     def _run(self):
         self.socket.run('dbus-launch --exit-with-session ../fcitx-wrapper/start-fcitx5.sh')
-        gtk1 = wu.LoggedProcess(self.socket, 'gtk_logger', 'gtk1', 'keyboard text-input &> /tmp/log')
+        gtk1 = wu.LoggedProcess(self.socket, 'gtk_logger', 'gtk1', 'keyboard text-input')
 
         self.wait_for_clients_to_open(nr_clients=1)
         self.wait_for_clients(2) # wait for im
