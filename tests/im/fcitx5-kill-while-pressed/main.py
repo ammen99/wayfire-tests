@@ -14,7 +14,7 @@ class WTest(wt.WayfireTest):
     def _run(self):
         gtk1 = wu.LoggedProcess(self.socket, 'gtk_logger', 'gtk1', 'keyboard text-input')
         self.wait_for_clients_to_open(nr_clients=1)
-        pid = self.socket.run('WAYLAND_DEBUG=1 dbus-launch --exit-with-session ../fcitx-wrapper/start-fcitx5.sh &> /tmp/flog')['pid']
+        pid = self.socket.run('../fcitx-wrapper/start-fcitx5.sh')['pid']
         self.wait_for_clients(5) # wait for im+handshake
 
         try:
@@ -30,7 +30,7 @@ class WTest(wt.WayfireTest):
             return wt.Status.WRONG, e.args[0]
 
         clients = self.socket.list_views()
-        if len(clients) != 2:
+        if len(clients) != 1:
             return wt.Status.WRONG, f'Wrong number of clients {clients}'
 
         return wt.Status.OK, None

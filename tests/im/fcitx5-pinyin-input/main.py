@@ -11,7 +11,7 @@ class WTest(wt.WayfireTest):
         return self.require_test_clients(['gedit', 'fcitx5', 'wl-paste'])
 
     def _run(self):
-        self.socket.run('dbus-launch --exit-with-session ./script.sh')
+        self.socket.run('./script.sh')
         self.wait_for_clients_to_open(nr_clients=1)
         self.wait_for_clients(2) # wait for im
 

@@ -10,7 +10,7 @@ class WTest(wt.WayfireTest):
         return self.require_test_clients(['gedit', 'fcitx5'])
 
     def _run(self):
-        self.socket.run('dbus-launch --exit-with-session ./script.sh')
+        self.socket.run('./script.sh')
         self.wait_for_clients_to_open(nr_clients=1)
         self.socket.press_key('KEY_R') # Make sure gedit is not maximized!
         self.wait_for_clients(4)

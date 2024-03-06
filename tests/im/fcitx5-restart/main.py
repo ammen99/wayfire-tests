@@ -12,7 +12,7 @@ class WTest(wt.WayfireTest):
         return self.require_test_clients(['gedit', 'fcitx5', 'wl-paste'])
 
     def _run(self):
-        pid = self.socket.run('dbus-launch --exit-with-session ../fcitx-wrapper/start-fcitx5.sh')['pid']
+        pid = self.socket.run('../fcitx-wrapper/start-fcitx5.sh')['pid']
         self.socket.run('gedit')
         self.wait_for_clients_to_open(nr_clients=1)
         self.wait_for_clients(2) # wait for im

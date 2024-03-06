@@ -24,7 +24,7 @@ class WTest(wt.WayfireTest):
     def _run(self):
         self.socket.run('weston-terminal')
         self.wait_for_clients_to_open(nr_clients=1)
-        self.socket.run('dbus-launch --exit-with-session ./script.sh')
+        self.socket.run('./script.sh')
         self.wait_for_clients_to_open(nr_clients=2)
 
         self.wait_for_clients(2) # Wait for IM

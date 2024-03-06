@@ -11,7 +11,7 @@ class WTest(wt.WayfireTest):
         return self.require_test_clients(['fcitx5', 'wl-paste', 'weston-terminal', 'gtk_logger'])
 
     def _run(self):
-        self.socket.run('dbus-launch --exit-with-session ../fcitx-wrapper/start-fcitx5.sh')
+        self.socket.run('../fcitx-wrapper/start-fcitx5.sh')
         gtk1 = wu.LoggedProcess(self.socket, 'gtk_logger', 'gtk1', 'keyboard text-input')
 
         self.wait_for_clients_to_open(nr_clients=1)
