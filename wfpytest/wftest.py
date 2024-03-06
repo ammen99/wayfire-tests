@@ -5,6 +5,7 @@ from pathlib import Path
 from uuid import uuid4
 import wfutil as wu
 from datetime import datetime
+import threading
 
 import subprocess
 import signal
@@ -27,6 +28,12 @@ class Status(Enum):
 
 def get_now():
     return datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S.%f')[:-3]
+
+def kill_process_group(gid):
+    try:
+        os.killpg(gid, signal.SIGKILL)
+    except:
+        pass
 
 class WayfireTest:
     # An approximation of how long clients take to start and communicate with Wayfire
@@ -148,4 +155,5 @@ class WayfireTest:
     def cleanup(self):
         if self._wayfire_process:
             pgrp = os.getpgid(self._wayfire_process.pid)
-            os.killpg(pgrp, signal.SIGKILL)
+            os.killpg(pgrp, signal.SIGTERM)
+            threading.Timer(0.5, lambda: kill_process_group(pgrp)).start()

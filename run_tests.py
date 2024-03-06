@@ -6,6 +6,7 @@ import sys
 import glob
 import importlib.util
 import subprocess
+import time
 from multiprocessing import Pool
 
 from termcolor import colored
@@ -299,3 +300,7 @@ tests_total = tests_ok + tests_skip + tests_wrong
 print_test_summary()
 if args.interactive:
     interact_show_logs()
+
+# Waiting for the background threads which kill all process groups
+print("Cleaning up...")
+time.sleep(1.0)
