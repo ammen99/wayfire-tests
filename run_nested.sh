@@ -1,7 +1,7 @@
 #!/bin/zsh
 
 # Kill children on exit
-trap "trap - SIGTERM && kill -- -$$" SIGINT SIGTERM EXIT
+trap "trap - SIGTERM && pkill -P $$ && exit" SIGINT SIGTERM EXIT
 
 unset DISPLAY
 unset WAYLAND_DISPLAY
