@@ -46,14 +46,12 @@ class WTest(wt.WayfireTest):
         self.wait_for_clients()
         self.socket.press_key('KEY_A')
         self.wait_for_clients()
-        self.socket.press_key('KEY_SPACE')
-        self.wait_for_clients()
-        self.socket.press_key('KEY_SPACE')
+        self.socket.press_key('KEY_DOT')
         self.wait_for_clients()
 
         # Select all, copy
         state = wu.copy_paste_gedit_state(self)
-        if state != '\\u98ce\\u683c\\u8fd4\\u56deab \\u554a \n':
+        if state != '\\u98ce\\u683c\\u8fd4\\u56deab \\u554a\\u3002\n':
             return wt.Status.WRONG, f'Wrong input in Gedit: ${state}$'
 
         return wt.Status.OK, None
