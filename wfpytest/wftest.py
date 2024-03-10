@@ -154,6 +154,9 @@ class WayfireTest:
 
     def cleanup(self):
         if self._wayfire_process:
-            pgrp = os.getpgid(self._wayfire_process.pid)
-            os.killpg(pgrp, signal.SIGTERM)
-            threading.Timer(0.5, lambda: kill_process_group(pgrp)).start()
+            try:
+                pgrp = os.getpgid(self._wayfire_process.pid)
+                os.killpg(pgrp, signal.SIGTERM)
+                threading.Timer(0.5, lambda: kill_process_group(pgrp)).start()
+            except:
+                pass
