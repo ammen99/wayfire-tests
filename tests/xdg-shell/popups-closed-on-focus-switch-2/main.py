@@ -22,8 +22,7 @@ class WTest(wt.WayfireTest):
     def _run(self):
         gtk = wu.LoggedProcess(self.socket, 'gtk_logger', 'gtk1', 'keyboard')
         self.socket.run('gedit')
-        self.wait_for_clients(2)
-        if self._get_views() != ['gedit', 'gtk_logger']:
+        if not self.wait_for_clients_to_open(nr_clients=2):
             return wt.Status.WRONG, 'Demo apps did not open: ' + str(self._get_views())
 
         # Focus should be xterm
@@ -37,7 +36,7 @@ class WTest(wt.WayfireTest):
         self.socket.click_button('BTN_RIGHT', 'full')
         self.wait_for_clients()
 
-        if self._get_views() != ['', 'gedit', 'gtk_logger']:
+        if not self.wait_for_clients_to_open(nr_clients=3):
             return wt.Status.WRONG, 'Popup menu did not open! ' + str(self._get_views())
 
         gtk.reset_logs()

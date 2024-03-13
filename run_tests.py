@@ -7,6 +7,7 @@ import glob
 import importlib.util
 import subprocess
 import time
+import signal
 from multiprocessing import Pool
 
 from termcolor import colored
@@ -26,6 +27,7 @@ parser.add_argument('--categories', type=str, default='', required=False)
 parser.add_argument('--force-gui', action='store_true', required=False)
 parser.add_argument('-j', type=int, default='1', required=False)
 parser.add_argument('--maxretries', type=int, default='1', required=False)
+parser.add_argument('--last-rerun', action='store_true', required=False)
 args = parser.parse_args()
 
 # Make tests execute slower or faster
@@ -154,7 +156,13 @@ def run_single_test_retry(filename: str) -> Tuple[wftest.Status, str | None, int
 
     return status, explanation, args.maxretries
 
+exit_test = False
+
 def run_test_from_path(filename: str) -> Tuple[wftest.Status, str | None]:
+    global exit_test
+    if exit_test:
+        return wftest.Status.SKIPPED, "Test cancelled"
+
     print("Running test " + colored(filename, 'blue') + " - ", end='')
     status, explanation, tryIdx = run_single_test_retry(filename)
 
@@ -163,9 +171,9 @@ def run_test_from_path(filename: str) -> Tuple[wftest.Status, str | None]:
 
     print(colored(message, color, attrs=['bold']), end='')
     if explanation:
-        print(f" ({explanation}, try #{colored(tryIdx, tryColor)})")
+        print(f" ({explanation}, try #{colored(str(tryIdx), tryColor)})")
     else:
-        print(f" (try #{colored(tryIdx, tryColor)})")
+        print(f" (try #{colored(str(tryIdx), tryColor)})")
 
     return status, explanation
 
@@ -179,6 +187,7 @@ def run_all_tests():
         test_list.append(filename)
 
     results_list = []
+
     with Pool(args.j) as pool:
         results_list = pool.map(run_test_from_path, test_list)
 
@@ -236,7 +245,6 @@ def rerun_all_tests(threads: int):
             tests_ok += 1
 
     failed_tests = still_failing
-    print_test_summary()
 
 def rerun_test(input: str):
     cmds = [x for x in input.split(' ') if x]
@@ -256,8 +264,10 @@ def rerun_test(input: str):
 
     if cmds[-1] == "all":
         rerun_all_tests(1)
+        print_test_summary()
     elif cmds[-1] == "all-parallel":
         rerun_all_tests(args.j)
+        print_test_summary()
     else:
         idx = int(cmds[-1])
         run_test_from_path(failed_tests[idx].prefix)
@@ -294,7 +304,20 @@ def interact_show_logs():
             print("Wrong selection!")
 
 check_arguments()
+
+def sigint_handler(a, b):
+    del a, b
+    global exit_test
+    print('Ctrl-C, stopping tests...')
+    exit_test = True
+
+signal.signal(signal.SIGINT, sigint_handler)
+
 run_all_tests()
+if args.last_rerun:
+    print("Rerunning last failed tests sequentially...")
+    rerun_all_tests(1)
+
 tests_total = tests_ok + tests_skip + tests_wrong
 
 print_test_summary()
