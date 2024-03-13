@@ -7,18 +7,21 @@ import signal
 def is_gui() -> bool:
     return True
 
+# Test that everything works with the noop output
+# Also test Wayfire #2212
+
 class WTest(wt.WayfireTest):
     def prepare(self):
-        return self.require_test_clients(['gtk_color_switcher', 'wf-background'])
+        return self.require_test_clients(['gtk_color_switcher', 'wf-background', 'wleird-wfshell-tester'])
 
     def _get_views(self):
         return sorted([v['title'] for v in self.socket.list_views()])
 
     def _run(self):
+        pid_tester = self.socket.run('wleird-wfshell-tester')["pid"]
         pid = self.socket.run('gtk_color_switcher cs')["pid"]
         self.socket.run('wf-background')
-        self.wait_for_clients(4)
-        if self._get_views() != ['cs', 'layer-shell']:
+        if not self.wait_for_clients_to_open(nr_clients=2):
             return wt.Status.WRONG, 'Demo apps did not open: ' + str(self._get_views())
 
         # position the views
@@ -59,5 +62,9 @@ class WTest(wt.WayfireTest):
 
         if err := self.take_screenshot('1-final'):
             return wt.Status.WRONG, "Failed to take screenshot: " + str(err)
+
+        # Make sure cleaning up resources is ok
+        self.send_signal(pid_tester, signal.SIGKILL)
+        self.wait_for_clients(2)
 
         return wt.Status.OK, None
