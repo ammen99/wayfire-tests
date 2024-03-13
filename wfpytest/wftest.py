@@ -142,6 +142,7 @@ class WayfireTest:
 
             self._wayfire_process = subprocess.Popen([wayfire_path, '-c', self.locate_cfgfile()],
                     env=env, stdout=log, stderr=log, preexec_fn=os.setsid)
+            self._wayfire_gid = os.getpgid(self._wayfire_process.pid)
             time.sleep(0.5 + random.uniform(0, 1)) # Leave a bit of time for Wayfire to initialize + add random offset to desync multiple tests in parallel
 
             log.write(f'Test code starting: {get_now()}\n')
@@ -155,8 +156,7 @@ class WayfireTest:
     def cleanup(self):
         if self._wayfire_process:
             try:
-                pgrp = os.getpgid(self._wayfire_process.pid)
-                os.killpg(pgrp, signal.SIGTERM)
-                threading.Timer(0.5, lambda: kill_process_group(pgrp)).start()
+                os.killpg(self._wayfire_gid, signal.SIGTERM)
+                threading.Timer(0.5, lambda: kill_process_group(self._wayfire_gid)).start()
             except:
                 pass
