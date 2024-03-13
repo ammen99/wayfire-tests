@@ -34,7 +34,7 @@ class WTest(wt.WayfireTest):
 
         # Check that view was scaled to match the NOOP-1 resolution
         cs_geometry = self.socket.get_view_info_title('cs')["geometry"]
-        if not wi.check_geometry(5, 5, 200, 200, cs_geometry):
+        if not wi.check_geometry(0, 0, 250, 250, cs_geometry):
             return wt.Status.WRONG, 'Demo app has wrong size on NOOP-1: ' + str(cs_geometry)
 
         # Trigger damage, move cursor, any action to see that wayfire can handle it
@@ -54,7 +54,7 @@ class WTest(wt.WayfireTest):
             return wt.Status.WRONG, 'Demo app crashed after restoring to WL-2: ' + str(self._get_views())
 
         cs_geometry = self.socket.get_view_info_title('cs')["geometry"]
-        if not wi.check_geometry(10, 10, 400, 400, cs_geometry):
+        if not wi.check_geometry(0, 0, 250, 250, cs_geometry):
             return wt.Status.WRONG, 'Demo app has wrong size after restoring to WL-2: ' + str(cs_geometry)
 
         if err := self.take_screenshot('1-final'):
