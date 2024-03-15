@@ -60,30 +60,35 @@ class WTest(wt.WayfireTest):
         return None
 
     def _run(self):
+        EMPTY_LAYOUT = {'geometry': {'height': 500, 'width': 500, 'x': 0, 'y': 0}, 'percent': 1.0, 'vertical-split': []}
+        EMPTY_LAYOUT_LEFT = {'geometry': {'height': 500, 'width': 500, 'x': -500, 'y': 0}, 'percent': 1.0, 'vertical-split': []}
+
         ids = []
         layout = self._tiling_layout(1, 0, 0)
-        if layout != {}:
+        if layout != EMPTY_LAYOUT:
             return wt.Status.WRONG, "Tiling layout should be empty: {}".format(layout)
 
-        pid = self.socket.run('gtk_color_switcher')['pid']
+        pids = []
+        pids.append(self.socket.run('gtk_color_switcher')['pid'])
         self.wait_for_clients_to_open(nr_clients=1)
-        self.send_signal(pid, signal.SIGUSR1)
         gcs_id = self._get_new_view_id(ids)
 
         layout = self._tiling_layout(1, 0, 0)
-        expected_layout = {'geometry': {'height': 500, 'width': 500, 'x': 0, 'y': 0}, 'percent': 1.0, 'view-id': gcs_id}
+        expected_layout = {'geometry': {'height': 500, 'width': 500, 'x': 0, 'y': 0}, 'percent': 1.0,
+                           'vertical-split': [{'geometry': {'height': 500, 'width': 500, 'x': 0, 'y': 0}, 'percent': 1.0, 'view-id': gcs_id}]}
         if layout != expected_layout:
             return wt.Status.WRONG, "Tiling layout should contain just one view: {}".format(layout)
 
-        self.socket.run('weston-terminal')
+        pids.append(self.socket.run('weston-terminal')['pid'])
         self.wait_for_clients_to_open(nr_clients=2)
         wt1_id = self._get_new_view_id(ids)
 
-        self.socket.run('weston-terminal')
+        pids.append(self.socket.run('weston-terminal')['pid'])
         self.wait_for_clients_to_open(nr_clients=3)
         wt2_id = self._get_new_view_id(ids)
 
-        wu.LoggedProcess(self.socket, 'gtk_logger', 'gtk1', '') # not tiled
+        gtk1 = wu.LoggedProcess(self.socket, 'gtk_logger', 'gtk1', '') # not tiled
+        pids.append(gtk1.pid)
         self.wait_for_clients_to_open(nr_clients=4)
         logger1_id = self._get_new_view_id(ids)
 
@@ -101,12 +106,14 @@ class WTest(wt.WayfireTest):
             return wt.Status.WRONG, 'Tiling layout with three views at startup is wrong: {}'.format(layout)
 
         self.socket.press_key('KEY_B')
-        wu.LoggedProcess(self.socket, 'gtk_logger', 'gtk2', '')
+        gtk2 = wu.LoggedProcess(self.socket, 'gtk_logger', 'gtk2', '')
+        pids.append(gtk2.pid)
         self.wait_for_clients_to_open(nr_clients=5)
         logger2_id = self._get_new_view_id(ids)
 
         layout = self._tiling_layout(2, 0, 0)
-        expected_layout = {'geometry': {'height': 500, 'width': 500, 'x': 0, 'y': 0}, 'percent': 1.0, 'view-id': logger2_id}
+        expected_layout = {'geometry': {'height': 500, 'width': 500, 'x': 0, 'y': 0}, 'percent': 1.0,
+                           'vertical-split': [{'geometry': {'height': 500, 'width': 500, 'x': 0, 'y': 0}, 'percent': 1.0, 'view-id': logger2_id}]}
         if layout != expected_layout:
             return wt.Status.WRONG, "Tiling layout on wset 2 should contain just one view: {}".format(layout)
 
@@ -124,10 +131,12 @@ class WTest(wt.WayfireTest):
                         {'weight': 250, 'view-id': logger1_id},
                         {'weight': 250, 'view-id': logger2_id},
                         ]},
-                    {'weight': 1, 'view-id': wt1_id}, # weston-terminal #1
                     ]
         }
 
+        # Try incremental changes to the layout
+        self.socket.send_json(msg)
+        msg['data']['layout']['horizontal-split'].append({'weight': 1, 'view-id': wt1_id})
         self.socket.send_json(msg)
         self.wait_for_clients(2)
         self.socket.press_key('KEY_A')
@@ -137,6 +146,15 @@ class WTest(wt.WayfireTest):
         layout = self._tiling_layout_raw(2, 0, 0)
         if 'error' not in layout:
             return wt.Status.WRONG, "Tiling layout on 2,0,0 should be empty: {}".format(layout)
+
+        # Invalid layout: duplicate view id
+        msg['data']['layout'] = {
+                'horizontal-split': [
+                    {'weight': 1.0, 'view-id': gcs_id},
+                    {'weight': 1.0, 'view-id': gcs_id}
+                    ]}
+        if 'error' not in self.socket.send_json(msg):
+            return wt.Status.WRONG, "Tiling layout with duplicate view ids should not be allowed!"
 
         layout = self._tiling_layout(1, 1, 0)
         expected_layout = {
@@ -152,7 +170,7 @@ class WTest(wt.WayfireTest):
                     ], 'percent': 1.0}
 
         if layout != expected_layout:
-            return wt.Status.WRONG, "Tiling layout on 1,1,0 should contain just weston-terminal: {}".format(layout)
+            return wt.Status.WRONG, "Tiling layout on 1,1,0 should contain all views: {}".format(layout)
 
         self.wait_for_clients(4)
 
@@ -164,11 +182,22 @@ class WTest(wt.WayfireTest):
                 return wt.Status.WRONG, "View with id {} has wrong geometry: {} after retiling, expected {}".format(id, info, geometry)
 
         layout = self._tiling_layout(1, 0, 0) # Check first workspace, we should have just weston-terminal #2 now
-        if layout != {'geometry': {'height': 500, 'width': 500, 'x': -500, 'y': 0}, 'percent': 1.0, 'view-id': wt2_id}:
+        expected_layout = {'geometry': {'height': 500, 'width': 500, 'x': -500, 'y': 0}, 'percent': 1.0,
+                           'vertical-split': [{'geometry': {'height': 500, 'width': 500, 'x': -500, 'y': 0}, 'percent': 1.0, 'view-id': wt2_id}]}
+        if layout != expected_layout:
             return wt.Status.WRONG, "Tiling layout on 1,0,0 should contain just weston-terminal: {}".format(layout)
 
         if err := self.take_screenshot('final-tiling'):
             return wt.Status.CRASHED, err
+
+        # Untile a few views
+        msg = wi.get_msg_template("simple-tile/set-layout")
+        msg['data']['wset-index'] = 1
+        msg['data']['workspace'] = {}
+        msg['data']['workspace']['x'] = 1
+        msg['data']['workspace']['y'] = 0
+        msg['data']['layout'] = {'vertical-split': []}
+        print(self.socket.send_json(msg))
 
         # Untile weston-terminal on ws 1, 0, 0
         msg = wi.get_msg_template("simple-tile/set-layout")
@@ -179,8 +208,17 @@ class WTest(wt.WayfireTest):
         msg['data']['layout'] = {'vertical-split': []}
         print(self.socket.send_json(msg))
         self.wait_for_clients(2)
-        layout = self._tiling_layout(1, 0, 0) # Check first workspace, we should have just weston-terminal now
-        if layout != {}:
+
+        layout = self._tiling_layout(1, 1, 0)
+        if layout != EMPTY_LAYOUT:
+            return wt.Status.WRONG, "Tiling layout on 1,1,0 should be empty at the end: {}".format(layout)
+
+        layout = self._tiling_layout(1, 0, 0)
+        if layout != EMPTY_LAYOUT_LEFT:
             return wt.Status.WRONG, "Tiling layout on 1,0,0 should be empty at the end: {}".format(layout)
+
+        for pid in pids:
+            self.send_signal(pid, signal.SIGKILL)
+        self.wait_for_clients(4)
 
         return wt.Status.OK, None
