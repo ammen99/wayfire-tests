@@ -2,7 +2,6 @@
 
 import wftest as wt
 import wfipclib as wi
-import wfutil as wu
 import signal
 
 def is_gui() -> bool:
@@ -23,20 +22,6 @@ class WTest(wt.WayfireTest):
 
     def _tiling_layout(self, wset, x, y):
         return self._tiling_layout_raw(wset, x, y)['layout']
-
-    def _get_new_view_id(self, ids):
-        all_ids = [v['id'] for v in self.socket.list_views() if v['mapped']]
-        for id in all_ids:
-            if id not in ids:
-                ids += [id]
-                return id
-        return None
-
-    def _find_by_id(self, id):
-        for v in self.socket.list_views():
-            if v['id'] == id:
-                return v
-        raise Exception("View with id {} not found".format(id))
 
     def _find_geometry_in_layout_by_id(self, id, layout):
         if 'view-id' in layout:
@@ -63,15 +48,13 @@ class WTest(wt.WayfireTest):
         EMPTY_LAYOUT = {'geometry': {'height': 500, 'width': 500, 'x': 0, 'y': 0}, 'percent': 1.0, 'vertical-split': []}
         EMPTY_LAYOUT_LEFT = {'geometry': {'height': 500, 'width': 500, 'x': -500, 'y': 0}, 'percent': 1.0, 'vertical-split': []}
 
-        ids = []
         layout = self._tiling_layout(1, 0, 0)
         if layout != EMPTY_LAYOUT:
             return wt.Status.WRONG, "Tiling layout should be empty: {}".format(layout)
 
         pids = []
-        pids.append(self.socket.run('gtk_color_switcher')['pid'])
-        self.wait_for_clients_to_open(nr_clients=1)
-        gcs_id = self._get_new_view_id(ids)
+        gcs_id, pid = self.run_get_id('gtk_color_switcher')
+        pids.append(pid)
 
         layout = self._tiling_layout(1, 0, 0)
         expected_layout = {'geometry': {'height': 500, 'width': 500, 'x': 0, 'y': 0}, 'percent': 1.0,
@@ -79,18 +62,12 @@ class WTest(wt.WayfireTest):
         if layout != expected_layout:
             return wt.Status.WRONG, "Tiling layout should contain just one view: {}".format(layout)
 
-        pids.append(self.socket.run('weston-terminal')['pid'])
-        self.wait_for_clients_to_open(nr_clients=2)
-        wt1_id = self._get_new_view_id(ids)
-
-        pids.append(self.socket.run('weston-terminal')['pid'])
-        self.wait_for_clients_to_open(nr_clients=3)
-        wt2_id = self._get_new_view_id(ids)
-
-        gtk1 = wu.LoggedProcess(self.socket, 'gtk_logger', 'gtk1', '') # not tiled
-        pids.append(gtk1.pid)
-        self.wait_for_clients_to_open(nr_clients=4)
-        logger1_id = self._get_new_view_id(ids)
+        wt1_id, pid = self.run_get_id('weston-terminal')
+        pids.append(pid)
+        wt2_id, pid = self.run_get_id('weston-terminal')
+        pids.append(pid)
+        logger1_id, pid = self.run_get_id('gtk_logger gtk1 /dev/null')
+        pids.append(pid)
 
         layout = self._tiling_layout(1, 0, 0)
         expected_layout = {
@@ -106,10 +83,9 @@ class WTest(wt.WayfireTest):
             return wt.Status.WRONG, 'Tiling layout with three views at startup is wrong: {}'.format(layout)
 
         self.socket.press_key('KEY_B')
-        gtk2 = wu.LoggedProcess(self.socket, 'gtk_logger', 'gtk2', '')
-        pids.append(gtk2.pid)
-        self.wait_for_clients_to_open(nr_clients=5)
-        logger2_id = self._get_new_view_id(ids)
+
+        logger2_id, pid = self.run_get_id('gtk_logger gtk2 /dev/null')
+        pids.append(pid)
 
         layout = self._tiling_layout(2, 0, 0)
         expected_layout = {'geometry': {'height': 500, 'width': 500, 'x': 0, 'y': 0}, 'percent': 1.0,
@@ -175,7 +151,7 @@ class WTest(wt.WayfireTest):
         self.wait_for_clients(4)
 
         for id in [gcs_id, logger1_id, logger2_id, wt1_id]:
-            info = self._find_by_id(id)['bbox']
+            info = self.socket.get_view_info_id(id)['bbox'] # type: ignore
             geometry = self._find_geometry_in_layout_by_id(id, expected_layout)
             assert geometry
             if info['x'] != geometry['x'] or info['y'] != geometry['y'] or info['width'] != geometry['width'] or info['height'] != geometry['height']:

@@ -134,6 +134,12 @@ class WayfireIPCClient:
                 return v
         return None
 
+    def get_view_info_id(self, id):
+        for v in self.list_views():
+            if v['id'] == id:
+                return v
+        return None
+
     def run(self, cmd):
         message = get_msg_template()
         message["method"] = "stipc/run"
