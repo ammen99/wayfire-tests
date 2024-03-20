@@ -7,7 +7,6 @@ import glob
 import importlib.util
 import subprocess
 import time
-import signal
 from multiprocessing import Pool
 
 from termcolor import colored
@@ -190,6 +189,7 @@ def run_all_tests():
 
     with Pool(args.j) as pool:
         results_list = pool.map(run_test_from_path, test_list)
+        pool.close()
 
     # Calculate statistics
     global tests_ok
@@ -305,18 +305,18 @@ def interact_show_logs():
 
 check_arguments()
 
-def sigint_handler(a, b):
-    del a, b
-    global exit_test
-    print('Ctrl-C, stopping tests...')
+try:
+    run_all_tests()
+    if args.last_rerun:
+        print("Rerunning last failed tests sequentially...")
+        rerun_all_tests(1)
+except KeyboardInterrupt:
     exit_test = True
-
-signal.signal(signal.SIGINT, sigint_handler)
-
-run_all_tests()
-if args.last_rerun:
-    print("Rerunning last failed tests sequentially...")
-    rerun_all_tests(1)
+    print('Ctrl-C, stopping tests...')
+    # Waiting for the background threads which kill all process groups
+    print("Cleaning up...")
+    time.sleep(1.0)
+    sys.exit(0)
 
 tests_total = tests_ok + tests_skip + tests_wrong
 
