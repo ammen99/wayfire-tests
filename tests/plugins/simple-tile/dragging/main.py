@@ -139,4 +139,17 @@ class WTest(wt.WayfireTest):
         if err := self.check([gcs1_id, gcs2_id, gcs3_id], [(0, 0, 500, 500), (0, 0, 500, 245), (0, 255, 500, 245)], ['WL-2', 'WL-1', 'WL-1']):
             return wt.Status.WRONG, err + " after drag to empty."
 
+        # Exit scale on WL-1
+        self.socket.move_cursor(250, 250)
+        self.socket.click_button('BTN_LEFT', 'full')
+        self.socket.press_key('KEY_S')
+        self.wait_for_clients()
+
+        # Check that we can swap two adjacent tiles (wayfire #2239)
+        self.drag_window_to(gcs3_id, 250, 125)
+        self.wait_for_clients()
+
+        if err := self.check([gcs1_id, gcs2_id, gcs3_id], [(0, 0, 500, 500), (0, 255, 500, 245), (0, 0, 500, 245)], ['WL-2', 'WL-1', 'WL-1']):
+            return wt.Status.WRONG, err + " after swap adjacent."
+
         return wt.Status.OK, None
