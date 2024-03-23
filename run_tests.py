@@ -309,7 +309,10 @@ try:
     run_all_tests()
     if args.last_rerun:
         print("Rerunning last failed tests sequentially...")
+        retries = args.maxretries
+        args.maxretries = 1
         rerun_all_tests(1)
+        args.maxretries = retries
 except KeyboardInterrupt:
     exit_test = True
     print('Ctrl-C, stopping tests...')
