@@ -173,7 +173,7 @@ class WTest(wt.WayfireTest):
         msg['data']['workspace']['x'] = 1
         msg['data']['workspace']['y'] = 0
         msg['data']['layout'] = {'vertical-split': []}
-        print(self.socket.send_json(msg))
+        self.socket.send_json(msg)
 
         # Untile weston-terminal on ws 1, 0, 0
         msg = wi.get_msg_template("simple-tile/set-layout")
@@ -182,7 +182,7 @@ class WTest(wt.WayfireTest):
         msg['data']['workspace']['x'] = 0
         msg['data']['workspace']['y'] = 0
         msg['data']['layout'] = {'vertical-split': []}
-        print(self.socket.send_json(msg))
+        self.socket.send_json(msg)
         self.wait_for_clients(2)
 
         layout = self._tiling_layout(1, 1, 0)

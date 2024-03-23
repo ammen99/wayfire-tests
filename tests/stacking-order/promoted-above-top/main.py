@@ -23,12 +23,10 @@ class WTest(wt.WayfireTest):
     def _run(self):
         self.socket.run('gtk-layer-demo -l top -a lrt')
         self.socket.run('weston-terminal')
-        self.wait_for_clients() # Wait for weston-terminal to open, so that x11 demo is above it
+        self.wait_for_clients_to_open(nr_clients=2)
         self.socket.press_key('KEY_F11') # Make weston-terminal fullscreen, so on top of gtk demo
         self.socket.run('x11_click_to_close x11 fullscreen')
-        self.wait_for_clients(2)
-
-        if self._get_views() != ['demo', 'nil', 'x11']:
+        if not self.wait_for_clients_to_open(nr_clients=3):
             return wt.Status.WRONG, \
                 'Could not find all three clients after test setup: ' + str(self._get_views())
 
