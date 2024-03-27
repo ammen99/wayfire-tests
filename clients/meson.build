@@ -19,6 +19,7 @@ gtkmm = dependency('gtkmm-3.0')
 wayland_client = dependency('wayland-client')
 wayland_protos = dependency('wayland-protocols', version: '>=1.12')
 logger_inc = include_directories(['.'])
+gtklayershell  = dependency('gtk-layer-shell-0', version: '>= 0.6')
 
 # Custom wayland protocols needed
 wl_protocol_dir = wayland_protos.get_variable('pkgdatadir')
@@ -91,4 +92,8 @@ executable('gtk_logger', ['gtk_logger.cpp'],
 
 executable('gtk_color_switcher', ['gtk_color_switcher.cpp'],
     dependencies: [gtkmm],
+    install: false)
+
+executable('layer_shell_kb_popup', ['gtk_layer_shell_kb_popup.cpp'],
+    dependencies: [gtkmm, gtklayershell],
     install: false)
