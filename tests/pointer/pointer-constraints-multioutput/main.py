@@ -34,6 +34,7 @@ class WTest(wt.WayfireTest):
         layout['gtk1'] = (0, 0, 500, 500, 'WL-2')
         layout['ioquake3'] = (0, 0, 500, 500, 'WL-1')
         self.socket.layout_views(layout)
+        self.wait_for_clients(2)
         gtk1.reset_logs()
         self.wait_for_clients(2)
 
