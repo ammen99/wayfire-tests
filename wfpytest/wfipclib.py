@@ -81,6 +81,10 @@ class WayfireIPCClient:
         message["data"]["output"] = output
         return self.send_json(message)
 
+    def list_outputs(self):
+        message = get_msg_template("window-rules/list-outputs")
+        return self.send_json(message)
+
     def list_views(self):
         message = get_msg_template()
         message["method"] = "stipc/list_views"
