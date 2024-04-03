@@ -97,3 +97,7 @@ executable('gtk_color_switcher', ['gtk_color_switcher.cpp'],
 executable('layer_shell_kb_popup', ['gtk_layer_shell_kb_popup.cpp'],
     dependencies: [gtkmm, gtklayershell],
     install: false)
+
+executable('layer_shell_delay_exclusive', ['gtk_layer_delayed_exclusive.cpp'],
+    dependencies: [gtkmm, gtklayershell],
+    install: false)
