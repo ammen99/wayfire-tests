@@ -13,17 +13,23 @@ class WTest(wt.WayfireTest):
     def _run(self):
         wt_pid = self.socket.run('weston-terminal')['pid']
         self.wait_for_clients_to_open(nr_clients=1)
-        self.socket.run('gtk_color_switcher a')
+        gcs_pid = self.socket.run('gtk_color_switcher a')['pid']
         self.wait_for_clients_to_open(nr_clients=2)
 
         self.socket.press_key('KEY_N')
-        if error := self.take_screenshot('switcher-active'):
+        if error := self.take_screenshot('1-switcher-active'):
             return wt.Status.CRASHED, error
 
         self.send_signal(wt_pid, signal.SIGKILL)
         self.wait_for_clients()
 
-        if error := self.take_screenshot('switcher-active-one-fewer'):
+        if error := self.take_screenshot('2-switcher-active-one-fewer'):
+            return wt.Status.CRASHED, error
+
+        self.send_signal(gcs_pid, signal.SIGKILL)
+        self.wait_for_clients()
+
+        if error := self.take_screenshot('3-switcher-done'):
             return wt.Status.CRASHED, error
 
         return wt.Status.OK, None
