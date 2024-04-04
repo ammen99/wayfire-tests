@@ -19,6 +19,11 @@ class WTest(wt.WayfireTest):
             self.wait_for_clients_to_open(nr_clients=1)
             self.socket.destroy_wayland_output('WL-1')
 
+            info = self.socket.list_views()[0]
+            sx = info['bbox']['x'] + info['bbox']['width'] / 2
+            sy = info['bbox']['y'] + info['bbox']['height'] / 2
+            self.click_and_drag('BTN_LEFT', sx, sy, 500, 500)
+
             assert self._wayfire_process
             os.killpg(self._wayfire_gid, signal.SIGINT)
             if status := self._wayfire_process.wait(5.0):
