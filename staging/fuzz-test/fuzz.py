@@ -8,7 +8,7 @@ with open("/tmp/seeds", "a") as f:
     f.write(str(rand_seed) + "\n")
 
 # scale, expo, showdesktop, switcherview, cube,  autororate
-plugin = choice(["scale", "expo", "showdesktop", "switcherview", "cube", "autorotate", None])
+plugin = choice(["scale", "expo", None])
 while True:
     try:
         number_of_views = randint(1, 20)
