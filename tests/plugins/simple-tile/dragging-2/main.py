@@ -1,5 +1,6 @@
 #!/bin/env python3
 
+import signal
 import wftest as wt
 
 def is_gui() -> bool:
@@ -35,7 +36,7 @@ class WTest(wt.WayfireTest):
 
         self.drag_window_to(gcs1_id, 450, 250, release=False)
         self.wait_ms(400) # for simple-tile preview animation
-        gcs3_id, _ = self.run_get_id('gtk_color_switcher')
+        gcs3_id, pid3 = self.run_get_id('gtk_color_switcher')
         self.socket.click_button('BTN_LEFT', 'release')
         self.wait_for_clients(2)
 
@@ -45,6 +46,13 @@ class WTest(wt.WayfireTest):
         self.drag_window_to(gcs1_id, 450, 250, release=True)
         self.wait_for_clients(2)
         if err := self.check([gcs1_id, gcs2_id, gcs3_id], [(338, 0, 162, 500), (0, 0, 161, 500), (171, 0, 157, 500)]):
+            return wt.Status.WRONG, err + " after successful drag."
+
+        self.drag_window_to(gcs3_id, 80, 250, release=False)
+        self.wait_for_clients()
+        self.send_signal(pid3, signal.SIGKILL)
+        self.wait_for_clients(2)
+        if err := self.check([gcs1_id, gcs2_id], [(255, 0, 245, 500), (0, 0, 245, 500)]):
             return wt.Status.WRONG, err + " after successful drag."
 
         return wt.Status.OK, None
