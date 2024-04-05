@@ -46,7 +46,6 @@ class WayfireTest:
         self._ipc_duration = 0.1
         self.screenshots = []
         self.screenshot_prefix = ""
-        self._ids = []
 
     def send_signal(self, parent_pid, sig=signal.SIGTERM):
         try:
@@ -65,19 +64,18 @@ class WayfireTest:
     def _get_mapped_views(self):
         return [v for v in self.socket.list_views() if v['mapped']]
 
-    def _get_new_view_id(self):
+    def _get_new_view_id(self, ids):
         all_ids = [v['id'] for v in self.socket.list_views() if v['mapped']]
         for id in all_ids:
-            if id not in self._ids:
-                self._ids += [id]
+            if id not in ids:
                 return id
         return None
 
     def run_get_id(self, cmd):
-        clen = len(self._get_mapped_views())
+        ids = [v['id'] for v in self._get_mapped_views()]
         pid = self.socket.run(cmd)['pid']
-        self.wait_for_clients_to_open(clen + 1)
-        return self._get_new_view_id(), pid
+        self.wait_for_clients_to_open(len(ids) + 1)
+        return self._get_new_view_id(ids), pid
 
     def wait_for_clients_to_open(self, nr_clients: int, waits = 10, interval = 100):
         for _ in range(waits):
