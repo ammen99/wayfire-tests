@@ -149,7 +149,7 @@ class WayfireTest:
             self._wayfire_process = subprocess.Popen([wayfire_path, '-c', self.locate_cfgfile()],
                     env=env, stdout=log, stderr=log, preexec_fn=os.setsid)
             self._wayfire_gid = os.getpgid(self._wayfire_process.pid)
-            time.sleep(0.5 + random.uniform(0, 1)) # Leave a bit of time for Wayfire to initialize + add random offset to desync multiple tests in parallel
+            time.sleep(1.5 + random.uniform(0, 1)) # Leave a bit of time for Wayfire to initialize + add random offset to desync multiple tests in parallel
 
             log.write(f'Test code starting: {get_now()}\n')
             log.flush()
