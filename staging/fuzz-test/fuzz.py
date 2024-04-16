@@ -1,14 +1,8 @@
 from wayfire.ipc import sock
-import random
 from random import randint, choice
 
-rand_seed = randint(0, 1000)
-random.seed(rand_seed)
-with open("/tmp/seeds", "a") as f:
-    f.write(str(rand_seed) + "\n")
-
 # scale, expo, showdesktop, switcherview, cube,  autororate
-plugin = choice(["scale", "expo", None])
+plugin = choice(["scale", "expo", "showdesktop", "switcherview", "cube", "autororate", None])
 while True:
     try:
         number_of_views = randint(1, 20)
