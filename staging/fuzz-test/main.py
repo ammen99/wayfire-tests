@@ -2,17 +2,29 @@
 
 import wftest as wt
 from time import sleep
+import os
+import signal
+import traceback
 
 
 def is_gui() -> bool:
     return False
 
 class WTest(wt.WayfireTest):
-    def _run(self):
-        # the goal of this code is to run the fuzz test not to make it fit wayfire-tests code of conduct
-        # the code will hang until the timeout ends
-        self.socket.create_wayland_output()
-        self.socket.run("kitty --hold -- sh fuzz.sh")
-        timeout = 7
-        sleep(timeout)
+    def run(self, wayfire_path: str, log: str):
+        try:
+            self.run_wayfire(wayfire_path, log)
+            self.socket.create_wayland_output()
+            self.socket.run("kitty --hold -- sh fuzz.sh")
+            timeout = 7
+            sleep(timeout)
+
+            assert self._wayfire_process
+            os.killpg(self._wayfire_gid, signal.SIGINT)
+            if status := self._wayfire_process.wait(5.0):
+                return wt.Status.CRASHED, "Wayfire process exited with status {}".format(status)
+
+        except Exception as _:
+            return wt.Status.CRASHED, "Wayfire or client socket crashed, " + traceback.format_exc()
+
         return wt.Status.OK, None
