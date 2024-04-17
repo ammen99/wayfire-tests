@@ -25,9 +25,14 @@ class WTest(wt.WayfireTest):
         self.socket.layout_views(layout)
 
         self.send_signal(pid, signal.SIGKILL)
-        self.wait_ms(300) # wait for tx timeout
+        self.wait_ms(600) # wait for tx timeout
 
         if self.socket.list_views():
             return wt.Status.WRONG, "Clients are still open?"
+
+        self.socket.delay_next_tx()
+        pid = self.socket.run('x11_map_unmap -a x11 -x 0 -y 0 -w 200 -h 200 -d 400 -r 1')['pid']
+        self.wait_ms(600) # For map tx timeout
+
 
         return wt.Status.OK, None
