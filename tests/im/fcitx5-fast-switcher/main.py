@@ -1,6 +1,5 @@
 #!/bin/env python3
 
-from wfipclib import WayfireIPCClient, get_msg_template
 import wftest as wt
 
 def is_gui() -> bool:
@@ -26,11 +25,7 @@ class WTest(wt.WayfireTest):
         self.wait_for_clients_to_open(nr_clients=1)
         self.socket.run('gedit')
         self.wait_for_clients_to_open(nr_clients=2)
-
-        ev_socket = WayfireIPCClient(self._socket_name)
-        sub_cmd = get_msg_template('window-rules/events/watch')
-        sub_cmd['data']['events'] = ['plugin-activation-state-changed']
-        ev_socket.send_json(sub_cmd)
+        ev_socket = self.watch(['plugin-activation-state-changed'])
 
         # Press next twice => focus should remain on Gedit
         self.socket.set_key_state('KEY_LEFTALT', True)

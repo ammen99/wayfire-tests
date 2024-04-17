@@ -1,6 +1,5 @@
 #!/bin/env python3
 
-from wfipclib import WayfireIPCClient, get_msg_template
 import wftest as wt
 import wfutil as wu
 
@@ -29,11 +28,7 @@ class WTest(wt.WayfireTest):
         self.wait_for_clients_to_open(nr_clients=2)
 
         self.wait_for_clients(2) # Wait for IM
-
-        ev_socket = WayfireIPCClient(self._socket_name)
-        sub_cmd = get_msg_template('window-rules/events/watch')
-        sub_cmd['data']['events'] = ['plugin-activation-state-changed']
-        ev_socket.send_json(sub_cmd)
+        ev_socket = self.watch(['plugin-activation-state-changed'])
 
         # Send a key to IM, grab keyboard, type something
         self.socket.press_key('KEY_J')

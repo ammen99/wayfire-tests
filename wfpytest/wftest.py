@@ -1,6 +1,6 @@
 from enum import Enum
 from typing import Tuple, Optional, List, Any
-from wfipclib import WayfireIPCClient
+from wfipclib import WayfireIPCClient, get_msg_template
 from pathlib import Path
 from uuid import uuid4
 import wfutil as wu
@@ -47,6 +47,15 @@ class WayfireTest:
         self.screenshots = []
         self.screenshot_prefix = ""
         self.subtest_data: Any = None
+        self.ev_socket: WayfireIPCClient | None = None
+
+    def watch(self, events: List[str]) -> WayfireIPCClient:
+        assert not self.ev_socket
+        self.ev_socket = WayfireIPCClient(self._socket_name)
+        sub_cmd = get_msg_template('window-rules/events/watch')
+        sub_cmd['data']['events'] = events
+        self.ev_socket.send_json(sub_cmd)
+        return self.ev_socket
 
     def send_signal(self, parent_pid, sig=signal.SIGTERM):
         try:
