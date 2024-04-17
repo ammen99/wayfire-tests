@@ -27,6 +27,7 @@ parser.add_argument('--force-gui', action='store_true', required=False)
 parser.add_argument('-j', type=int, default='1', required=False)
 parser.add_argument('--maxretries', type=int, default='1', required=False)
 parser.add_argument('--last-rerun', action='store_true', required=False)
+parser.add_argument('--configuration', type=str, default=None, required=False)
 args = parser.parse_args()
 
 # Make tests execute slower or faster
@@ -57,7 +58,7 @@ def _run_test_once(TestType, wayfire_exe, logfile: str, image_prefix: str, timeo
         return TestResult(status, msg, [])
 
     try:
-        status, msg = test.run(wayfire_exe, logfile)
+        status, msg = test.run(wayfire_exe, logfile, args.configuration)
         test.cleanup()
         return TestResult(status, msg, test.screenshots)
     except KeyboardInterrupt:

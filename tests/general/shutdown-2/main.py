@@ -12,7 +12,7 @@ class WTest(wt.WayfireTest):
     def prepare(self):
         return self.require_test_clients(['xterm'])
 
-    def run(self, wayfire_path: str, log: str):
+    def run_once(self, wayfire_path: str, log: str):
         try:
             self.run_wayfire(wayfire_path, log)
             self.socket.run('xterm')

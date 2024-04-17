@@ -13,7 +13,7 @@ class WTest(wt.WayfireTest):
     def _get_views(self):
         return sorted([v['title'] for v in self.socket.list_views()])
 
-    def run(self, wayfire_path: str, log: str):
+    def run_once(self, wayfire_path: str, log: str):
         try:
             self.run_wayfire(wayfire_path, log)
             self.socket.run('glxgears')

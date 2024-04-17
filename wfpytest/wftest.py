@@ -1,5 +1,5 @@
 from enum import Enum
-from typing import Tuple, Optional
+from typing import Tuple, Optional, List, Any
 from wfipclib import WayfireIPCClient
 from pathlib import Path
 from uuid import uuid4
@@ -46,6 +46,7 @@ class WayfireTest:
         self._ipc_duration = 0.1
         self.screenshots = []
         self.screenshot_prefix = ""
+        self.subtest_data: Any = None
 
     def send_signal(self, parent_pid, sig=signal.SIGTERM):
         try:
@@ -107,10 +108,13 @@ class WayfireTest:
     def _run(self) -> Tuple[Status, Optional[str]]:
         return Status.SKIPPED, "Test for not implemented?"
 
+    def get_subtests(self) -> List[Tuple[str, Any]]:
+        return [('default', None)]
+
     # By default, a test starts Wayfire, executes self._run(), then checks that wayfire didn't crash
     # and exits successfully.
     # Thus, tests only need to implement _run() and don't need to duplicate the setup/teardown code
-    def run(self, wayfire_path: str, log: str) -> Tuple[Status, Optional[str]]:
+    def run_once(self, wayfire_path: str, log: str) -> Tuple[Status, Optional[str]]:
         try:
             self.run_wayfire(wayfire_path, log)
             status, msg = self._run()
@@ -125,6 +129,31 @@ class WayfireTest:
         except Exception as _:
             return Status.CRASHED, "Wayfire or client socket crashed, " + traceback.format_exc()
 
+    def run(self, wayfire_path: str, log: str, configuration: str | None) -> Tuple[Status, Optional[str]]:
+        needs_reset = False
+        tests_run = 0
+
+        for name, subtest in self.get_subtests():
+            self.subtest_data = subtest
+
+            if configuration is not None and name != configuration:
+                continue
+
+            if needs_reset:
+                self.cleanup()
+
+            status, msg = self.run_once(wayfire_path, log)
+            if status != Status.OK:
+                return status, str(msg) + "(configuration " + name + ")"
+            else:
+                tests_run += 1
+                needs_reset = True
+
+        if tests_run > 1:
+            return Status.OK, f'{tests_run} subtests'
+
+        return Status.OK, None
+
     def click_and_drag(self, button, start_x, start_y, end_x, end_y, release=True, steps = 10):
         dx = end_x - start_x
         dy = end_y - start_y
@@ -135,7 +164,6 @@ class WayfireTest:
             self.socket.move_cursor(start_x + dx * i // steps, start_y + dy * i // steps)
         if release:
             self.socket.click_button(button, 'release')
-
 
     def run_wayfire(self, wayfire_path: str, logfile: str):
         # Run wayfire with specified socket name for IPC communication
