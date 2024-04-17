@@ -15,6 +15,7 @@ class WTest(wt.WayfireTest):
     def _run(self):
         # Make sure x11_click_to_close does not get focus initially, but only after moving
         self.socket.move_cursor(250, 250)
+        ev_socket = self.watch(['view-unmapped'])
 
         pid = self.socket.run('x11_click_to_close x11 0 0 200 200')['pid']
         self.wait_for_clients_to_open(nr_clients=1)
@@ -29,6 +30,9 @@ class WTest(wt.WayfireTest):
 
         if self.socket.list_views():
             return wt.Status.WRONG, "Clients are still open?"
+
+        if not ev_socket.read_message(0.1):
+            return wt.Status.WRONG, 'Missing unmap event'
 
         self.socket.delay_next_tx()
         pid = self.socket.run('x11_map_unmap -a x11 -x 0 -y 0 -w 200 -h 200 -d 400 -r 1')['pid']

@@ -117,7 +117,7 @@ class WayfireTest:
         return Status.SKIPPED, "Test for not implemented?"
 
     def get_subtests(self) -> List[Tuple[str, Any]]:
-        return [('default', None)]
+        return [('--default--', None)]
 
     # By default, a test starts Wayfire, executes self._run(), then checks that wayfire didn't crash
     # and exits successfully.
@@ -152,7 +152,7 @@ class WayfireTest:
 
             status, msg = self.run_once(wayfire_path, log)
             if status != Status.OK:
-                return status, str(msg) + "(configuration " + name + ")"
+                return status, str(msg) + ("" if (configuration == "--default--") else ("(configuration " + name + ")"))
             else:
                 tests_run += 1
                 needs_reset = True
