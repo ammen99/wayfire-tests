@@ -50,7 +50,6 @@ class WayfireTest:
         self.ev_socket: WayfireIPCClient | None = None
 
     def watch(self, events: List[str]) -> WayfireIPCClient:
-        assert not self.ev_socket
         self.ev_socket = WayfireIPCClient(self._socket_name)
         sub_cmd = get_msg_template('window-rules/events/watch')
         sub_cmd['data']['events'] = events
