@@ -17,9 +17,8 @@ class WTest(wt.WayfireTest):
             self.run_wayfire(wayfire_path, log)
             self.socket.create_wayland_output()
             self.socket.run("kitty --hold -- sh fuzz.sh")
-            timeout = 15
-            sleep(timeout)
 
+            sleep(15)
             assert self._wayfire_process
             os.killpg(self._wayfire_gid, signal.SIGINT)
             if status := self._wayfire_process.wait(5.0):
