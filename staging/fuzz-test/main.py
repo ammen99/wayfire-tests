@@ -12,7 +12,7 @@ def is_gui() -> bool:
     return False
 
 class WTest(wt.WayfireTest):
-    def run(self, wayfire_path: str, log: str):
+    def run_once(self, wayfire_path: str, log: str):
         try:
             self.run_wayfire(wayfire_path, log)
             self.socket.create_wayland_output()

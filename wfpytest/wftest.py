@@ -152,7 +152,7 @@ class WayfireTest:
 
             status, msg = self.run_once(wayfire_path, log)
             if status != Status.OK:
-                return status, str(msg) + ("" if (configuration == "--default--") else ("(configuration " + name + ")"))
+                return status, str(msg) + ("" if (name == "--default--") else ("(configuration " + name + ")"))
             else:
                 tests_run += 1
                 needs_reset = True
