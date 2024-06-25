@@ -11,8 +11,7 @@ class WTest(wt.WayfireTest):
         return self.require_test_clients(['weston-terminal', 'gtk_color_switcher'])
 
     def _run(self):
-        self.socket.run('weston-terminal')
-        self.wait_for_clients(2)
+        self.run_get_id('weston-terminal')
 
         # Pinch-in gesture
         self.socket.set_touch(0, 0, 0)
@@ -21,7 +20,7 @@ class WTest(wt.WayfireTest):
         self.socket.set_touch(1, 251, 251)
         self.socket.release_touch(0)
         self.socket.release_touch(1)
-        self.wait_for_clients()
+        self.wait_for_clients(2)
 
         if error := self.take_screenshot('1-scale-start'):
             return wt.Status.CRASHED, error
@@ -29,6 +28,7 @@ class WTest(wt.WayfireTest):
         # Click in the middle to select weston-terminal
         self.socket.set_touch(0, 250, 250)
         self.socket.release_touch(0)
+        self.wait_for_clients(2)
 
         if error := self.take_screenshot('2-scale-exited'):
             return wt.Status.CRASHED, error

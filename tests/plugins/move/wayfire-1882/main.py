@@ -15,8 +15,8 @@ class WTest(wt.WayfireTest):
         self.socket.create_wayland_output()
         self.socket.move_cursor(250, 250) # Focus WL-1
         self.socket.click_button('BTN_LEFT', 'full')
-        self.socket.run('WAYLAND_DEBUG=1 weston-terminal -m &> /tmp/log')
-        self.wait_for_clients(2)
+        self.socket.run('weston-terminal -m')
+        self.wait_for_clients_to_open(nr_clients=1)
 
         self.click_and_drag('BTN_RIGHT', 50, 50, 750, 0) # Maximize on WL-2
         self.wait_for_clients(2)

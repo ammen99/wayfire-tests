@@ -16,7 +16,7 @@ class WTest(wt.WayfireTest):
         self.socket.create_wayland_output()
         self.socket.run('weston-terminal')
         self.socket.run('gtk_color_switcher gcs')
-        self.wait_for_clients(2)
+        self.wait_for_clients_to_open(nr_clients=2)
 
         layout = {}
         layout['nil'] = (0, 0, 500, 500, 'WL-1')
