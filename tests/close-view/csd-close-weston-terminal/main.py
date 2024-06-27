@@ -27,7 +27,6 @@ class WTest(wt.WayfireTest):
         self.wait_for_clients(2)
 
         if len(self.socket.list_views()) > 0:
-            print(self.socket.list_views())
             return wt.Status.WRONG, "weston-terminal is still open"
 
         return wt.Status.OK, None

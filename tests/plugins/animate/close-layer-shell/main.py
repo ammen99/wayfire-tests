@@ -20,7 +20,6 @@ class WTest(wt.WayfireTest):
         self.wait_ms(200)
 
         if len(self.socket.list_views()) > 0:
-            print(self.socket.list_views())
             return wt.Status.WRONG, "wleird-layer-shell is still open"
 
         return wt.Status.OK, None

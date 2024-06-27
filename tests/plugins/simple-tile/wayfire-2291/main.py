@@ -29,7 +29,7 @@ class WTest(wt.WayfireTest):
         output = [o['id'] for o in self.socket.list_outputs() if o['name'] == 'WL-2'][0]
         msg = get_msg_template('scale/toggle')
         msg['data']['output_id'] = output
-        print(self.socket.send_json(msg))
+        self.socket.send_json(msg)
 
         self.socket.move_cursor(750, 250)
         self.socket.click_button('BTN_LEFT', 'release')
