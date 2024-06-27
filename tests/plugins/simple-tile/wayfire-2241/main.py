@@ -16,8 +16,8 @@ class WTest(wt.WayfireTest):
         return None
 
     def _run(self):
-        self.socket.run('weston-terminal')
-        self.socket.run('weston-terminal')
+        self.socket.run('weston-terminal --shell=/bin/sh')
+        self.socket.run('weston-terminal --shell=/bin/sh')
         self.wait_for_clients_to_open(nr_clients=2)
 
         self.watch(['plugin-activation-state-changed'])

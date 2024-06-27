@@ -13,7 +13,7 @@ class WTest(wt.WayfireTest):
         tiled = {'x': 10, 'y': 10, 'width': 1260, 'height': 700}
         full = {'x': 0, 'y': 0, 'width': 1280, 'height': 720}
 
-        self.socket.run('weston-terminal')
+        self.socket.run('weston-terminal --shell=/bin/sh')
         self.wait_for_clients() # Wait for weston-terminals to open
 
         self.socket.press_key('KEY_T') # Tile

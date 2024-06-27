@@ -19,7 +19,7 @@ class WTest(wt.WayfireTest):
         return super().run(*args, **kwargs)
 
     def _run(self):
-        pid = self.socket.run('weston-terminal')['pid']
+        pid = self.socket.run('weston-terminal --shell=/bin/sh')['pid']
         self.wait_for_clients_to_open(nr_clients=1)
         os.kill(pid, signal.SIGKILL)
 

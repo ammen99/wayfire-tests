@@ -15,7 +15,7 @@ class WTest(wt.WayfireTest):
         return wt.Status.OK, None
 
     def _run(self):
-        self.socket.run('weston-terminal -m')
+        self.socket.run('weston-terminal --shell=/bin/sh -m')
         self.wait_for_clients_to_open(nr_clients=1)
         self.wait_for_clients(2) # for resize
 

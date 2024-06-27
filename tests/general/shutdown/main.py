@@ -17,8 +17,8 @@ class WTest(wt.WayfireTest):
         try:
             self.run_wayfire(wayfire_path, log)
             self.socket.run('glxgears')
-            self.socket.run('weston-terminal')
-            self.socket.run('weston-terminal')
+            self.socket.run('weston-terminal --shell=/bin/sh')
+            self.socket.run('weston-terminal --shell=/bin/sh')
             self.socket.run('wleird-layer-shell -l top')
             self.wait_for_clients_to_open(nr_clients=3)
 

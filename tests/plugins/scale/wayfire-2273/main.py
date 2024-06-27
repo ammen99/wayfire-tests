@@ -11,7 +11,7 @@ class WTest(wt.WayfireTest):
 
     def _run(self):
         self.socket.run('python3 client.py')
-        self.socket.run('weston-terminal')
+        self.socket.run('weston-terminal --shell=/bin/sh')
         self.wait_ms(500)
 
         for _ in range(4):

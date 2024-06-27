@@ -41,7 +41,7 @@ class WTest(wt.WayfireTest):
 
         self.send_signal(editor.pid, signal.SIGKILL)
         self.wait_for_clients(2)
-        self.socket.run('weston-terminal')
+        self.socket.run('weston-terminal --shell=/bin/sh')
         self.wait_ms(600) # wait for unmap animation to end, the unmap animation is important, weston-terminal should run while it is active
 
         if self._get_views() != ['gtk_logger', 'nil']:

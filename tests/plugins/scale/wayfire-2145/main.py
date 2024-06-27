@@ -12,8 +12,8 @@ class WTest(wt.WayfireTest):
 
     def _run(self):
         # Open 2x weston-terminal on WL-1, start scale
-        self.socket.run('weston-terminal')
-        self.socket.run('weston-terminal')
+        self.socket.run('weston-terminal --shell=/bin/sh')
+        self.socket.run('weston-terminal --shell=/bin/sh')
         self.wait_for_clients_to_open(nr_clients=2)
         self.socket.press_key('KEY_S')
 
@@ -21,8 +21,8 @@ class WTest(wt.WayfireTest):
         self.socket.create_wayland_output()
         self.socket.move_cursor(750, 250)
         self.socket.click_button('BTN_LEFT', 'full')
-        self.socket.run('weston-terminal')
-        self.socket.run('weston-terminal')
+        self.socket.run('weston-terminal --shell=/bin/sh')
+        self.socket.run('weston-terminal --shell=/bin/sh')
         self.wait_for_clients_to_open(nr_clients=4)
         self.socket.press_key('KEY_S')
         self.wait_for_clients()

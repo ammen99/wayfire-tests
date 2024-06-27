@@ -17,7 +17,7 @@ class WTest(wt.WayfireTest):
         return self.require_test_clients(['weston-terminal', 'wf-background'])
 
     def _run(self):
-        self.socket.run('weston-terminal')
+        self.socket.run('weston-terminal --shell=/bin/sh')
         self.socket.run('wf-background')
         self.wait_for_clients_to_open(nr_clients=2)
         self.wait_ms(1500) # Wait for wf-background to start and be initialized

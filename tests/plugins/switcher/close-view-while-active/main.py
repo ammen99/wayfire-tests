@@ -11,7 +11,7 @@ class WTest(wt.WayfireTest):
         return self.require_test_clients(['gtk_color_switcher', 'weston-terminal'])
 
     def _run(self):
-        wt_pid = self.socket.run('weston-terminal')['pid']
+        wt_pid = self.socket.run('weston-terminal --shell=/bin/sh')['pid']
         self.wait_for_clients_to_open(nr_clients=1)
         gcs_pid = self.socket.run('gtk_color_switcher a')['pid']
         self.wait_for_clients_to_open(nr_clients=2)

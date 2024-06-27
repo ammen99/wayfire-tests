@@ -12,7 +12,7 @@ class WTest(wt.WayfireTest):
         return self.require_test_clients(['weston-terminal'])
 
     def _run(self):
-        self.socket.run('weston-terminal')
+        self.socket.run('weston-terminal --shell=/bin/sh')
         self.wait_for_clients_to_open(nr_clients=1)
 
         terminal = self.socket.get_view_info('nil')

@@ -22,7 +22,7 @@ class WTest(wt.WayfireTest):
 
     def _run(self):
         self.socket.run('gtk-layer-demo -l top -a lrt')
-        self.socket.run('weston-terminal')
+        self.socket.run('weston-terminal --shell=/bin/sh')
         self.wait_for_clients_to_open(nr_clients=2)
         self.socket.press_key('KEY_F11') # Make weston-terminal fullscreen, so on top of gtk demo
         self.socket.run('x11_click_to_close x11 fullscreen')

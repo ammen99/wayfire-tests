@@ -15,7 +15,7 @@ class WTest(wt.WayfireTest):
         return wt.Status.OK, None
 
     def _run(self):
-        self.socket.run('weston-terminal')
+        self.socket.run('weston-terminal --shell=/bin/sh')
         self.wait_for_clients(4)
         self.socket.press_key('KEY_Q')
         self.wait_for_clients(2)

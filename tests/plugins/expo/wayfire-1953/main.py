@@ -11,7 +11,7 @@ class WTest(wt.WayfireTest):
         return self.require_test_clients(['weston-terminal'])
 
     def _run(self):
-        self.socket.run('weston-terminal')
+        self.socket.run('weston-terminal --shell=/bin/sh')
         self.wait_for_clients_to_open(nr_clients=1)
 
         layout = {}
@@ -37,7 +37,7 @@ class WTest(wt.WayfireTest):
 
         self.socket.press_key('KEY_E')
         self.wait_for_clients(1)
-        self.socket.run('weston-terminal -m')
+        self.socket.run('weston-terminal --shell=/bin/sh -m')
         self.wait_for_clients_to_open(nr_clients=2)
 
         if error := self.take_screenshot('3-still-on-top'):

@@ -12,7 +12,7 @@ class WTest(wt.WayfireTest):
         return self.require_test_clients(['weston-terminal', 'wleird-layer-shell'])
 
     def _run(self):
-        self.socket.run('weston-terminal')
+        self.socket.run('weston-terminal --shell=/bin/sh')
         self.socket.run('wleird-layer-shell -l bottom -c green -a top -a left')
         self.wait_for_clients_to_open(nr_clients=2)
         self.wait_for_clients(2) # Wait for tiled

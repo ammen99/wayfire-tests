@@ -11,7 +11,7 @@ class WTest(wt.WayfireTest):
         return self.require_test_clients(['weston-terminal', 'gtk_color_switcher'])
 
     def _run(self):
-        self.socket.run('weston-terminal')
+        self.socket.run('weston-terminal --shell=/bin/sh')
         self.wait_for_clients_to_open(nr_clients=1)
 
         self.socket.press_key('KEY_F') # Fullscreen

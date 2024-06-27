@@ -13,7 +13,7 @@ class WTest(wt.WayfireTest):
         return self.require_test_clients(['weston-terminal'])
 
     def _run(self):
-        self.socket.run('weston-terminal')
+        self.socket.run('weston-terminal --shell=/bin/sh')
         self.wait_for_clients(2) # Wait for terminals to start and be tiled
 
         layout = {}

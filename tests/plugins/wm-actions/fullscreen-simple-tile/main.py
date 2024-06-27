@@ -12,8 +12,8 @@ class WTest(wt.WayfireTest):
         return self.require_test_clients(['weston-terminal', 'wf-panel'])
 
     def _run(self):
-        self.socket.run('weston-terminal')
-        self.socket.run('weston-terminal')
+        self.socket.run('weston-terminal --shell=/bin/sh')
+        self.socket.run('weston-terminal --shell=/bin/sh')
         self.socket.run('wf-panel -c wf-shell.ini')
         self.wait_for_clients() # Wait for weston-terminals to open
         self.socket.press_key('KEY_F') # Fullscreen any of the two

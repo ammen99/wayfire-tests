@@ -11,7 +11,7 @@ class WTest(wt.WayfireTest):
         return self.require_test_clients(['weston-terminal'])
 
     def _run(self):
-        self.socket.run('weston-terminal')
+        self.socket.run('weston-terminal --shell=/bin/sh')
         self.wait_for_clients_to_open(nr_clients=1)
 
         # Toggle scale once
@@ -21,7 +21,7 @@ class WTest(wt.WayfireTest):
         self.wait_for_clients()
 
         # Open a new window
-        self.socket.run('weston-terminal')
+        self.socket.run('weston-terminal --shell=/bin/sh')
         self.wait_for_clients(2)
 
         # Type a bit => the scale title filter should not activate, neither should titles be shown

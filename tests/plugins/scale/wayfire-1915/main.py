@@ -13,7 +13,7 @@ class WTest(wt.WayfireTest):
 
     def _run(self):
         gtk = wu.LoggedProcess(self.socket, 'gtk_logger', 'gtk1', 'keyboard')
-        self.wait_for_clients_to_open(nr_clients=2)
+        self.wait_for_clients_to_open(nr_clients=1)
         gtk.reset_logs()
 
         try:

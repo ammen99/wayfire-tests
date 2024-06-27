@@ -21,7 +21,7 @@ class WTest(wt.WayfireTest):
         return sorted([v['title'] for v in self.socket.list_views()])
 
     def _run(self):
-        wt_pid = self.socket.run('weston-terminal')["pid"]
+        wt_pid = self.socket.run('weston-terminal --shell=/bin/sh')["pid"]
         self.socket.create_wayland_output()
         self.socket.run('wf-background')
         self.wait_ms(1500) # Wait for wf-background to start and be initialized

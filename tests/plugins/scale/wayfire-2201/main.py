@@ -19,7 +19,7 @@ class WTest(wt.WayfireTest):
         return super().run(*args, **kwargs)
 
     def _run(self):
-        self.socket.run('weston-terminal')
+        self.socket.run('weston-terminal --shell=/bin/sh')
         self.wait_for_clients_to_open(nr_clients=1)
 
         self.socket.create_wayland_output()

@@ -22,7 +22,7 @@ class WTest(wt.WayfireTest):
         self.wait_for_clients(10)
 
         # Open a new window
-        self.socket.run('weston-terminal')
+        self.socket.run('weston-terminal --shell=/bin/sh')
         self.wait_for_clients(10)
 
         if error := self.take_screenshot('scale-does-not-show-anything'):

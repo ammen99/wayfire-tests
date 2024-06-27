@@ -14,7 +14,7 @@ class WTest(wt.WayfireTest):
         return self.require_test_clients(['weston-terminal', 'wleird-slow-ack-configure'])
 
     def _run(self):
-        self.socket.run('weston-terminal -m')
+        self.socket.run('weston-terminal --shell=/bin/sh -m')
         self.wait_for_clients(2)
         slowack = self.socket.run('wleird-slow-ack-configure 300 400')["pid"]
         self.wait_for_clients(2)

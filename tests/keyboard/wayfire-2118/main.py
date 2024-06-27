@@ -14,7 +14,7 @@ class WTest(wt.WayfireTest):
         return focused['app-id'] if focused else 'None'
 
     def _run(self):
-        self.socket.run('weston-terminal')
+        self.socket.run('weston-terminal --shell=/bin/sh')
         self.socket.run('wf-panel -c wf-shell.ini')
         self.wait_for_clients_to_open(nr_clients=2)
 

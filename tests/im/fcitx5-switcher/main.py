@@ -21,7 +21,7 @@ class WTest(wt.WayfireTest):
         return None
 
     def _run(self):
-        self.socket.run('weston-terminal')
+        self.socket.run('weston-terminal --shell=/bin/sh')
         self.wait_for_clients_to_open(nr_clients=1)
         self.socket.run('../fcitx-wrapper/start-fcitx5.sh')
         wu.LoggedProcess(self.socket, 'gtk_logger', 'gtk1', 'text-input')

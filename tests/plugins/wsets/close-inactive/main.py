@@ -13,7 +13,7 @@ class WTest(wt.WayfireTest):
         return self.require_test_clients(['weston-terminal'])
 
     def _run(self):
-        pid = self.socket.run('weston-terminal')['pid']
+        pid = self.socket.run('weston-terminal --shell=/bin/sh')['pid']
         self.wait_for_clients_to_open(nr_clients=1)
 
         self.socket.press_key('KEY_2')
