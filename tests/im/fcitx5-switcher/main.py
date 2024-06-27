@@ -8,7 +8,7 @@ def is_gui() -> bool:
 
 class WTest(wt.WayfireTest):
     def prepare(self):
-        return self.require_test_clients(['weston-terminal', 'gedit', 'fcitx5', 'wl-paste'])
+        return self.require_test_clients(['weston-terminal', 'gtk_logger', 'fcitx5', 'wl-paste'])
 
     def _check_status_changed(self, ev_socket, status: bool, tryy: int):
         msg = ev_socket.read_message(self._ipc_duration * 2)
@@ -24,7 +24,7 @@ class WTest(wt.WayfireTest):
         self.socket.run('weston-terminal')
         self.wait_for_clients_to_open(nr_clients=1)
         self.socket.run('../fcitx-wrapper/start-fcitx5.sh')
-        self.socket.run('gedit')
+        wu.LoggedProcess(self.socket, 'gtk_logger', 'gtk1', 'text-input')
         self.wait_for_clients_to_open(nr_clients=2)
 
         self.wait_for_clients(4) # Wait for IM
@@ -54,8 +54,8 @@ class WTest(wt.WayfireTest):
             return wt.Status.WRONG, msg
 
         focused = self.socket.ipc_rules_get_focused()['info']
-        if not focused or focused['app-id'] != 'gedit':
-            return wt.Status.WRONG, f'Gedit lost focus: {focused}'
+        if not focused or focused['app-id'] != 'gtk_logger':
+            return wt.Status.WRONG, f'gtk_logger lost focus: {focused}'
 
         # We should be able to type in Gedit now
         self.wait_for_clients(4) # wait for initial handshake with IM

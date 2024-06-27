@@ -13,9 +13,9 @@ class WTest(wt.WayfireTest):
 
     def _run(self):
         pid = self.socket.run('../fcitx-wrapper/start-fcitx5.sh')['pid']
-
-        self.socket.run('gedit')
+        wu.LoggedProcess(self.socket, 'gtk_logger', 'gtk1', 'text-input')
         self.wait_for_clients_to_open(nr_clients=1)
+        self.wait_for_clients(4) # for fcitx5
 
         # Default layout is pinyin => enter a few chinese symbols
         self.socket.press_key('KEY_F')

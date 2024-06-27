@@ -1,6 +1,7 @@
 #!/bin/env python3
 
 import wftest as wt
+import wfutil as wu
 
 def is_gui() -> bool:
     return True
@@ -11,7 +12,7 @@ class WTest(wt.WayfireTest):
 
     def _run(self):
         self.socket.run('../fcitx-wrapper/start-fcitx5.sh')
-        self.socket.run('gedit')
+        wu.LoggedProcess(self.socket, 'gtk_logger', 'gtk1', 'text-input')
         self.wait_for_clients_to_open(nr_clients=1)
         self.socket.press_key('KEY_R') # Make sure gedit is not maximized!
         self.wait_for_clients(4)

@@ -8,11 +8,11 @@ def is_gui() -> bool:
 
 class WTest(wt.WayfireTest):
     def prepare(self):
-        return self.require_test_clients(['gedit', 'fcitx5', 'wl-paste'])
+        return self.require_test_clients(['gtk_logger', 'fcitx5', 'wl-paste'])
 
     def _run(self):
         self.socket.run('../fcitx-wrapper/start-fcitx5.sh')
-        self.socket.run('gedit')
+        wu.LoggedProcess(self.socket, 'gtk_logger', 'gtk1', 'text-input')
         self.wait_for_clients_to_open(nr_clients=1)
         self.wait_for_clients(2) # wait for im
 

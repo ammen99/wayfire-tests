@@ -1,13 +1,14 @@
 #!/bin/env python3
 
 import wftest as wt
+import wfutil as wu
 
 def is_gui() -> bool:
     return False
 
 class WTest(wt.WayfireTest):
     def prepare(self):
-        return self.require_test_clients(['kitty', 'gedit', 'fcitx5'])
+        return self.require_test_clients(['kitty', 'gtk_logger', 'fcitx5'])
 
     def _check_status_changed(self, ev_socket, status: bool, tryy: int):
         msg = ev_socket.read_message(self._ipc_duration * 2)
@@ -23,7 +24,7 @@ class WTest(wt.WayfireTest):
         self.socket.run('kitty')
         self.socket.run('../fcitx-wrapper/start-fcitx5.sh')
         self.wait_for_clients_to_open(nr_clients=1)
-        self.socket.run('gedit')
+        wu.LoggedProcess(self.socket, 'gtk_logger', 'gtk1', 'text-input')
         self.wait_for_clients_to_open(nr_clients=2)
         ev_socket = self.watch(['plugin-activation-state-changed'])
 

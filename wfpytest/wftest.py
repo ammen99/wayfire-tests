@@ -138,6 +138,8 @@ class WayfireTest:
             else:
                 return Status.WRONG, "Wayfire failed to respond to ping"
 
+        except TestEncounteredError as e:
+            return Status.WRONG, str(e)
         except Exception as _:
             return Status.CRASHED, "Wayfire or client socket crashed, " + traceback.format_exc()
 

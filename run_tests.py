@@ -64,9 +64,6 @@ def _run_test_once(TestType, wayfire_exe, logfile: str, image_prefix: str, timeo
     except KeyboardInterrupt:
         test.cleanup()
         raise
-    except wftest.TestEncounteredError as e:
-        test.cleanup()
-        return TestResult(wftest.Status.WRONG, str(e), [])
     except:
         test.cleanup()
         return TestResult(wftest.Status.CRASHED, "Test runner crashed " + traceback.format_exc(), [])
