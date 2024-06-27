@@ -23,8 +23,7 @@ class WTest(wt.WayfireTest):
     def _run(self):
         wu.LoggedProcess(self.socket, 'gtk_logger', 'gtk1')
         pid = self.socket.run('gedit')['pid']
-        if not self.wait_for_clients_to_open(nr_clients=2):
-            return wt.Status.WRONG, 'Demo apps did not open: ' + str(self._get_views())
+        self.wait_for_clients_to_open(nr_clients=2)
 
         # Focus should be xterm
         layout = {}

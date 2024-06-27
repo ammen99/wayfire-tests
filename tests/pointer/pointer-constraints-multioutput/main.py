@@ -16,8 +16,7 @@ class WTest(wt.WayfireTest):
 
     def _run(self):
         self.socket.run('openarena')
-        if not self.wait_for_clients_to_open(1):
-            return wt.Status.WRONG, 'openarena failed to start'
+        self.wait_for_clients_to_open(1)
 
         # Skip the 'abnormal start' button
         self.socket.press_key('KEY_ENTER')

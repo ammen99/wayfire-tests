@@ -28,14 +28,12 @@ class WTest(wt.WayfireTest):
         self.socket.move_cursor(info['geometry']['x'] + info['geometry']['width'] / 2,
                                 info['geometry']['y'] + info['geometry']['height'] / 2)
         self.socket.click_button('BTN_RIGHT', 'full')
-        if not self.wait_for_clients_to_open(nr_clients=2):
-            return wt.Status.WRONG, 'Failed to open context menu'
+        self.wait_for_clients_to_open(nr_clients=2, message='Failed to open context menu')
 
         # Select all uppercase from menu: last item => first item in submenu
         self.socket.press_key('KEY_UP')
         self.socket.press_key('KEY_RIGHT')
-        if not self.wait_for_clients_to_open(nr_clients=3):
-            return wt.Status.WRONG, 'Failed to select uppercase'
+        self.wait_for_clients_to_open(nr_clients=3, message='Failed to select uppercase')
 
         self.socket.press_key('KEY_ENTER')
         self.wait_ms(100)

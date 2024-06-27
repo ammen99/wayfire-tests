@@ -28,6 +28,9 @@ class Status(Enum):
 def get_now():
     return datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S.%f')[:-3]
 
+class TestEncounteredError(Exception):
+    pass
+
 class WayfireTest:
     # An approximation of how long clients take to start and communicate with Wayfire
     # If your PC is slow, this duration can be increased, making every test wait longer
@@ -86,15 +89,16 @@ class WayfireTest:
         self.wait_for_clients_to_open(len(ids) + 1)
         return self._get_new_view_id(ids), pid
 
-    def wait_for_clients_to_open(self, nr_clients: int, waits = 10, interval = 100):
+    def wait_for_clients_to_open(self, nr_clients: int, waits = 10, interval = 100, message: str | None = None):
         for _ in range(waits):
             if len(self._get_mapped_views()) != nr_clients:
                 self.wait_ms(interval)
 
         if len(self._get_mapped_views()) != nr_clients:
-            return False
-
-        return True
+            if message is None:
+                raise TestEncounteredError("Clients did not open: {}".format(nr_clients))
+            else:
+                raise TestEncounteredError(message)
 
     def wait_ms(self, ms):
         time.sleep((self._ipc_duration / 0.1) * ms * 0.001)

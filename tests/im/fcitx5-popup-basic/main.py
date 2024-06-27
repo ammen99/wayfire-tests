@@ -22,9 +22,7 @@ class WTest(wt.WayfireTest):
         self.socket.set_key_state('KEY_SPACE', False)
         self.socket.set_key_state('KEY_LEFTCTRL', False)
 
-        if not self.wait_for_clients_to_open(nr_clients=2):
-            return wt.Status.WRONG, 'IM popup did not show!'
-
+        self.wait_for_clients_to_open(nr_clients=2, message='IM popup did not show!')
         if err := self.take_screenshot('1-shown'):
             return wt.Status.WRONG, err
 

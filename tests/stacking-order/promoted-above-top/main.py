@@ -26,9 +26,7 @@ class WTest(wt.WayfireTest):
         self.wait_for_clients_to_open(nr_clients=2)
         self.socket.press_key('KEY_F11') # Make weston-terminal fullscreen, so on top of gtk demo
         self.socket.run('x11_click_to_close x11 fullscreen')
-        if not self.wait_for_clients_to_open(nr_clients=3):
-            return wt.Status.WRONG, \
-                'Could not find all three clients after test setup: ' + str(self._get_views())
+        self.wait_for_clients_to_open(nr_clients=3)
 
         # gtk-layer-demo takes the top part of the screen.
         # However, the fullscreen x11 demo should cover that part,

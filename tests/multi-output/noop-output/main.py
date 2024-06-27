@@ -21,8 +21,7 @@ class WTest(wt.WayfireTest):
         pid_tester = self.socket.run('wleird-wfshell-tester')["pid"]
         pid = self.socket.run('gtk_color_switcher cs')["pid"]
         self.socket.run('wf-background')
-        if not self.wait_for_clients_to_open(nr_clients=2):
-            return wt.Status.WRONG, 'Demo apps did not open: ' + str(self._get_views())
+        self.wait_for_clients_to_open(nr_clients=2)
 
         # position the views
         layout = {}

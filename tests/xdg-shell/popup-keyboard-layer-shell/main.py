@@ -19,8 +19,7 @@ class WTest(wt.WayfireTest):
         self.socket.move_cursor(info['geometry']['x'] + info['geometry']['width'] / 2,
                                 info['geometry']['y'] + info['geometry']['height'] / 2)
         self.socket.click_button('BTN_RIGHT', 'full')
-        if not self.wait_for_clients_to_open(nr_clients=2):
-            return wt.Status.WRONG, 'Failed to open context menu'
+        self.wait_for_clients_to_open(nr_clients=2, message='Failed to open context menu')
 
         # Select second item in the menu, which closes.
         self.socket.press_key('KEY_DOWN')

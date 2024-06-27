@@ -33,8 +33,7 @@ class WTest(wt.WayfireTest):
         self.socket.move_cursor(20, 40)
 
         # Try to wait for the first popup. If it does not flicker, we will 'catch it'
-        if not self.wait_for_clients_to_open(nr_clients=2, interval=16, waits=60):
-            return wt.Status.WRONG, 'Popups flicker 1?'
+        self.wait_for_clients_to_open(nr_clients=2, interval=16, waits=60, message='Popups flicker 1?')
 
         # If we caught a flickering popup, it might immediately go away => check again
         start_ids = self._view_ids()
