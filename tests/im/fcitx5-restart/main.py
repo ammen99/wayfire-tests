@@ -13,9 +13,9 @@ class WTest(wt.WayfireTest):
 
     def _run(self):
         pid = self.socket.run('../fcitx-wrapper/start-fcitx5.sh')['pid']
+
         self.socket.run('gedit')
         self.wait_for_clients_to_open(nr_clients=1)
-        self.wait_for_clients(2) # wait for im
 
         # Default layout is pinyin => enter a few chinese symbols
         self.socket.press_key('KEY_F')
@@ -27,10 +27,11 @@ class WTest(wt.WayfireTest):
 
         self.send_signal(pid, signal.SIGKILL)
         self.wait_for_clients(2)
-        self.socket.run('dbus-launch --exit-with-session ../fcitx-wrapper/start-fcitx5.sh')['pid']
+        self.socket.run('../fcitx-wrapper/start-fcitx5.sh')['pid']
         self.wait_for_clients(4)
 
         self.socket.press_key('KEY_A')
+        self.wait_for_clients()
         self.socket.press_key('KEY_SPACE')
         self.wait_for_clients(2)
 

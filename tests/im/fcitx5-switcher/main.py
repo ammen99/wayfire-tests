@@ -27,7 +27,7 @@ class WTest(wt.WayfireTest):
         self.socket.run('gedit')
         self.wait_for_clients_to_open(nr_clients=2)
 
-        self.wait_for_clients(2) # Wait for IM
+        self.wait_for_clients(4) # Wait for IM
         ev_socket = self.watch(['plugin-activation-state-changed'])
 
         # Send a key to IM, grab keyboard, type something

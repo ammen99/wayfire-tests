@@ -32,24 +32,24 @@ class WTest(wt.WayfireTest):
         layout = {}
         layout['nil'] = (0, 0, 500, 500, 'WL-1')
         self.socket.layout_views(layout)
-        self.wait_for_clients(2)
+        self.wait_for_clients(4)
         if error := self.take_screenshot('scene-setup'):
             return wt.Status.CRASHED, error
 
         self.socket.move_cursor(5, 5)
         self.socket.click_button('BTN_LEFT', 'press')
-        self.wait_for_clients()
+        self.wait_for_clients(2)
 
         if error := self.take_screenshot('start-drag'):
             return wt.Status.CRASHED, error
 
         self.socket.move_cursor(200, 200)
-        self.wait_for_clients()
+        self.wait_for_clients(2)
         if error := self.take_screenshot('in-flight'):
             return wt.Status.CRASHED, error
 
         self.send_signal(wt_pid, signal.SIGKILL)
-        self.wait_for_clients(2)
+        self.wait_for_clients(4)
         if error := self.take_screenshot('force-closed'):
             return wt.Status.CRASHED, error
 

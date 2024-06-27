@@ -12,8 +12,7 @@ class WTest(wt.WayfireTest):
         return self.require_test_clients(['weston-terminal'])
 
     def _run(self):
-        pid = self.socket.run('weston-terminal')['pid']
-        self.wait_for_clients(2)
+        _, pid = self.run_get_id('weston-terminal')
 
         # Toggle scale once
         self.socket.press_key('KEY_S')
