@@ -12,6 +12,9 @@ tests/multi-output/wayfire-1895/wayfire.ini
 tests/plugins/animate/wayfire-2005/wayfire.ini
 tests/plugins/scale/wayfire-2201/wayfire.ini
 
+tests/im/fcitx-wrapper/fcitx5/conf/pinyin.conf*
+tests/im/fcitx-wrapper/fcitx5/conf/punctuation.conf*
+
 dbg.sh
 my_run.sh
 .vim/*
