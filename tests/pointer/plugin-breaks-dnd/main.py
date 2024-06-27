@@ -28,11 +28,16 @@ class WTest(wt.WayfireTest):
         layout = {}
         layout['gtk1'] = (0, 0, 100, 100)
         self.socket.layout_views(layout)
-        self.socket.move_cursor(50, 50)
-        self.socket.click_button('BTN_LEFT', 'press')
-        self.socket.move_cursor(55, 55)
-        self.socket.move_cursor(75, 75)
         self.wait_for_clients(2)
+
+        self.socket.move_cursor(50, 50)
+        self.wait_for_clients()
+        self.socket.click_button('BTN_LEFT', 'press')
+        self.wait_for_clients()
+        self.socket.move_cursor(55, 55)
+        self.wait_for_clients()
+        self.socket.move_cursor(75, 75)
+        self.wait_for_clients(3)
         if not gtk1.expect_line("drag-begin"):
             return wt.Status.WRONG, 'gtk1 did not start DnD: ' + gtk1.last_line
         if not gtk1.expect_none():
