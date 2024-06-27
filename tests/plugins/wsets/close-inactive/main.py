@@ -10,7 +10,7 @@ def is_gui() -> bool:
 
 class WTest(wt.WayfireTest):
     def prepare(self):
-        return self.require_test_clients(['weston-terminal', 'gedit'])
+        return self.require_test_clients(['weston-terminal'])
 
     def _run(self):
         pid = self.socket.run('weston-terminal')['pid']

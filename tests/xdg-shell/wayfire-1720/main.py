@@ -11,7 +11,7 @@ def is_gui() -> bool:
 # Then, it opens a menu in gedit (xdg-popup) which should be automatically closed when clicking on the gtk logger client.
 class WTest(wt.WayfireTest):
     def prepare(self):
-        return self.require_test_clients(['gtk_logger', 'gedit', 'weston-terminal'])
+        return self.require_test_clients(['gtk_logger', 'weston-terminal'])
 
     def _get_views(self):
         return sorted([v['app-id'] for v in self.socket.list_views()])
@@ -22,13 +22,13 @@ class WTest(wt.WayfireTest):
 
     def _run(self):
         wu.LoggedProcess(self.socket, 'gtk_logger', 'gtk1')
-        pid = self.socket.run('gedit')['pid']
+        editor = wu.LoggedProcess(self.socket, 'gtk_logger', 'gtk2', 'text-input')
         self.wait_for_clients_to_open(nr_clients=2)
 
         # Focus should be xterm
         layout = {}
-        layout['gedit'] = (0, 0, 500, 500)
-        layout['gtk_logger'] = (500, 0, 500, 500)
+        layout['gtk2'] = (0, 0, 500, 500)
+        layout['gtk1'] = (500, 0, 500, 500)
         self.socket.layout_views(layout)
         self.wait_for_clients(2)
 
@@ -36,10 +36,10 @@ class WTest(wt.WayfireTest):
         self.socket.click_button('BTN_RIGHT', 'full')
         self.wait_for_clients()
 
-        if self._get_views() != ['', 'gedit', 'gtk_logger']:
+        if self._get_views() != ['', 'gtk_logger', 'gtk_logger']:
             return wt.Status.WRONG, 'Popup menu did not open! ' + str(self._get_views())
 
-        self.send_signal(pid, signal.SIGKILL)
+        self.send_signal(editor.pid, signal.SIGKILL)
         self.wait_for_clients(2)
         self.socket.run('weston-terminal')
         self.wait_ms(600) # wait for unmap animation to end, the unmap animation is important, weston-terminal should run while it is active

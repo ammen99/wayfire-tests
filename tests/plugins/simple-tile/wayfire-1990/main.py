@@ -9,13 +9,14 @@ def is_gui() -> bool:
 # Open a Xwayland dialog and make sure it isn't tiled automatically
 class WTest(wt.WayfireTest):
     def prepare(self):
-        return self.require_test_clients(['gedit'])
+        return self.require_test_clients(['eog'])
 
     def _run(self):
-        self.socket.run('GDK_BACKEND=x11 gedit')
+        self.socket.run('GDK_BACKEND=x11 eog')
         self.wait_for_clients_to_open(nr_clients=1)
         self.wait_ms(100) # Wait for things to settle down
-        gedit_id = self.socket.get_view_info('Gedit', mappedOnly=True)['id']
+        print(self.socket.list_views())
+        gedit_id = self.socket.get_view_info('Eog', mappedOnly=True)['id']
 
         self.socket.set_key_state('KEY_LEFTCTRL', True)
         self.socket.set_key_state('KEY_O', True)

@@ -8,7 +8,7 @@ def is_gui() -> bool:
 
 class WTest(wt.WayfireTest):
     def prepare(self):
-        return self.require_test_clients(['glxgears', 'weston-terminal', 'gedit', 'wleird-layer-shell'])
+        return self.require_test_clients(['glxgears', 'weston-terminal', 'wleird-layer-shell'])
 
     def _get_views(self):
         return sorted([v['title'] for v in self.socket.list_views()])
@@ -17,10 +17,10 @@ class WTest(wt.WayfireTest):
         try:
             self.run_wayfire(wayfire_path, log)
             self.socket.run('glxgears')
-            self.socket.run('gedit')
+            self.socket.run('weston-terminal')
             self.socket.run('weston-terminal')
             self.socket.run('wleird-layer-shell -l top')
-            self.wait_for_clients_to_open(4)
+            self.wait_for_clients_to_open(nr_clients=3)
 
             self.socket.set_key_state('KEY_LEFTCTRL', True)
             self.socket.set_key_state('KEY_LEFTALT', True)
