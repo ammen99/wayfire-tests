@@ -20,7 +20,7 @@ class WTest(wt.WayfireTest):
             self.socket.run('weston-terminal --shell=/bin/sh')
             self.socket.run('weston-terminal --shell=/bin/sh')
             self.socket.run('wleird-layer-shell -l top')
-            self.wait_for_clients_to_open(nr_clients=3)
+            self.wait_for_clients_to_open(nr_clients=6)
 
             self.socket.set_key_state('KEY_LEFTCTRL', True)
             self.socket.set_key_state('KEY_LEFTALT', True)
