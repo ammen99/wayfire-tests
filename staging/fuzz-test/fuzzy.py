@@ -5,8 +5,6 @@ import time
 from subprocess import Popen, PIPE, run
 from wayfire.extra.ipc_utils import WayfireUtils
 from wayfire.extra.stipc import Stipc
-sock = WayfireSocket()
-
 
 class TestWayfire:
     def __init__(self):
@@ -139,69 +137,76 @@ class TestWayfire:
             key_combination = modifier + main_key
             try:
                 self.stipc.press_key(key_combination)
-            except:
+            except Exception as e:
+                print(e)
                 continue
 
     def test_random_set_view_position(self, view_id):
         if view_id is None:
             view_id = self.test_random_view_id()
-        actions = [
-            self.utils.set_view_top_left,
-            self.utils.set_view_top_right,
-            self.utils.set_view_bottom_left,
-            self.utils.set_view_right,
-            self.utils.set_view_left,
-            self.utils.set_view_bottom,
-            self.utils.set_view_top,
-            self.utils.set_view_center,
-            self.utils.set_view_bottom_right,
-        ]
-        choice(actions)(view_id)
+
+        if view_id:
+            actions = [
+                self.utils.set_view_top_left,
+                self.utils.set_view_top_right,
+                self.utils.set_view_bottom_left,
+                self.utils.set_view_right,
+                self.utils.set_view_left,
+                self.utils.set_view_bottom,
+                self.utils.set_view_top,
+                self.utils.set_view_center,
+                self.utils.set_view_bottom_right,
+            ]
+            choice(actions)(view_id)
 
     def test_random_change_view_state(self, view_id):
-        if view_id is None:
+        if view_id is not None:
             view_id = self.test_random_view_id()
-        actions = [
-            lambda: self.utils.maximize(view_id),
-            lambda: self.sock.set_view_fullscreen(view_id, True),
-            lambda: self.sock.set_view_minimized(view_id, True),
-            lambda: self.sock.set_view_minimized(view_id, False),
-            lambda: self.sock.set_view_sticky(view_id, choice([True, False])),
-            lambda: self.sock.send_view_to_back(view_id, choice([True, False])),
-            lambda: self.sock.set_view_alpha(view_id, random() * 1.0),
-        ]
-        choice(actions)()
+            if view_id:
+                actions = [
+                    lambda: self.utils.set_view_maximized(view_id),
+                    lambda: self.sock.set_view_fullscreen(view_id, True),
+                    lambda: self.sock.set_view_minimized(view_id, True),
+                    lambda: self.sock.set_view_minimized(view_id, False),
+                    lambda: self.sock.set_view_sticky(view_id, choice([True, False])),
+                    lambda: self.sock.send_view_to_back(view_id, choice([True, False])),
+                    lambda: self.sock.set_view_alpha(view_id, random() * 1.0),
+                ]
+                choice(actions)()
 
     def test_random_list_info(self, view_id):
         if view_id is None:
             view_id = self.test_random_view_id()
-        actions = [
-            self.sock.list_outputs,
-            self.sock.list_wsets,
-            lambda: self.sock.wset_info(view_id),
-            lambda: self.sock.get_view(view_id),
-            lambda: self.utils.get_view_info(view_id),
-            lambda: self.sock.get_view_alpha(view_id),
-            self.sock.list_input_devices,
-            self.utils.get_workspaces_with_views,
-            self.utils.get_workspaces_without_views,
-            self.utils.get_views_from_active_workspace,
-        ]
-        choice(actions)()
+
+        if view_id:
+            actions = [
+                self.sock.list_outputs,
+                self.sock.list_wsets,
+                lambda: self.sock.wset_info(view_id),
+                lambda: self.sock.get_view(view_id),
+                lambda: self.sock.get_view(view_id),
+                lambda: self.sock.get_view_alpha(view_id),
+                self.sock.list_input_devices,
+                self.utils.get_workspaces_with_views,
+                self.utils.get_workspaces_without_views,
+                self.utils.get_views_from_active_workspace,
+            ]
+            choice(actions)()
 
     def test_set_view_position(self, view_id):
         if view_id is None:
             view_id = self.test_random_view_id()
-        self.utils.set_view_top_left(view_id)
-        self.utils.set_view_top_right(view_id)
-        self.utils.set_view_bottom_left(view_id)
-        self.utils.set_view_right(view_id)
-        self.utils.set_view_left(view_id)
-        self.utils.set_view_bottom(view_id)
-        self.utils.set_view_top(view_id)
-        self.utils.set_view_center(view_id)
-        self.utils.set_view_bottom_right(view_id)
-        self.sock.set_focus(view_id)
+        if isinstance(view_id, int):
+            self.utils.set_view_top_left(view_id)
+            self.utils.set_view_top_right(view_id)
+            self.utils.set_view_bottom_left(view_id)
+            self.utils.set_view_right(view_id)
+            self.utils.set_view_left(view_id)
+            self.utils.set_view_bottom(view_id)
+            self.utils.set_view_top(view_id)
+            self.utils.set_view_center(view_id)
+            self.utils.set_view_bottom_right(view_id)
+            self.sock.set_focus(view_id)
 
     def test_random_view_id(self):
         ids = self.utils.list_ids()
@@ -211,23 +216,24 @@ class TestWayfire:
     def test_change_view_state(self, view_id):
         if view_id is None:
             view_id = self.test_random_view_id()
-        actions = [
-            lambda: self.utils.maximize(view_id),
-            lambda: self.sock.set_view_fullscreen(view_id, True),
-            lambda: self.sock.set_view_minimized(view_id, choice([True, False])),
-            lambda: self.sock.set_view_sticky(view_id, choice([True, False])),
-            lambda: self.sock.send_view_to_back(view_id, choice([True, False])),
-            lambda: self.sock.set_view_alpha(view_id, random() * 1.0),
-        ]
-        choice(actions)()
+        if isinstance(view_id, int):
+            actions = [
+                lambda: self.utils.set_view_maximized(view_id),
+                lambda: self.sock.set_view_fullscreen(view_id, True),
+                lambda: self.sock.set_view_minimized(view_id, choice([True, False])),
+                lambda: self.sock.set_view_sticky(view_id, choice([True, False])),
+                lambda: self.sock.send_view_to_back(view_id, choice([True, False])),
+                lambda: self.sock.set_view_alpha(view_id, random() * 1.0),
+            ]
+            choice(actions)()
 
     def test_move_cursor_and_click(self):
-        sumgeo = self.utils.sum_geometry_resolution()
+        sumgeo = self.utils._sum_geometry_resolution()
         self.stipc.move_cursor(randint(100, sumgeo[0]), randint(100, sumgeo[1]))
         self.stipc.click_button("BTN_LEFT", "full")
 
     def test_move_cursor_and_drag_drop(self):
-        sumgeo = self.sum_geometry_resolution()
+        sumgeo = self.utils._sum_geometry_resolution()
         random_iterations = randint(1, 8)
 
         for _ in range(random_iterations):
@@ -243,17 +249,20 @@ class TestWayfire:
     def test_list_info(self, view_id):
         if view_id is None:
             view_id = self.test_random_view_id()
+
         self.sock.list_outputs()
         self.sock.list_wsets()
-        # self.wset_info(view_id)
-        self.sock.get_view(view_id)
-        self.utils.get_view_info(view_id)
-        self.sock.get_view_alpha(view_id)
+
+        if isinstance(view_id, int):
+            self.sock.get_view(view_id)
+            self.sock.get_view(view_id)
+            self.sock.get_view_alpha(view_id)
+            self.sock.set_focus(view_id)
+
         self.sock.list_input_devices()
         self.utils.get_workspaces_with_views()
         self.utils.get_workspaces_without_views()
         self.utils.get_views_from_active_workspace()
-        self.sock.set_focus(view_id)
 
     def test_cube_plugin(self):
         self.sock.cube_activate()
@@ -344,8 +353,8 @@ class TestWayfire:
                 continue
             else:
                 name = self.utils.get_output_name_by_id(output_id)
-
-                self.stipc.destroy_wayland_output(name)
+                if name:
+                    self.stipc.destroy_wayland_output(name)
 
     def test_is_terminal_available(self, terminal):
         try:
@@ -436,16 +445,15 @@ class TestWayfire:
     ):
         from gtk3_window import spam_new_views
         from gtk3_dialogs import spam_new_dialogs
-        #from layershell import spam_new_layers
 
         # Retrieve necessary data
         view_id = self.test_random_view_id()
         workspaces = (
-            [{"x": x, "y": y} for x, y in self.utils.total_workspaces().values()]
-            if self.utils.total_workspaces()
+            [{"x": x, "y": y} for x, y in self.utils._total_workspaces().values()]
+            if self.utils._total_workspaces()
             else []
         )
-        sumgeo = self.utils.sum_geometry_resolution()
+        sumgeo = self.utils._sum_geometry_resolution()
 
         # Define functions to be executed
         functions = [
@@ -527,8 +535,10 @@ class TestWayfire:
                     # so it close while still there is actions going on
                     try:
                         output_id = self.utils.get_focused_output_id()
-                        name = self.utils.get_output_name_by_id(output_id)
-                        self.stipc.destroy_wayland_output(name)
+                        if output_id:
+                            name = self.utils.get_output_name_by_id(output_id)
+                            if name:
+                                self.stipc.destroy_wayland_output(name)
                     except Exception as e:
                         print(e)
 

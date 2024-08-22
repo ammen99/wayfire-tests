@@ -3,8 +3,8 @@ from fuzzy import TestWayfire
 
 test = TestWayfire()
 
-# scale, expo, showdesktop, switcherview, cube,  autororate
-plugin = choice(["scale", "expo", "showdesktop", "switcherview", "cube", "autororate", None])
+# scale, expo, switcherview, cube
+plugin = choice(["scale", "expo",  "switcherview", "cube", None])
 while True:
     try:
         number_of_views = randint(1, 20)
