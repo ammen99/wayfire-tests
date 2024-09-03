@@ -412,7 +412,7 @@ class TestWayfire:
                     Popen(command, shell=True)
 
     def test_spam_go_workspace_set_focus(self):
-        list_ids = self.utils.list_ids()
+        list_ids = [i["id"] for i in self.utils.list_filtered_views()]
         num_items = randint(1, len(list_ids))
         random_views = sample(list_ids, num_items)
         for view_id in random_views:
@@ -457,13 +457,13 @@ class TestWayfire:
 
         # Define functions to be executed
         functions = [
-            (self.utils.go_workspace_set_focus, (view_id)),
+            (self.test_spam_go_workspace_set_focus, ([view_id])),
             (self.test_move_cursor_and_click, ()),
             (self.test_plugins, (plugin,)),
             (self.test_low_priority_plugins, (plugin,)),
             (self.test_move_cursor_and_drag_drop, ()),
             (self.test_output, ()),
-            (self.test_random_views, (view_id)),
+            (self.test_random_views, ([view_id])),
             (
                 self.sock.configure_view,
                 (
