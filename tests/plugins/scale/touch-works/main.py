@@ -8,10 +8,12 @@ def is_gui() -> bool:
 # This test starts scale and checks that it works with touch gestures and can exit with touch input
 class WTest(wt.WayfireTest):
     def prepare(self):
-        return self.require_test_clients(['weston-terminal', 'gtk_color_switcher'])
+        return self.require_test_clients(['gtk_special'])
 
     def _run(self):
-        self.run_get_id('weston-terminal')
+        # Open a dialog to also test Wayfire #2447
+        self.socket.run('gtk_special a b')
+        self.wait_for_clients_to_open(nr_clients=2)
 
         # Pinch-in gesture
         self.socket.set_touch(0, 0, 0)
