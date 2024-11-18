@@ -6,14 +6,12 @@ import signal
 def is_gui() -> bool:
     return False
 
-# Simple test which starts weston-terminal maximized, then closes it by clicking on the close button
-
 class WTest(wt.WayfireTest):
     def prepare(self):
-        return self.require_test_clients(['swaylock'])
+        return self.require_test_clients(['wleird-layer-shell'])
 
     def _run(self):
-        pid = self.socket.run('swaylock')["pid"]
+        pid = self.socket.run('wleird-layer-shell -l top')["pid"]
         self.wait_for_clients(2)
 
         self.send_signal(pid, signal.SIGKILL)
