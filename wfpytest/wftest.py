@@ -168,16 +168,26 @@ class WayfireTest:
 
         return Status.OK, None
 
-    def click_and_drag(self, button, start_x, start_y, end_x, end_y, release=True, steps = 10):
-        dx = end_x - start_x
-        dy = end_y - start_y
+    def move_continuous(self, positions: List[Tuple[int, int]], steps = 10):
+        for i in range(len(positions) - 1):
+            start_x, start_y = positions[i]
+            end_x, end_y = positions[i+1]
 
+            dx = end_x - start_x
+            dy = end_y - start_y
+            for i in range(steps+1):
+                self.socket.move_cursor(start_x + dx * i // steps, start_y + dy * i // steps)
+
+    def click_and_drag_steps(self, button, positions: List[Tuple[int, int]], release=True, steps = 10):
+        start_x, start_y = positions[0]
         self.socket.move_cursor(start_x, start_y)
         self.socket.click_button(button, 'press')
-        for i in range(steps+1):
-            self.socket.move_cursor(start_x + dx * i // steps, start_y + dy * i // steps)
+        self.move_continuous(positions, steps)
         if release:
             self.socket.click_button(button, 'release')
+
+    def click_and_drag(self, button, start_x, start_y, end_x, end_y, release=True, steps = 10):
+        self.click_and_drag_steps(button, [(start_x, start_y), (end_x, end_y)], release, steps)
 
     def run_wayfire(self, wayfire_path: str, logfile: str):
         # Run wayfire with specified socket name for IPC communication
