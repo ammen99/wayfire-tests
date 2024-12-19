@@ -16,6 +16,7 @@ project(
 # Dependencies
 x11 = dependency('x11')
 gtkmm = dependency('gtkmm-3.0')
+cairo = dependency('cairo')
 wayland_client = dependency('wayland-client')
 wayland_protos = dependency('wayland-protocols', version: '>=1.12')
 logger_inc = include_directories(['.'])
@@ -40,6 +41,8 @@ wayland_scanner_client = generator(
 protocols = [
     [wl_protocol_dir, 'unstable/pointer-constraints/pointer-constraints-unstable-v1.xml'],
     [wl_protocol_dir, 'unstable/tablet/tablet-unstable-v2.xml'],
+    [wl_protocol_dir, 'stable/xdg-shell/xdg-shell.xml'],
+    ['wlr-foreign-toplevel-management-unstable-v1.xml']
 ]
 
 wl_protos_src = []
@@ -101,3 +104,8 @@ executable('layer_shell_kb_popup', ['gtk_layer_shell_kb_popup.cpp'],
 executable('layer_shell_delay_exclusive', ['gtk_layer_delayed_exclusive.cpp'],
     dependencies: [gtkmm, gtklayershell],
     install: false)
+
+executable('xdg_popup_crasher', ['xdg_popup_crasher.c'],
+    dependencies: [cairo, wayland_client, wl_protos],
+    install: false)
+
