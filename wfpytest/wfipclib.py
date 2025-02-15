@@ -138,7 +138,7 @@ class WayfireIPCClient:
                 return v
         return None
 
-    def get_view_info_id(self, id):
+    def get_view_info_id(self, id) -> Any:
         for v in self.list_views():
             if v['id'] == id:
                 return v
