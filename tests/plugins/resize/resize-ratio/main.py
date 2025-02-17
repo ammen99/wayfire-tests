@@ -45,13 +45,13 @@ class WTest(wt.WayfireTest):
         self.socket.layout_views(layout)
         self.wait_for_clients(2)
 
-        # Ensure we hit max size
         self.click_and_drag('BTN_MIDDLE', 175, 175, 275, 200)
         self.wait_for_clients()
         g = self.socket.get_view_info_title('test')['geometry']
         if not wi.check_geometry(100, 100, 200, 200, g):
             return wt.Status.WRONG, 'geometry mismatch after BR ratio resize to (100, 100, 200, 200): {}'.format(g)
 
+        # Ensure we hit max size
         self.click_and_drag('BTN_MIDDLE', 275, 200, 1000, 1000)
         self.wait_for_clients()
         g = self.socket.get_view_info_title('test')['geometry']
