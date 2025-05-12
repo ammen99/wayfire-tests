@@ -1,3 +1,5 @@
+from datetime import datetime, timezone
+
 from enum import Enum
 from typing import Tuple, Optional, List, Any
 from wfipclib import WayfireIPCClient, get_msg_template
@@ -26,7 +28,7 @@ class Status(Enum):
         return self.value == other.value
 
 def get_now():
-    return datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S.%f')[:-3]
+    return datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S.%f')[:-3]
 
 class TestEncounteredError(Exception):
     pass
@@ -201,6 +203,9 @@ class WayfireTest:
             self._wayfire_process = subprocess.Popen([wayfire_path, '-c', self.locate_cfgfile()],
                     env=env, stdout=log, stderr=log, preexec_fn=os.setsid)
             self._wayfire_gid = os.getpgid(self._wayfire_process.pid)
+
+            if os.getenv('WFVKTEST') is not None:
+                time.sleep(3.5) # additional wait for the vk renderer to initialize
             time.sleep(1.5 + random.uniform(0, 1)) # Leave a bit of time for Wayfire to initialize + add random offset to desync multiple tests in parallel
 
             log.write(f'Test code starting: {get_now()}\n')
@@ -215,7 +220,11 @@ class WayfireTest:
         if self._wayfire_process:
             try:
                 os.killpg(self._wayfire_gid, signal.SIGTERM)
-                time.sleep(0.5)
-                os.killpg(self._wayfire_gid, signal.SIGKILL)
+                # Launch a separate process to send SIGKILL after a short delay
+                # This ensures SIGKILL is sent even if the main process is terminated.
+                kill_script_path = os.path.join(os.path.dirname(__file__), "kill_process_group.py")
+                subprocess.Popen(
+                    ["python", kill_script_path, str(self._wayfire_gid)],
+                    start_new_session=True)
             except:
                 pass

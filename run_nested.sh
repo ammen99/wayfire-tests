@@ -6,7 +6,7 @@ trap "trap - SIGTERM && pkill -P $$ && exit" SIGINT SIGTERM EXIT
 unset DISPLAY
 unset WAYLAND_DISPLAY
 
-WLR_RENDER_DRM_DEVICE=/dev/dri/renderD128 WLR_BACKENDS=headless wayfire -c miniconfig.ini &> /tmp/outerlog &
+WLR_RENDERER=gles2 WLR_RENDER_DRM_DEVICE=/dev/dri/renderD128 WLR_BACKENDS=headless wayfire -c miniconfig.ini &> /tmp/outerlog &
 sleep 1
 display=$(cat /tmp/outerlog | grep "Using socket name" | cut -d ' ' -f 9)
 
