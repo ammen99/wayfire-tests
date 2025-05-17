@@ -20,6 +20,9 @@ class WTest(wt.WayfireTest):
         self.socket.layout_views(layout)
         self.wait_for_clients(4)
 
+        if error := self.take_screenshot('0-init'):
+            return wt.Status.CRASHED, error
+
         self.socket.move_cursor(0, 0)
         self.socket.click_button('BTN_LEFT', 'press')
         self.wait_for_clients()
