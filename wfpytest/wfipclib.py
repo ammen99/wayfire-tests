@@ -2,6 +2,7 @@ from typing import Any
 import socket
 import json as js
 import select
+import time
 
 def get_msg_template(cmd: str | None = None):
     # Create generic message template
@@ -190,24 +191,38 @@ class WayfireIPCClient:
         message["data"]["state"] = state
         return self.send_json(message)
 
-    def press_key(self, key: str):
+    def press_key(self, key: str, pause: float = 0):
+        def wait():
+            if pause > 0:
+                time.sleep(pause)
+
         if key[:2] == 'S-':
             self.set_key_state('KEY_LEFTMETA', True)
+            wait()
             self.set_key_state(key[2:], True)
+            wait()
             self.set_key_state(key[2:], False)
+            wait()
             self.set_key_state('KEY_LEFTMETA', False)
         elif key[:2] == 'C-':
             self.set_key_state('KEY_LEFTCTRL', True)
+            wait()
             self.set_key_state(key[2:], True)
+            wait()
             self.set_key_state(key[2:], False)
+            wait()
             self.set_key_state('KEY_LEFTCTRL', False)
         elif key[:2] == 'A-':
             self.set_key_state('KEY_LEFTALT', True)
+            wait()
             self.set_key_state(key[2:], True)
+            wait()
             self.set_key_state(key[2:], False)
+            wait()
             self.set_key_state('KEY_LEFTALT', False)
         else:
             self.set_key_state(key, True)
+            wait()
             self.set_key_state(key, False)
 
     def tablet_tool_proximity(self, x, y, prox_in):

@@ -42,7 +42,7 @@ class WTest(wt.WayfireTest):
         self.wait_for_clients()
 
         # Switch back to pinyin, type a few more chinese symbols and space
-        self.socket.press_key('C-KEY_SPACE')
+        self.socket.press_key('C-KEY_SPACE', pause=self._ipc_duration)
         self.wait_for_clients()
         self.socket.press_key('KEY_A')
         self.wait_for_clients()

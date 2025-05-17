@@ -112,9 +112,9 @@ class LoggedProcess:
 
 def copy_paste_gedit_state(self: WayfireTest):
         # Select all, copy
-        self.socket.press_key('C-KEY_A')
+        self.socket.press_key('C-KEY_A', pause=self._ipc_duration)
         self.wait_for_clients()
-        self.socket.press_key('C-KEY_C')
+        self.socket.press_key('C-KEY_C', pause=self._ipc_duration)
         self.wait_for_clients()
 
         self.socket.run('wl-paste > gedit-state.txt')
