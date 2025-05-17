@@ -278,10 +278,15 @@ def rerun_test(input: str):
 def show_test_logs(tst: FailedTest):
     path = get_test_base_dir(tst.prefix)
     command = ""
+    if os.environ.get('OLD_DISPLAY'):
+        command += f"DISPLAY={os.environ['OLD_DISPLAY']} "
+    if os.environ.get('OLD_WAYLAND_DISPLAY'):
+        command += f"WAYLAND_DISPLAY={os.environ['OLD_WAYLAND_DISPLAY']} "
+
     if tst.gui:
-        command = 'eog {}/*.png'.format(path)
+        command += 'eog {}/*.png'.format(path)
     else:
-        command = '$EDITOR {}/*.log'.format(path)
+        command += '$EDITOR {}/*.log'.format(path)
     p = subprocess.Popen(['/bin/sh', '-c', command])
     p.communicate()
 

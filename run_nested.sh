@@ -3,6 +3,9 @@
 # Kill children on exit
 trap "trap - SIGTERM && pkill -P $$ && exit" SIGINT SIGTERM EXIT
 
+export OLD_DISPLAY=$DISPLAY
+export OLD_WAYLAND_DISPLAY=$WAYLAND_DISPLAY
+
 unset DISPLAY
 unset WAYLAND_DISPLAY
 
