@@ -20,7 +20,7 @@ cairo = dependency('cairo')
 wayland_client = dependency('wayland-client')
 wayland_protos = dependency('wayland-protocols', version: '>=1.12')
 logger_inc = include_directories(['.'])
-gtklayershell  = dependency('gtk-layer-shell-0', version: '>= 0.6')
+gtklayershell  = dependency('gtk-layer-shell-0', version: '>=0.9.1')
 
 # Custom wayland protocols needed
 wl_protocol_dir = wayland_protos.get_variable('pkgdatadir')
