@@ -43,19 +43,19 @@ class WTest(wt.WayfireTest):
         self.socket.move_cursor(500, 0)
         self.socket.click_button('BTN_LEFT', 'full')
         # Press super+KEY_H, we have configured this to core/close_top_view
-        self.socket.press_key('S-KEY_H')
+        self.socket.press_key('W-KEY_H')
         self.wait_for_clients(2)
         if self._get_views() != ['b']:
             return wt.Status.WRONG, 'Wrong app got the key combo! ' + str(self._get_views())
 
         # Pressing again, but the output WL-1 is still focused and does not contain 'b'
-        self.socket.press_key('S-KEY_H')
+        self.socket.press_key('W-KEY_H')
         self.wait_for_clients(2)
         if self._get_views() != ['b']:
             return wt.Status.WRONG, 'Did focus switch to the other output? ' + str(self._get_views())
 
         self._click_on(self.socket.get_view_info_title('b'))
-        self.socket.press_key('S-KEY_H')
+        self.socket.press_key('W-KEY_H')
         self.wait_for_clients(2)
         if self._get_views() != []:
             return wt.Status.WRONG, 'After output switch, cannot close second app! ' + str(self._get_views())

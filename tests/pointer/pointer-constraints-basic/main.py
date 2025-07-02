@@ -50,7 +50,7 @@ class WTest(wt.WayfireTest):
         self.socket.move_cursor(0, 0) # Outside of client, but should be confined to the corner
         self.wait_for_clients(2)
 
-        if not gtk1.expect_line("pointer-motion 99,99"):
+        if not gtk1.expect_line("pointer-motion 100,100"):
             return wt.Status.WRONG, 'pointer not properly confined to bottom-right corner: ' + gtk1.last_line
         if not gtk1.expect_line("pointer-motion 0,0"):
             return wt.Status.WRONG, 'pointer not properly confined to top-left corner: ' + gtk1.last_line

@@ -1,100 +1,59 @@
+from wayfire import WayfireSocket
+from wayfire.extra.stipc import Stipc
+from wayfire.core.template import get_msg_template
 from typing import Any
-import socket
-import json as js
 import select
-import time
 
-def get_msg_template(cmd: str | None = None):
-    # Create generic message template
-    message = {}
-    message["data"] = {}
-    if str is not None:
-        message["method"] = cmd
-    return message
 
 class WayfireIPCClient:
     def __init__(self, socket_name: str):
-        self.client = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
-        self.client.connect(socket_name)
-        self.client.setblocking(False)
+        self.sock = WayfireSocket(socket_name)
+        self.stipc = Stipc(self.sock)
 
-    def read_exact(self, n, timeout: float | None = None):
-        response = bytes()
-        while n > 0:
-            ready = select.select([self.client], [], [], 5 if timeout is None else timeout) # Wait 5 seconds
-            if not ready[0]:
-                if timeout is None:
-                    raise Exception("Failed to read from socket: timeout")
-                else:
-                    return None
+        self.original_read_msg = self.sock.read_message
+        self.sock.read_message = self.wrap_read_message
 
-            read_this_time = self.client.recv(n)
-            if not read_this_time:
-                raise Exception("Failed to read anything from the socket!")
-            n -= len(read_this_time)
-            response += read_this_time
+    # pywayfire raises exceptions when wayfire reports an error, instead, we want to handle them in the tests.
+    # so we wrap the read_message method.
+    def wrap_read_message(self):
+        try:
+            return self.original_read_msg()
+        except Exception as e:
+            return {'error': str(e.args[0])}
 
-        return response
+    def read_message(self, timeout = None):
+        if timeout is None:
+            return self.wrap_read_message()
 
-    def read_message(self, timeout: float = 5):
-        length = self.read_exact(4, timeout)
-        if not length:
+        readable, _, _ = select.select([self.sock.client], [], [], timeout)
+        if readable:
+            return self.wrap_read_message()
+        else:
             return None
 
-        rlen = int.from_bytes(length, byteorder="little")
-        response_message = self.read_exact(rlen)
-        assert response_message is not None
-        return js.loads(response_message)
-
-    def _send_json(self, msg):
-        data = js.dumps(msg).encode('utf8')
-        header = len(data).to_bytes(4, byteorder="little")
-        self.client.send(header)
-        self.client.send(data)
-        resp = self.read_message()
-        assert resp is not None
-        return resp
-
-    def send_json(self, msg):
-        response = self._send_json(msg)
-        if 'error' in response:
-            msg["method"] = "core" + msg["method"][5:]
-            response2 = self._send_json(msg)
-            if 'error' in response2:
-                return response
-            return response2
-        return response
-
     def ping(self):
-        message = get_msg_template()
-        message["method"] = "stipc/ping"
-        response = self.send_json(message)
-        return ("result", "ok") in response.items()
+        return self.stipc.ping()
 
     def create_wayland_output(self):
-        message = get_msg_template()
-        message["method"] = "stipc/create_wayland_output"
-        self.send_json(message)
+        return self.stipc.create_wayland_output()
 
     def destroy_wayland_output(self, output: str):
-        message = get_msg_template()
-        message["method"] = "stipc/destroy_wayland_output"
-        message["data"]["output"] = output
-        return self.send_json(message)
+        return self.stipc.destroy_wayland_output(output)
+
+    def send_json(self, data):
+        return self.sock.send_json(data)
 
     def list_outputs(self):
-        message = get_msg_template("window-rules/list-outputs")
-        return self.send_json(message)
+        return self.sock.list_outputs()
 
     def list_views(self):
-        message = get_msg_template()
-        message["method"] = "stipc/list_views"
-        views = self.send_json(message)
-        if "error" in views:
-            message["method"] = "window-rules/list-views"
-            views = self.send_json(message)
+        try:
+            views = self.sock.list_views()
+        except:
+            # Support for older Wayfire versions (pre-0.8.1)
+            message = get_msg_template("stipc/list_views")
+            views = self.sock.send_json(message)
 
-        # Support for older Wayfire versions (pre-0.8.1)
         for i in range(len(views)):
             for field in ['minimized', 'activated', 'focusable', 'mapped']:
                 if 'state' in views[i] and field in views[i]['state']:
@@ -105,30 +64,18 @@ class WayfireIPCClient:
             if 'output' in views[i]:
                 views[i]['output-name'] = views[i]['output']
 
+            if 'output' not in views[i]:
+                views[i]['output'] = views[i]['output-name']
+
         return views
 
     def layout_views(self, layout):
-        views = self.list_views()
-        message = get_msg_template()
-        message["method"] = "stipc/layout_views"
-        msg_layout = []
+        return self.stipc.layout_views(layout)
 
-        for ident in layout:
-            x, y, w, h = layout[ident][:4]
-            for v in views:
-                if v['app-id'] == ident or v['title'] == ident or v['id'] == ident:
-                    layout_for_view = {"id": v["id"], "x": x, "y": y, "width": w, "height": h}
-                    if len(layout[ident]) == 5:
-                        layout_for_view["output"] = layout[ident][-1]
-                    msg_layout.append(layout_for_view)
-
-        message["data"]["views"] = msg_layout
-        return self.send_json(message)
-
-    def get_view_info(self, app_id: str, mappedOnly: bool = False) -> Any:
+    def get_view_info(self, app_id: str, mapped_only: bool = False) -> Any:
         views = self.list_views()
         for v in views:
-            if v['app-id'] == app_id and (not mappedOnly or v['mapped']) :
+            if v['app-id'] == app_id and (not mapped_only or v['mapped']) :
                 return v
         return None
 
@@ -146,31 +93,16 @@ class WayfireIPCClient:
         return None
 
     def run(self, cmd):
-        message = get_msg_template()
-        message["method"] = "stipc/run"
-        message["data"]["cmd"] = cmd
-        return self.send_json(message)
+        return self.stipc.run_cmd(cmd)
 
     def move_cursor(self, x: int, y: int):
-        message = get_msg_template()
-        message["method"] = "stipc/move_cursor"
-        message["data"]["x"] = x
-        message["data"]["y"] = y
-        return self.send_json(message)
+        return self.stipc.move_cursor(x, y)
 
     def set_touch(self, id: int, x: int, y: int):
-        message = get_msg_template()
-        message["method"] = "stipc/touch"
-        message["data"]["finger"] = id
-        message["data"]["x"] = x
-        message["data"]["y"] = y
-        return self.send_json(message)
+        return self.stipc.set_touch(id, x, y)
 
     def release_touch(self, id: int):
-        message = get_msg_template()
-        message["method"] = "stipc/touch_release"
-        message["data"]["finger"] = id
-        return self.send_json(message)
+        return self.stipc.release_touch(id)
 
     def click_button(self, btn_with_mod: str, mode: str):
         """
@@ -178,110 +110,43 @@ class WayfireIPCClient:
         If S-BTN..., then the super modifier will be pressed as well.
         mode is full, press or release
         """
-        message = get_msg_template()
-        message["method"] = "stipc/feed_button"
-        message["data"]["mode"] = mode
-        message["data"]["combo"] = btn_with_mod
-        return self.send_json(message)
+        return self.stipc.click_button(btn_with_mod, mode)
 
     def set_key_state(self, key: str, state: bool):
-        message = get_msg_template()
-        message["method"] = "stipc/feed_key"
-        message["data"]["key"] = key
-        message["data"]["state"] = state
-        return self.send_json(message)
+        return self.stipc.set_key_state(key, state)
 
     def press_key(self, key: str, pause: float = 0):
-        def wait():
-            if pause > 0:
-                time.sleep(pause)
-
-        if key[:2] == 'S-':
-            self.set_key_state('KEY_LEFTMETA', True)
-            wait()
-            self.set_key_state(key[2:], True)
-            wait()
-            self.set_key_state(key[2:], False)
-            wait()
-            self.set_key_state('KEY_LEFTMETA', False)
-        elif key[:2] == 'C-':
-            self.set_key_state('KEY_LEFTCTRL', True)
-            wait()
-            self.set_key_state(key[2:], True)
-            wait()
-            self.set_key_state(key[2:], False)
-            wait()
-            self.set_key_state('KEY_LEFTCTRL', False)
-        elif key[:2] == 'A-':
-            self.set_key_state('KEY_LEFTALT', True)
-            wait()
-            self.set_key_state(key[2:], True)
-            wait()
-            self.set_key_state(key[2:], False)
-            wait()
-            self.set_key_state('KEY_LEFTALT', False)
-        else:
-            self.set_key_state(key, True)
-            wait()
-            self.set_key_state(key, False)
+        return self.stipc.press_key(key, int(pause * 1000))
 
     def tablet_tool_proximity(self, x, y, prox_in):
-        message = get_msg_template()
-        message["method"] = "stipc/tablet/tool_proximity"
-        message["data"]["x"] = x
-        message["data"]["y"] = y
-        message["data"]["proximity_in"] = prox_in
-        return self.send_json(message)
+        return self.stipc.tablet_tool_proximity(x, y, prox_in)
 
     def tablet_tool_tip(self, x, y, state):
-        message = get_msg_template()
-        message["method"] = "stipc/tablet/tool_tip"
-        message["data"]["x"] = x
-        message["data"]["y"] = y
-        message["data"]["state"] = state
-        return self.send_json(message)
+        return self.stipc.tablet_tool_tip(x, y, state)
 
     def tablet_tool_axis(self, x, y, pressure):
-        message = get_msg_template()
-        message["method"] = "stipc/tablet/tool_axis"
-        message["data"]["x"] = x
-        message["data"]["y"] = y
-        message["data"]["pressure"] = pressure
-        return self.send_json(message)
+        return self.stipc.tablet_tool_axis(x, y, pressure)
 
     def tablet_tool_button(self, btn, state):
-        message = get_msg_template()
-        message["method"] = "stipc/tablet/tool_button"
-        message["data"]["button"] = btn
-        message["data"]["state"] = state
-        return self.send_json(message)
+        return self.stipc.tablet_tool_button(btn, state)
 
     def tablet_pad_button(self, btn, state):
-        message = get_msg_template()
-        message["method"] = "stipc/tablet/pad_button"
-        message["data"]["button"] = btn
-        message["data"]["state"] = state
-        return self.send_json(message)
+        return self.stipc.tablet_pad_button(btn, state)
 
     def delay_next_tx(self):
-        message = get_msg_template()
-        message["method"] = "stipc/delay_next_tx"
-        return self.send_json(message)
+        return self.stipc.delay_next_tx()
 
     def xwayland_pid(self):
-        message = get_msg_template()
-        message["method"] = "stipc/get_xwayland_pid"
-        return self.send_json(message)
+        return self.stipc.xwayland_pid()
 
     def xwayland_display(self):
-        message = get_msg_template()
-        message["method"] = "stipc/get_xwayland_display"
-        return self.send_json(message)
+        return self.stipc.xwayland_display()
 
     def ipc_rules_get_focused(self):
-        message = get_msg_template()
-        message["method"] = "window-rules/get-focused-view"
-        return self.send_json(message)
+        info = self.sock.get_focused_view()
+        resp = info
+        resp['info'] = info # backwards compatibility with older ipc lib implementations
+        return resp
 
 # Helper functions
 def check_geometry(x: int, y: int, width: int, height: int, obj) -> bool:

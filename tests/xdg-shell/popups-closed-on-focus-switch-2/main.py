@@ -34,7 +34,7 @@ class WTest(wt.WayfireTest):
         self.wait_for_clients_to_open(nr_clients=3, message='popup menu should be open now')
 
         gtk.reset_logs()
-        self.socket.press_key('S-KEY_TAB')
+        self.socket.press_key('W-KEY_TAB')
         self.wait_for_clients()
 
         if self._get_views() != ['gtk_logger', 'gtk_logger']:

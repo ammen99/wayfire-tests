@@ -26,7 +26,7 @@ class WTest(wt.WayfireTest):
             self.wait_for_clients()
             gtk1.expect_line_throw('key-release 57') # press is sent via text-input-v3
 
-            self.socket.press_key('S-KEY_ENTER')
+            self.socket.press_key('W-KEY_ENTER')
             self.wait_for_clients_to_open(nr_clients=2)
             gtk1.expect_line_throw('key-press 125')
             gtk1.expect_line_throw('key-release 125')

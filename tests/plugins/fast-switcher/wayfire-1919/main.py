@@ -31,7 +31,7 @@ class WTest(wt.WayfireTest):
         gtk2.reset_logs()
 
         try:
-            self.socket.press_key('S-KEY_ESC')
+            self.socket.press_key('W-KEY_ESC')
             self.wait_for_clients(2)
             gtk1.expect_line_throw('key-press 125')
             gtk1.expect_line_throw('keyboard-leave')

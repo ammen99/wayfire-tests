@@ -27,7 +27,7 @@ class WTest(wt.WayfireTest):
 
         try:
             gtk1.expect_line_throw("keyboard-enter")
-            self.socket.press_key('S-KEY_E')
+            self.socket.press_key('W-KEY_E')
             self.wait_for_clients(2)
 
             gtk1.expect_line_throw("key-press 125", "(super mod)")
