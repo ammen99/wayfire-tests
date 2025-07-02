@@ -15,7 +15,7 @@ class WTest(wt.WayfireTest):
         self.socket.run('GDK_BACKEND=x11 eog')
         self.wait_for_clients_to_open(nr_clients=1)
         self.wait_ms(100) # Wait for things to settle down
-        gedit_id = self.socket.get_view_info('Eog', mappedOnly=True)['id']
+        gedit_id = self.socket.get_view_info('Eog', mapped_only=True)['id']
 
         self.socket.set_key_state('KEY_LEFTCTRL', True)
         self.socket.set_key_state('KEY_O', True)
