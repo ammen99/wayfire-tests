@@ -11,7 +11,7 @@ class WTest(wt.WayfireTest):
         return self.require_test_clients(['kitty'])
 
     def _run(self):
-        self.socket.run('WAYLAND_DEBUG=1 kitty &> /tmp/log')
+        self.socket.run('kitty /bin/sh')
         self.wait_for_clients_to_open(nr_clients=1)
 
         layout = {}
