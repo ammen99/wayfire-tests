@@ -21,7 +21,7 @@ class WTest(wt.WayfireTest):
         self.click_and_drag('BTN_RIGHT', 50, 50, 750, 0) # Maximize on WL-2
         self.wait_for_clients(2)
 
-        info = self.socket.get_view_info('nil')
+        info = self.socket.get_view_info('org.freedesktop.weston.wayland-terminal')
         if not wi.check_geometry(0, 0, 500, 500, info['geometry']):
             return wt.Status.WRONG, f'weston-terminal has invalid geometry after dragging with binding: {str(info["geometry"])}'
         if info['output-name'] != 'WL-2':
@@ -33,7 +33,7 @@ class WTest(wt.WayfireTest):
         self.click_and_drag('BTN_LEFT', sx, sy, 250, 0)
         self.wait_for_clients(2)
 
-        info = self.socket.get_view_info('nil')
+        info = self.socket.get_view_info('org.freedesktop.weston.wayland-terminal')
         if not wi.check_geometry(0, 0, 500, 500, info['geometry']):
             return wt.Status.WRONG, f'Try 1: weston-terminal has invalid geometry after dragging by titlebar: {str(info["geometry"])}'
         if info['output-name'] != 'WL-2':
@@ -47,7 +47,7 @@ class WTest(wt.WayfireTest):
         self.click_and_drag('BTN_LEFT', sx, sy, 250, 0)
         self.wait_for_clients(2)
 
-        info = self.socket.get_view_info('nil')
+        info = self.socket.get_view_info('org.freedesktop.weston.wayland-terminal')
         if not wi.check_geometry(0, 0, 500, 500, info['geometry']):
             return wt.Status.WRONG, f'Try 2: weston-terminal has invalid geometry after dragging by titlebar: {str(info["geometry"])}'
         if info['output-name'] != 'WL-1':

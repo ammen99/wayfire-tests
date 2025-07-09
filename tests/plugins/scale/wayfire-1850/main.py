@@ -15,13 +15,13 @@ class WTest(wt.WayfireTest):
         self.socket.run('gtk_color_switcher gcs')
         self.wait_for_clients_to_open(nr_clients=2)
 
-        weston_focus = self.socket.get_view_info('nil')['activated']
+        weston_focus = self.socket.get_view_info('org.freedesktop.weston.wayland-terminal')['activated']
 
         # toggle scale
         self.socket.press_key('KEY_Z')
         self.socket.press_key('KEY_Z')
 
-        focus_now = self.socket.get_view_info('nil')['activated']
+        focus_now = self.socket.get_view_info('org.freedesktop.weston.wayland-terminal')['activated']
         if focus_now != weston_focus:
             return wt.Status.WRONG, 'weston-terminal changed focus: ' + str(focus_now)
 

@@ -35,7 +35,7 @@ class WTest(wt.WayfireTest):
         self.socket.click_button('BTN_RIGHT', 'full')
         self.wait_for_clients(2)
 
-        if self._get_views() != ['demo', 'nil']:
+        if self._get_views() != ['demo', 'org.freedesktop.weston.wayland-terminal']:
             return wt.Status.WRONG, \
                 'x11_click_to_close did not get the click: ' + str(self._get_views())
 

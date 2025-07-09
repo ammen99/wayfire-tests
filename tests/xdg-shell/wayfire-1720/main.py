@@ -44,7 +44,7 @@ class WTest(wt.WayfireTest):
         self.socket.run('weston-terminal --shell=/bin/sh')
         self.wait_ms(600) # wait for unmap animation to end, the unmap animation is important, weston-terminal should run while it is active
 
-        if self._get_views() != ['gtk_logger', 'nil']:
+        if self._get_views() != ['gtk_logger', 'org.freedesktop.weston.wayland-terminal']:
             return wt.Status.WRONG, 'Wrong views are open: ' + str(self._get_views())
 
         return wt.Status.OK, None

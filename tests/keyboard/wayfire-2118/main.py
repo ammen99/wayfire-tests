@@ -19,12 +19,12 @@ class WTest(wt.WayfireTest):
         self.wait_for_clients_to_open(nr_clients=2)
 
         layout = {}
-        layout['nil'] = (100, 100, 900, 900)
+        layout['org.freedesktop.weston.wayland-terminal'] = (100, 100, 900, 900)
         self.socket.layout_views(layout)
         self.wait_for_clients(2)
 
         focus = self._get_focused()
-        if focus != 'nil':
+        if focus != 'org.freedesktop.weston.wayland-terminal':
             return wt.Status.WRONG, f'weston-terminal should be focused in the beginning, instead focus is {focus}'
 
         self.socket.press_key('KEY_A')
@@ -38,7 +38,7 @@ class WTest(wt.WayfireTest):
         self.wait_for_clients(2)
 
         focus = self._get_focused()
-        if focus != 'nil':
+        if focus != 'org.freedesktop.weston.wayland-terminal':
             return wt.Status.WRONG, f'weston-terminal did not regain focus, instead focus is {focus}'
 
         return wt.Status.OK, None

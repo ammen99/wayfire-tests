@@ -15,7 +15,7 @@ class WTest(wt.WayfireTest):
         self.wait_for_clients(2)
 
         layout = {}
-        layout['nil'] = (0, 0, 400, 500, 'WL-1')
+        layout['org.freedesktop.weston.wayland-terminal'] = (0, 0, 400, 500, 'WL-1')
         self.socket.layout_views(layout)
         self.wait_for_clients(2)
 

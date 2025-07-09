@@ -23,7 +23,7 @@ class WTest(wt.WayfireTest):
         self.wait_ms(1500) # Wait for wf-background to start and be initialized
 
         layout = {}
-        layout['nil'] = (0, 0, 200, 200, 'WL-1')
+        layout['org.freedesktop.weston.wayland-terminal'] = (0, 0, 200, 200, 'WL-1')
         self.socket.layout_views(layout)
         self.wait_for_clients(2)
         if error := self.take_screenshot('scene-setup'):

@@ -80,7 +80,7 @@ class WTest(wt.WayfireTest):
             return wt.Status.WRONG, msg
 
         focused = self.socket.ipc_rules_get_focused()['info']
-        if not focused or focused['app-id'] != 'nil':
+        if not focused or focused['app-id'] != 'org.freedesktop.weston.wayland-terminal':
             return wt.Status.WRONG, f'weston-terminal is not focused {focused}'
 
         return wt.Status.OK, None
