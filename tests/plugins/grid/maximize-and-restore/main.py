@@ -18,42 +18,42 @@ class WTest(wt.WayfireTest):
         self.wait_for_clients(5)
 
         layout = {}
-        layout['nil'] = (100, 200, 300, 300)
+        layout['org.freedesktop.weston.wayland-terminal'] = (100, 200, 300, 300)
         self.socket.layout_views(layout)
         self.wait_for_clients(2)
 
-        initial_g = self.socket.get_view_info('nil')["geometry"]
+        initial_g = self.socket.get_view_info('org.freedesktop.weston.wayland-terminal')["geometry"]
         self.socket.press_key('KEY_C')
         self.wait_for_clients(2)
 
-        maximized_g = self.socket.get_view_info('nil')["geometry"]
+        maximized_g = self.socket.get_view_info('org.freedesktop.weston.wayland-terminal')["geometry"]
         if not wi.check_geometry(0, 100, 500, 400, maximized_g):
             return wt.Status.WRONG, "Invalid maximized geometry: " + str(maximized_g)
 
         self.socket.press_key('KEY_R')
         self.wait_for_clients(2)
 
-        restored_g = self.socket.get_view_info('nil')["geometry"]
+        restored_g = self.socket.get_view_info('org.freedesktop.weston.wayland-terminal')["geometry"]
         if restored_g != initial_g:
             return wt.Status.WRONG, "Invalid restored geometry: " + str(restored_g)
 
         # Do the same, but this time fullscreen from the client
         layout = {}
-        layout['nil'] = (200, 300, 250, 250)
+        layout['org.freedesktop.weston.wayland-terminal'] = (200, 300, 250, 250)
         self.socket.layout_views(layout)
         self.wait_for_clients(2)
-        initial_g = self.socket.get_view_info('nil')["geometry"]
+        initial_g = self.socket.get_view_info('org.freedesktop.weston.wayland-terminal')["geometry"]
 
         self.socket.press_key('KEY_F11')
         self.wait_for_clients(2)
-        fullscreen_g = self.socket.get_view_info('nil')["geometry"]
+        fullscreen_g = self.socket.get_view_info('org.freedesktop.weston.wayland-terminal')["geometry"]
         if not wi.check_geometry(0, 0, 500, 500, fullscreen_g):
             return wt.Status.WRONG, "Invalid fullscreen geometry: " + str(fullscreen_g)
 
         self.socket.press_key('KEY_F11')
         self.wait_for_clients(2)
 
-        restored_g = self.socket.get_view_info('nil')["geometry"]
+        restored_g = self.socket.get_view_info('org.freedesktop.weston.wayland-terminal')["geometry"]
         if restored_g != initial_g:
             return wt.Status.WRONG, "Invalid restored geometry after fullscreen: " + str(restored_g)
 

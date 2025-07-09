@@ -16,14 +16,14 @@ class WTest(wt.WayfireTest):
         self.wait_for_clients(2)
 
         layout = {}
-        layout['nil'] = (0, 0, 200, 200, 'WL-1')
+        layout['org.freedesktop.weston.wayland-terminal'] = (0, 0, 200, 200, 'WL-1')
         self.socket.layout_views(layout)
         self.wait_for_clients(2)
 
         for i in range(2):
             self.click_and_drag('BTN_RIGHT', 50, 50, 750, 60) # Add 200, 10 to the view geometry
             self.wait_for_clients()
-            g = self.socket.get_view_info('nil')['geometry']
+            g = self.socket.get_view_info('org.freedesktop.weston.wayland-terminal')['geometry']
             if g['x'] != 200 or g['y'] != 10:
                 return wt.Status.WRONG, f'Try #{i}: weston-terminal has invalid geometry after dragging with binding: {str(g)}'
 
@@ -32,7 +32,7 @@ class WTest(wt.WayfireTest):
             sy = g['y'] + 10
             self.click_and_drag('BTN_LEFT', sx, sy, 10, 10)
             self.wait_for_clients()
-            g = self.socket.get_view_info('nil')['geometry']
+            g = self.socket.get_view_info('org.freedesktop.weston.wayland-terminal')['geometry']
             if g['x'] != 0 or g['y'] != 0:
                 return wt.Status.WRONG, f'Try #{i}: weston-terminal has invalid geometry after dragging by titlebar: {str(g)}'
 

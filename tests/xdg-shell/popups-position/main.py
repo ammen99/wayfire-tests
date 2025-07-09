@@ -15,7 +15,7 @@ class WTest(wt.WayfireTest):
         self.socket.run('weston-terminal --shell=/bin/sh')
         self.wait_for_clients_to_open(nr_clients=1)
 
-        terminal = self.socket.get_view_info('nil')
+        terminal = self.socket.get_view_info('org.freedesktop.weston.wayland-terminal')
 
         sx, sy = terminal['bbox']['x'] + 200, terminal['bbox']['y'] + 200
         self.socket.move_cursor(sx, sy)
