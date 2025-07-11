@@ -11,6 +11,13 @@ class WTest(wt.WayfireTest):
     def prepare(self):
         return self.require_test_clients(['weston-terminal'])
 
+    def _interactive_drag(self, button, sx, sy, ex, ey):
+        self.socket.move_cursor(sx, sy)
+        self.socket.click_button(button, 'press')
+        self.wait_for_clients() # otherwise weston-terminal might not start interactive move
+        self.move_continuous([(sx, sy), (ex, ey)], 10)
+        self.socket.click_button(button, 'release')
+
     def _run(self):
         self.socket.create_wayland_output()
         self.socket.move_cursor(250, 250) # Focus WL-1
@@ -18,7 +25,7 @@ class WTest(wt.WayfireTest):
         self.socket.run('weston-terminal --shell=/bin/sh -m')
         self.wait_for_clients_to_open(nr_clients=1)
 
-        self.click_and_drag('BTN_RIGHT', 50, 50, 750, 0) # Maximize on WL-2
+        self._interactive_drag('BTN_RIGHT', 50, 50, 750, 0) # Maximize on WL-2
         self.wait_for_clients(2)
 
         info = self.socket.get_view_info('org.freedesktop.weston.wayland-terminal')
@@ -30,7 +37,7 @@ class WTest(wt.WayfireTest):
         # Drag via titlebar this time, back to the first output, but less than snap-off threshold
         sx = 510
         sy = 10
-        self.click_and_drag('BTN_LEFT', sx, sy, 250, 0)
+        self._interactive_drag('BTN_LEFT', sx, sy, 250, 0)
         self.wait_for_clients(2)
 
         info = self.socket.get_view_info('org.freedesktop.weston.wayland-terminal')
@@ -44,7 +51,7 @@ class WTest(wt.WayfireTest):
         self.wait_ms(100)
         sx = 700
         sy = 10
-        self.click_and_drag('BTN_LEFT', sx, sy, 250, 0)
+        self._interactive_drag('BTN_LEFT', sx, sy, 250, 0)
         self.wait_for_clients(2)
 
         info = self.socket.get_view_info('org.freedesktop.weston.wayland-terminal')
