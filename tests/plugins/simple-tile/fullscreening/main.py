@@ -18,19 +18,19 @@ class WTest(wt.WayfireTest):
 
         self.socket.press_key('KEY_T') # Tile
         self.wait_for_clients(2)
-        g = self.socket.get_view_info('org.freedesktop.weston.wayland-terminal')['geometry']
+        g = self.socket.get_view_info(self.WESTON_TERMINAL_APP_ID)['geometry']
         if g != tiled:
             return wt.Status.WRONG, 'Tiled weston-terminal does not have the correct size!' + str(g)
 
         self.socket.press_key('KEY_F') # Fullscreen
         self.wait_for_clients(2)
-        g = self.socket.get_view_info('org.freedesktop.weston.wayland-terminal')['geometry']
+        g = self.socket.get_view_info(self.WESTON_TERMINAL_APP_ID)['geometry']
         if g != full:
             return wt.Status.WRONG, 'Fullscreeen weston-terminal does not have the correct size!' + str(g)
 
         self.socket.press_key('KEY_F') # Unfullscreen
         self.wait_for_clients(2)
-        g = self.socket.get_view_info('org.freedesktop.weston.wayland-terminal')['geometry']
+        g = self.socket.get_view_info(self.WESTON_TERMINAL_APP_ID)['geometry']
         if g != tiled:
             return wt.Status.WRONG, 'Unfullscreened weston-terminal does not have the correct size!' + str(g)
 

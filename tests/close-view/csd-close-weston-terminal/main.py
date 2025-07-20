@@ -19,7 +19,7 @@ class WTest(wt.WayfireTest):
         self.wait_for_clients_to_open(nr_clients=1)
         self.wait_for_clients(2) # for resize
 
-        terminal = self.socket.get_view_info('org.freedesktop.weston.wayland-terminal')
+        terminal = self.socket.get_view_info(self.WESTON_TERMINAL_APP_ID)
         x = terminal['geometry']['x'] + terminal['geometry']['width'] - 16
         y = terminal['geometry']['y'] + 16
         self.socket.move_cursor(x, y)

@@ -18,16 +18,16 @@ class WTest(wt.WayfireTest):
         self.wait_for_clients(2) # Wait for tiled
 
         layout = {}
-        layout['org.freedesktop.weston.wayland-terminal'] = (0, 0, 200, 200)
+        layout[self.WESTON_TERMINAL_APP_ID] = (0, 0, 200, 200)
         self.socket.layout_views(layout)
         self.wait_for_clients(2)
 
-        geom = self.socket.get_view_info('org.freedesktop.weston.wayland-terminal')['geometry']
+        geom = self.socket.get_view_info(self.WESTON_TERMINAL_APP_ID)['geometry']
         self.socket.move_cursor(geom['width'] - 70, 10)
         self.socket.click_button('BTN_LEFT', 'full')
         self.wait_for_clients(2)
 
-        if not self.socket.get_view_info('org.freedesktop.weston.wayland-terminal')['minimized']:
+        if not self.socket.get_view_info(self.WESTON_TERMINAL_APP_ID)['minimized']:
             return wt.Status.WRONG, 'weston-terminal was not minimized!'
 
         if err := self.take_screenshot('minimized-does-not-show'):

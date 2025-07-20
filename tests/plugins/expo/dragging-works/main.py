@@ -18,7 +18,7 @@ class WTest(wt.WayfireTest):
         self.wait_for_clients(4)
 
         layout = {}
-        layout['org.freedesktop.weston.wayland-terminal'] = (0, 0, 500, 500)
+        layout[self.WESTON_TERMINAL_APP_ID] = (0, 0, 500, 500)
         self.socket.layout_views(layout)
         self.wait_for_clients(4)
 

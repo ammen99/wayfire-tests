@@ -16,7 +16,7 @@ class WTest(wt.WayfireTest):
 
         self.socket.press_key('KEY_F') # Fullscreen
         self.wait_for_clients(2)
-        g = self.socket.get_view_info('org.freedesktop.weston.wayland-terminal')['geometry']
+        g = self.socket.get_view_info(self.WESTON_TERMINAL_APP_ID)['geometry']
         if not wi.check_geometry(0, 0, 1280, 720, g):
             return wt.Status.WRONG, 'Fullscreeen weston-terminal does not have the correct size!' + str(g)
 
@@ -24,7 +24,7 @@ class WTest(wt.WayfireTest):
         self.wait_for_clients_to_open(nr_clients=2)
         self.wait_for_clients() # wait for resize after initial map
 
-        g = self.socket.get_view_info('org.freedesktop.weston.wayland-terminal')['geometry']
+        g = self.socket.get_view_info(self.WESTON_TERMINAL_APP_ID)['geometry']
         if not wi.check_geometry(50, 50, 585, 620, g):
             return wt.Status.WRONG, 'Unfullscreened weston-terminal does not have the correct size!' + str(g)
 

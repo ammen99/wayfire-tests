@@ -19,7 +19,7 @@ class WTest(wt.WayfireTest):
         # Potentially wait for resize
         self.wait_for_clients(2)
 
-        info = self.socket.get_view_info('org.freedesktop.weston.wayland-terminal')
+        info = self.socket.get_view_info(self.WESTON_TERMINAL_APP_ID)
         if not wi.check_geometry(0, 200, 1280, 520, info['geometry']):
             return wt.Status.WRONG, 'weston-terminal has invalid geometry: ' + str(info['geometry'])
 

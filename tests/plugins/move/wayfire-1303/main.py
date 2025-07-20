@@ -16,23 +16,23 @@ class WTest(wt.WayfireTest):
         self.wait_for_clients(2)
 
         layout = {}
-        layout['org.freedesktop.weston.wayland-terminal'] = (200, 200, 300, 300)
+        layout[self.WESTON_TERMINAL_APP_ID] = (200, 200, 300, 300)
         self.socket.layout_views(layout)
         self.wait_for_clients(2)
 
-        initial_g = self.socket.get_view_info('org.freedesktop.weston.wayland-terminal')['geometry']
+        initial_g = self.socket.get_view_info(self.WESTON_TERMINAL_APP_ID)['geometry']
 
         self.click_and_drag('BTN_RIGHT', 250, 207, 250, 0) # Drag and snap to top => maximize
         self.wait_for_clients(2)
 
-        maximized = self.socket.get_view_info('org.freedesktop.weston.wayland-terminal')['geometry']
+        maximized = self.socket.get_view_info(self.WESTON_TERMINAL_APP_ID)['geometry']
         if not check_geometry(0, 0, 500, 500, maximized):
             return wt.Status.WRONG, 'weston-terminal has wrong maximized geometry: ' + str(maximized)
 
         # Unmaximize => should be in the center again
         self.socket.press_key('KEY_M')
         self.wait_for_clients(2)
-        restored = self.socket.get_view_info('org.freedesktop.weston.wayland-terminal')['geometry']
+        restored = self.socket.get_view_info(self.WESTON_TERMINAL_APP_ID)['geometry']
         if initial_g != restored:
             return wt.Status.WRONG, 'weston-terminal has wrong restored geometry: ' + str(restored)
 

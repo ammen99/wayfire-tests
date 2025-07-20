@@ -15,7 +15,7 @@ class WTest(wt.WayfireTest):
         self.wait_for_clients_to_open(nr_clients=2)
 
         layout = {}
-        layout['org.freedesktop.weston.wayland-terminal'] = (100, 100, 900, 900)
+        layout[self.WESTON_TERMINAL_APP_ID] = (100, 100, 900, 900)
         self.socket.layout_views(layout)
         self.wait_for_clients(2)
 
@@ -37,7 +37,7 @@ class WTest(wt.WayfireTest):
         self.wait_for_clients(2)
 
         focused = self.socket.ipc_rules_get_focused()['info']
-        if focused['app-id'] != 'org.freedesktop.weston.wayland-terminal':
+        if focused['app-id'] != self.WESTON_TERMINAL_APP_ID:
             return wt.Status.WRONG, 'wf-panel did not let go of input!'
 
         return wt.Status.OK, None

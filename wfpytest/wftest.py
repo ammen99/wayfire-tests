@@ -53,6 +53,7 @@ class WayfireTest:
         self.screenshot_prefix = ""
         self.subtest_data: Any = None
         self.ev_socket: WayfireIPCClient | None = None
+        self.WESTON_TERMINAL_APP_ID = "org.freedesktop.weston.wayland-terminal"
 
     def watch(self, events: List[str]) -> WayfireIPCClient:
         self.ev_socket = WayfireIPCClient(self._socket_name)

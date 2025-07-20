@@ -15,7 +15,7 @@ class WTest(wt.WayfireTest):
         self.wait_for_clients(2) # Wait for terminals to start and be tiled
 
         layout = {}
-        layout['org.freedesktop.weston.wayland-terminal'] = (0, 0, 200, 200)
+        layout[self.WESTON_TERMINAL_APP_ID] = (0, 0, 200, 200)
         self.socket.layout_views(layout)
         self.wait_for_clients(1)
 

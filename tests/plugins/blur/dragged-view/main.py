@@ -30,7 +30,7 @@ class WTest(wt.WayfireTest):
             return wt.Status.CRASHED, error
 
         layout = {}
-        layout['org.freedesktop.weston.wayland-terminal'] = (0, 0, 500, 500, 'WL-1')
+        layout[self.WESTON_TERMINAL_APP_ID] = (0, 0, 500, 500, 'WL-1')
         self.socket.layout_views(layout)
         self.wait_for_clients(4)
         if error := self.take_screenshot('scene-setup'):

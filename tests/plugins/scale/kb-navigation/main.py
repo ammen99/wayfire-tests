@@ -12,7 +12,7 @@ class WTest(wt.WayfireTest):
 
     def _check_focus(self, terminal_focused: bool, msg: str):
         gcs = self.socket.get_view_info_title('gcs')['activated']
-        terminal = self.socket.get_view_info('org.freedesktop.weston.wayland-terminal')['activated']
+        terminal = self.socket.get_view_info(self.WESTON_TERMINAL_APP_ID)['activated']
 
         if terminal != terminal_focused:
             return f'weston-terminal has wrong activated state {terminal} {msg}'
@@ -29,7 +29,7 @@ class WTest(wt.WayfireTest):
 
         # weston-terminal on the left, gcs on the right
         layout = {}
-        layout['org.freedesktop.weston.wayland-terminal'] = (0, 0, 500, 500)
+        layout[self.WESTON_TERMINAL_APP_ID] = (0, 0, 500, 500)
         layout['gcs'] = (500, 0, 500, 500)
         self.socket.layout_views(layout)
         self.wait_for_clients(2)
