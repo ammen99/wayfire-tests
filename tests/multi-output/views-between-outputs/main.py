@@ -22,7 +22,7 @@ class WTest(wt.WayfireTest):
         self.socket.run('wleird-gamma-blend')
         self.socket.create_wayland_output()
         self.wait_for_clients(2)
-        if self._get_views() != ['gtk1', 'gtk2', self.WESTON_TERMINAL_APP_ID]:
+        if self._get_views() != ['gtk1', 'gtk2', 'nil']:
             return wt.Status.WRONG, 'Demo apps did not open: ' + str(self._get_views())
 
         # position the views
