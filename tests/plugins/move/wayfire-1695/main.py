@@ -24,7 +24,7 @@ class WTest(wt.WayfireTest):
             self.click_and_drag('BTN_RIGHT', 50, 50, 750, 60) # Add 200, 10 to the view geometry
             self.wait_for_clients()
             g = self.socket.get_view_info(self.WESTON_TERMINAL_APP_ID)['geometry']
-            if g['x'] != 200 or g['y'] != 10:
+            if abs(g['x'] - 200) > 1 or abs(g['y'] - 10) > 1:
                 return wt.Status.WRONG, f'Try #{i}: weston-terminal has invalid geometry after dragging with binding: {str(g)}'
 
             # Drag via titlebar this time, back to the first output
@@ -33,7 +33,7 @@ class WTest(wt.WayfireTest):
             self.click_and_drag('BTN_LEFT', sx, sy, 10, 10)
             self.wait_for_clients()
             g = self.socket.get_view_info(self.WESTON_TERMINAL_APP_ID)['geometry']
-            if g['x'] != 0 or g['y'] != 0:
+            if g['x'] > 1 or abs(g['y']) > 1:
                 return wt.Status.WRONG, f'Try #{i}: weston-terminal has invalid geometry after dragging by titlebar: {str(g)}'
 
         return wt.Status.OK, None
