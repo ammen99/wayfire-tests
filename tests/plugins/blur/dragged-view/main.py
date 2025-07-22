@@ -26,31 +26,31 @@ class WTest(wt.WayfireTest):
         self.socket.run('wf-background')
         self.wait_ms(1500) # Wait for wf-background to start and be initialized
 
-        if error := self.take_screenshot('clients-started'):
+        if error := self.take_screenshot('1-clients-started'):
             return wt.Status.CRASHED, error
 
         layout = {}
         layout[self.WESTON_TERMINAL_APP_ID] = (0, 0, 500, 500, 'WL-1')
         self.socket.layout_views(layout)
         self.wait_for_clients(4)
-        if error := self.take_screenshot('scene-setup'):
+        if error := self.take_screenshot('2-scene-setup'):
             return wt.Status.CRASHED, error
 
         self.socket.move_cursor(5, 5)
         self.socket.click_button('BTN_LEFT', 'press')
         self.wait_for_clients(2)
 
-        if error := self.take_screenshot('start-drag'):
+        if error := self.take_screenshot('3-start-drag'):
             return wt.Status.CRASHED, error
 
         self.socket.move_cursor(200, 200)
         self.wait_for_clients(2)
-        if error := self.take_screenshot('in-flight'):
+        if error := self.take_screenshot('4-in-flight'):
             return wt.Status.CRASHED, error
 
         self.send_signal(wt_pid, signal.SIGKILL)
         self.wait_for_clients(4)
-        if error := self.take_screenshot('force-closed'):
+        if error := self.take_screenshot('5-force-closed'):
             return wt.Status.CRASHED, error
 
         return wt.Status.OK, None
