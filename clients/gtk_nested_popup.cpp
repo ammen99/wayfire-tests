@@ -11,6 +11,12 @@ int main()
 
     Gtk::Menu nested;
     Gtk::MenuItem nested1{"Nested"};
+    auto provider = Gtk::CssProvider::create();
+    provider->load_from_data(".myclass { background-color: red; } .myclass2 { background-color: green; }");
+    Gtk::StyleContext::add_provider_for_screen(Gdk::Screen::get_default(), provider, GTK_STYLE_PROVIDER_PRIORITY_USER);
+    item1.get_style_context()->add_class("myclass");
+    nested1.get_style_context()->add_class("myclass2");
+
     nested.append(nested1);
     item1.set_submenu(nested);
 
