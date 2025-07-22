@@ -114,3 +114,6 @@ executable('xdg_popup_crasher', ['xdg_popup_crasher.c'],
     dependencies: [cairo, wayland_client, wl_protos],
     install: false)
 
+executable('wayfire2744', ['wayfire2744.c'],
+    dependencies: [wayland_client, wl_protos],
+    install: false)
