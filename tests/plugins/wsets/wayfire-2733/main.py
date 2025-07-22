@@ -7,7 +7,7 @@ from random import randint, choice
 def is_gui() -> bool:
     return False
 
-# This test opens gtk-logger and sends it back and forth between outputs and workspace sets
+# This test spams kitty terminal on two different outputs and moves terminals between outputs with wsets
 class WTest(wt.WayfireTest):
     def prepare(self):
         return self.require_test_clients(['kitty'])
