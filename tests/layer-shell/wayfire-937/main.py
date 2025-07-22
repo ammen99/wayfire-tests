@@ -5,8 +5,6 @@ import wftest as wt
 def is_gui() -> bool:
     return False
 
-# This test opens gedit and a gtk keyboard logger client side by side.
-# Then, it opens a menu in gedit (xdg-popup) which should be automatically closed when clicking on the gtk logger client.
 class WTest(wt.WayfireTest):
     def prepare(self):
         return self.require_test_clients(['layer_shell_delay_exclusive'])

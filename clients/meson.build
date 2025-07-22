@@ -88,6 +88,11 @@ executable('gtk_drag_and_drop', ['gtk_drag_and_drop.cpp'],
     include_directories: logger_inc,
     install: false)
 
+executable('gtk_nested_popup', ['gtk_nested_popup.cpp'],
+    dependencies: gtkmm,
+    include_directories: logger_inc,
+    install: false)
+
 executable('gtk_logger', ['gtk_logger.cpp'],
     dependencies: [gtkmm, wayland_client, wl_protos],
     include_directories: logger_inc,
