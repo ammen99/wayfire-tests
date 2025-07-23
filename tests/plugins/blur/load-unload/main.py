@@ -14,7 +14,7 @@ class WTest(wt.WayfireTest):
         return sorted([v['title'] for v in self.socket.list_views()])
 
     def _run(self):
-        self.socket.run('terminator')
+        self.socket.run('terminator -e /bin/sh')
         self.wait_for_clients(4) # Terminator has a slow startup
 
         shutil.copyfile('wayfire-no-blur.ini', 'wayfire.ini')

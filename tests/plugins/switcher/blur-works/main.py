@@ -18,7 +18,7 @@ class WTest(wt.WayfireTest):
         return sorted([v['title'] for v in self.socket.list_views()])
 
     def _run(self):
-        self.socket.run('terminator')
+        self.socket.run('terminator -e /bin/sh')
         self.socket.run('wf-background')
         self.wait_ms(1500)
 

@@ -16,7 +16,7 @@ class WTest(wt.WayfireTest):
         return sorted([v['app-id'] for v in self.socket.list_views()])
 
     def _run(self):
-        self.socket.run('terminator -f')
+        self.socket.run('terminator -f -e /bin/sh')
         self.wait_for_clients(4)
         if self._get_views() != ['terminator']:
             return wt.Status.WRONG, 'Terminator did not open: ' + str(self._get_views())

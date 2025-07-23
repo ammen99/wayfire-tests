@@ -14,7 +14,7 @@ class WTest(wt.WayfireTest):
 
     def _run(self):
         self.socket.run('wf-background')
-        self.socket.run('terminator')
+        self.socket.run('terminator -e /bin/sh')
         self.wait_ms(1000)
 
         self.socket.press_key('KEY_Q')
