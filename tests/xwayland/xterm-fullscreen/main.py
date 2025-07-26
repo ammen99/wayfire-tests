@@ -16,9 +16,9 @@ class WTest(wt.WayfireTest):
     def _run(self):
         # Add panel to reproduce #2585
         self.run_get_id('wf-panel -c wf-shell.ini')
-        self.socket.run('xterm -fullscreen')
+        self.socket.run('xterm -fullscreen -e /bin/sh')
         self.wait_for_clients_to_open(nr_clients=2)
-        self.wait_for_clients(2) # fullscreening
+        self.wait_for_clients(4) # fullscreening
 
         xterm = self.socket.get_view_info('XTerm')
         if not xterm:
