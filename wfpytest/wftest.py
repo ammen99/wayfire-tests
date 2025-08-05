@@ -171,7 +171,7 @@ class WayfireTest:
 
         return Status.OK, None
 
-    def move_continuous(self, positions: List[Tuple[int, int]], steps = 10):
+    def move_continuous(self, positions: List[Tuple[int, int]], steps = 10, pause = 0):
         for i in range(len(positions) - 1):
             start_x, start_y = positions[i]
             end_x, end_y = positions[i+1]
@@ -180,17 +180,22 @@ class WayfireTest:
             dy = end_y - start_y
             for i in range(steps+1):
                 self.socket.move_cursor(start_x + dx * i // steps, start_y + dy * i // steps)
+                if pause > 0:
+                    self.wait_ms(pause)
 
-    def click_and_drag_steps(self, button, positions: List[Tuple[int, int]], release=True, steps = 10):
+    def click_and_drag_steps(self, button, positions: List[Tuple[int, int]], release=True, steps = 10, pause = 0):
         start_x, start_y = positions[0]
         self.socket.move_cursor(start_x, start_y)
         self.socket.click_button(button, 'press')
+        if pause > 0:
+            self.wait_ms(pause)
+
         self.move_continuous(positions, steps)
         if release:
             self.socket.click_button(button, 'release')
 
-    def click_and_drag(self, button, start_x, start_y, end_x, end_y, release=True, steps = 10):
-        self.click_and_drag_steps(button, [(start_x, start_y), (end_x, end_y)], release, steps)
+    def click_and_drag(self, button, start_x, start_y, end_x, end_y, release=True, steps = 10, pause=0):
+        self.click_and_drag_steps(button, [(start_x, start_y), (end_x, end_y)], release, steps, pause)
 
     def run_wayfire(self, wayfire_path: str, logfile: str):
         # Run wayfire with specified socket name for IPC communication
