@@ -16,7 +16,6 @@ class WTest(wt.WayfireTest):
         gtk4_id, _ = self.run_get_id('gtk4-demo')
 
         gtk4_demo_view_info = self.socket.get_view_info_id(gtk4_id)
-        print(gtk4_demo_view_info)
         geometry1 = gtk4_demo_view_info["base-geometry"]
 
         self.socket.sock.assign_slot(gtk4_id, "slot_c") # type: ignore

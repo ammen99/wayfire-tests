@@ -31,7 +31,7 @@ class WTest(wt.WayfireTest):
         self.wait_for_clients(2)
 
         focus = self._get_focused()
-        if focus != 'panel':
+        if focus != 'panel' and focus != '': # '' is in wf-panel gtk4, where the popup gets focus
             return wt.Status.WRONG, f'wf-panel menu did not get focus, instead focus is {focus}'
 
         self.socket.press_key('KEY_A')

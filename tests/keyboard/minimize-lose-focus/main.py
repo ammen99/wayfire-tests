@@ -16,7 +16,7 @@ class WTest(wt.WayfireTest):
 
     def _run(self):
         # Start keylogger
-        x11 = wu.LoggedProcess(self.socket, 'x11_logger', 'x11', '&> /tmp/log')
+        x11 = wu.LoggedProcess(self.socket, 'x11_logger', 'x11')
         self.wait_for_clients_to_open(nr_clients=1)
 
         x11.reset_logs()

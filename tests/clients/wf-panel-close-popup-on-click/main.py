@@ -25,8 +25,8 @@ class WTest(wt.WayfireTest):
         self.socket.press_key('KEY_T') # Should start filtering in the menu
 
         focused = self.socket.ipc_rules_get_focused()['info']
-        if focused['title'] != 'layer-shell':
-            return wt.Status.WRONG, 'wf-panel did not get input!'
+        if focused['title'] != 'layer-shell' and focused['title'] != '': # '' in wf-panel gtk4, popup has no title
+            return wt.Status.WRONG, f'wf-panel did not get input, instead is {focused['title']}!'
 
         self.wait_for_clients(2)
 
