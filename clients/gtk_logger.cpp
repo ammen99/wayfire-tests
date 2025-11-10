@@ -24,7 +24,21 @@ enum class log_features : int
     DIALOG_SHORTCUT  = (1 << 7),
     DELAY_DIALOG     = (1 << 8),
     TEXT_INPUT       = (1 << 9),
+    LOCK_POINTER     = (1 << 10),
 };
+
+int flags = 0;
+
+static struct
+{
+    wl_pointer *pointer = NULL;
+    wl_keyboard *keyboard = NULL;
+    wl_touch *touch = NULL;
+    zwp_confined_pointer_v1 *confined = NULL;
+    zwp_locked_pointer_v1 *locked = NULL;
+    zwp_tablet_seat_v2 *tablet = NULL;
+
+} global_protocols;
 
 // ---------------------------- wl_pointer impl --------------------------------
 wl_surface *dialog_wl_surface = NULL;
@@ -78,6 +92,14 @@ void handle_pointer_button(void*, struct wl_pointer*,
     } else
     {
         logger::log(prefix + "button-release " + std::to_string(button));
+        if (flags & (int)log_features::LOCK_POINTER)
+        {
+            zwp_locked_pointer_v1_set_cursor_position_hint(global_protocols.locked,
+                wl_fixed_from_int(15), wl_fixed_from_int(23));
+            wl_surface_commit(current_surface);
+            zwp_locked_pointer_v1_destroy(global_protocols.locked);
+            global_protocols.locked = NULL;
+        }
     }
 }
 
@@ -115,6 +137,11 @@ void handle_pointer_axis120(void*, struct wl_pointer*, uint32_t, int32_t)
     // no-op
 }
 
+void handle_pointer_axis_relative_direction(void*, wl_pointer*, uint32_t, uint32_t)
+{
+    // no-op
+}
+
 const struct wl_pointer_listener pointer_logger = {
     .enter = handle_pointer_enter,
     .leave = handle_pointer_leave,
@@ -126,6 +153,7 @@ const struct wl_pointer_listener pointer_logger = {
     .axis_stop = handle_pointer_axis_stop,
     .axis_discrete = handle_pointer_axis_discrete,
     .axis_value120 = handle_pointer_axis120,
+    .axis_relative_direction = handle_pointer_axis_relative_direction,
 };
 
 // ------------------------ zwp_confined_pointer_v1 impl -----------------------
@@ -142,6 +170,22 @@ static void handle_pointer_unconfined(void*, zwp_confined_pointer_v1*)
 static const struct zwp_confined_pointer_v1_listener confined_pointer_impl = {
     .confined = handle_pointer_confined,
     .unconfined = handle_pointer_unconfined,
+};
+
+// ------------------------ zwp_locked_pointer_v1 impl -----------------------
+static void handle_pointer_locked(void*, zwp_locked_pointer_v1*)
+{
+    logger::log("pointer-locked");
+}
+
+static void handle_pointer_unlocked(void*, zwp_locked_pointer_v1*)
+{
+    logger::log("pointer-unlocked");
+}
+
+static const struct zwp_locked_pointer_v1_listener locked_pointer_impl = {
+    .locked = handle_pointer_locked,
+    .unlocked = handle_pointer_unlocked,
 };
 
 // ----------------------------- wl_keyboard impl ------------------------------
@@ -491,16 +535,6 @@ static struct wl_registry_listener registry_listener =
 
 struct wl_keyboard_listener listener;
 
-static struct
-{
-    wl_pointer *pointer = NULL;
-    wl_keyboard *keyboard = NULL;
-    wl_touch *touch = NULL;
-    zwp_confined_pointer_v1 *confined = NULL;
-    zwp_tablet_seat_v2 *tablet = NULL;
-
-} global_protocols;
-
 static wl_region *get_region_for_window(Gtk::Window *win)
 {
     auto disp = Gdk::Display::get_default();
@@ -605,6 +639,14 @@ static void setup_window(Gtk::Window *win, int flags)
         });
     }
 
+    if (flags & (int)log_features::LOCK_POINTER)
+    {
+        auto wl_surf = gdk_wayland_window_get_wl_surface(win->get_window()->gobj());
+        global_protocols.locked = zwp_pointer_constraints_v1_lock_pointer(pointer_constraints,
+            wl_surf, global_protocols.pointer, NULL, ZWP_POINTER_CONSTRAINTS_V1_LIFETIME_PERSISTENT);
+        zwp_locked_pointer_v1_add_listener(global_protocols.locked, &locked_pointer_impl, NULL);
+    }
+
     if (flags & (int)log_features::DIALOG_SHORTCUT)
     {
         win->signal_key_press_event().connect_notify([flags, win] (GdkEventKey *button)
@@ -644,7 +686,6 @@ int main(int argc, char **argv)
     a.set_default_size(200, 200);
     a.set_title(argv[1] ?: "null");
 
-    int flags = 0;
     for (int i = 3; i < argc; i++)
     {
         if (!strcmp("confine", argv[i]))
@@ -690,6 +731,10 @@ int main(int argc, char **argv)
         if (!strcmp("text-input", argv[i]))
         {
             flags |= (int)log_features::TEXT_INPUT;
+        }
+        if (!strcmp("lock-pointer", argv[i]))
+        {
+            flags |= (int)log_features::LOCK_POINTER;
         }
     }
 
