@@ -734,6 +734,7 @@ int main(int argc, char **argv)
         }
         if (!strcmp("lock-pointer", argv[i]))
         {
+            flags |= (int)log_features::POINTER;
             flags |= (int)log_features::LOCK_POINTER;
         }
     }
