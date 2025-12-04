@@ -11,7 +11,7 @@ class WTest(wt.WayfireTest):
         return self.require_test_clients(['swaylock'])
 
     def _run(self):
-        pid = self.socket.run('WAYLAND_DEBUG=1 swaylock &> /tmp/log')['pid']
+        pid = self.socket.run('swaylock')['pid']
         self.wait_for_clients(2)
         # wayfire crashes?
         self.send_signal(pid, signal.SIGUSR1)
