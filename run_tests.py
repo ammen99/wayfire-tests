@@ -313,28 +313,29 @@ def interact_show_logs():
 
 check_arguments()
 
-try:
-    run_all_tests()
-    if args.last_rerun:
-        print("Rerunning last failed tests sequentially...")
-        retries = args.maxretries
-        args.maxretries = 1
-        rerun_all_tests(1)
-        args.maxretries = retries
-except KeyboardInterrupt:
-    exit_test = True
-    print('Ctrl-C, stopping tests...')
+if __name__ == "__main__":
+    try:
+        run_all_tests()
+        if args.last_rerun:
+            print("Rerunning last failed tests sequentially...")
+            retries = args.maxretries
+            args.maxretries = 1
+            rerun_all_tests(1)
+            args.maxretries = retries
+    except KeyboardInterrupt:
+        exit_test = True
+        print('Ctrl-C, stopping tests...')
+        # Waiting for the background threads which kill all process groups
+        print("Cleaning up...")
+        time.sleep(1.0)
+        sys.exit(0)
+
+    tests_total = tests_ok + tests_skip + tests_wrong
+
+    print_test_summary()
+    if args.interactive:
+        interact_show_logs()
+
     # Waiting for the background threads which kill all process groups
     print("Cleaning up...")
     time.sleep(1.0)
-    sys.exit(0)
-
-tests_total = tests_ok + tests_skip + tests_wrong
-
-print_test_summary()
-if args.interactive:
-    interact_show_logs()
-
-# Waiting for the background threads which kill all process groups
-print("Cleaning up...")
-time.sleep(1.0)
