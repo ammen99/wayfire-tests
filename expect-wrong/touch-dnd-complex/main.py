@@ -25,7 +25,7 @@ class WTest(wt.WayfireTest):
         return wt.Status.OK, None
 
     def _get_views(self):
-        return sorted([v['title'] for v in self.socket.list_views()])
+        return sorted([v['title'] for v in self.socket.list_views() if v['mapped']])
 
     def _click_and_drag(self, src, dst):
         sx, sy = src
