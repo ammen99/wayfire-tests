@@ -28,19 +28,8 @@ parser.add_argument('-j', type=int, default='1', required=False)
 parser.add_argument('--maxretries', type=int, default='1', required=False)
 parser.add_argument('--last-rerun', action='store_true', required=False)
 parser.add_argument('--configuration', type=str, default=None, required=False)
-args = parser.parse_args()
 
 # Make tests execute slower or faster
-
-def check_exec(path):
-    if not os.access(path, os.X_OK):
-        print("The given wayfire binary \"" + path + "\" is not executable!")
-        sys.exit(-1)
-
-def check_arguments():
-    check_exec(args.wayfire)
-    if args.compare_with:
-        check_exec(args.compare_with)
 
 class TestResult:
     def __init__(self, status, msg, file_list):
@@ -48,7 +37,7 @@ class TestResult:
         self.msg = msg
         self.file_list = file_list
 
-def _run_test_once(TestType, wayfire_exe, logfile: str, image_prefix: str, timeoutMultiplier: float) -> TestResult:
+def _run_test_once(args: argparse.Namespace, TestType, wayfire_exe, logfile: str, image_prefix: str, timeoutMultiplier: float) -> TestResult:
     test = TestType()
 
     test.screenshot_prefix = image_prefix
@@ -72,14 +61,14 @@ def get_test_base_dir(test_main_file: str):
     # Ending is always main.py, so if we drop it, we get the test dir
     return test_main_file[:-7]
 
-def run_test_once(test_main_file, TestType, wayfire_exe, logfile: str, timeoutMultiplier: float, image_prefix: str, is_wayfire_B = False) -> TestResult:
+def run_test_once(args: argparse.Namespace, test_main_file, TestType, wayfire_exe, logfile: str, timeoutMultiplier: float, image_prefix: str, is_wayfire_B = False) -> TestResult:
     # Go to the directory of the test, so that any temporary files are stored there
     # and so that the wayfire.ini file can be found easily
     cwd = os.getcwd()
     os.chdir(get_test_base_dir(test_main_file))
 
     actual_log = '/dev/stdout' if args.show_log and not is_wayfire_B else logfile
-    result = _run_test_once(TestType, wayfire_exe, actual_log, os.getcwd() + '/' + image_prefix, timeoutMultiplier)
+    result = _run_test_once(args, TestType, wayfire_exe, actual_log, os.getcwd() + '/' + image_prefix, timeoutMultiplier)
     os.chdir(cwd)
     return result
 
@@ -88,7 +77,7 @@ class FailedTest:
         self.prefix = prefix
         self.gui = gui
 
-def run_single_test(testMain: str, timeoutMultiplier: float) -> Tuple[wftest.Status, str | None]:
+def run_single_test(args: argparse.Namespace, testMain: str, timeoutMultiplier: float) -> Tuple[wftest.Status, str | None]:
     spec = importlib.util.spec_from_file_location("main", testMain)
     assert spec is not None
     assert spec.loader is not None
@@ -96,11 +85,11 @@ def run_single_test(testMain: str, timeoutMultiplier: float) -> Tuple[wftest.Sta
     spec.loader.exec_module(foo) # type:ignore
 
     if foo.is_gui() and args.compare_with: # type: ignore
-        resultA = run_test_once(testMain, foo.WTest, args.wayfire, 'wayfireA.log', timeoutMultiplier, 'wayfireA') # type: ignore
+        resultA = run_test_once(args, testMain, foo.WTest, args.wayfire, 'wayfireA.log', timeoutMultiplier, 'wayfireA') # type: ignore
         if resultA.status != wftest.Status.OK:
             return resultA.status, 'wayfireA: ' + str(resultA.msg)
 
-        resultB = run_test_once(testMain, foo.WTest, args.compare_with, 'wayfireB.log', timeoutMultiplier, 'wayfireB', is_wayfire_B=True) # type: ignore
+        resultB = run_test_once(args, testMain, foo.WTest, args.compare_with, 'wayfireB.log', timeoutMultiplier, 'wayfireB', is_wayfire_B=True) # type: ignore
         if resultB.status == wftest.Status.CRASHED:
             return wftest.Status.SKIPPED, 'wayfireB: ' + str(resultB.msg)
         if resultB.status != wftest.Status.OK:
@@ -124,7 +113,7 @@ def run_single_test(testMain: str, timeoutMultiplier: float) -> Tuple[wftest.Sta
         return wftest.Status.OK, None
 
     elif not foo.is_gui() or args.force_gui:
-        result = run_test_once(testMain, foo.WTest, args.wayfire, 'wayfire.log', timeoutMultiplier, '') # type: ignore
+        result = run_test_once(args, testMain, foo.WTest, args.wayfire, 'wayfire.log', timeoutMultiplier, '') # type: ignore
         return result.status, result.msg
     else:
         return wftest.Status.SKIPPED, 'GUI test needs --compare-with'
@@ -148,11 +137,11 @@ def shouldRunTest(test_main_file: str) -> bool:
     else:
         return True
 
-def run_single_test_retry(filename: str) -> Tuple[wftest.Status, str | None, int]:
+def run_single_test_retry(args: argparse.Namespace, filename: str) -> Tuple[wftest.Status, str | None, int]:
     status = wftest.Status.SKIPPED
     explanation = "Retries <= 0?"
     for i in range(args.maxretries):
-        status, explanation = run_single_test(filename, float(i+1))
+        status, explanation = run_single_test(args, filename, float(i+1))
         if status == wftest.Status.OK:
             return status, explanation, i+1
 
@@ -160,13 +149,13 @@ def run_single_test_retry(filename: str) -> Tuple[wftest.Status, str | None, int
 
 exit_test = False
 
-def run_test_from_path(filename: str) -> Tuple[wftest.Status, str | None]:
+def run_test_from_path(args: argparse.Namespace, filename: str) -> Tuple[wftest.Status, str | None]:
     global exit_test
     if exit_test:
         return wftest.Status.SKIPPED, "Test cancelled"
 
     print("Running test " + colored(filename, 'blue') + " - ", end='')
-    status, explanation, tryIdx = run_single_test_retry(filename)
+    status, explanation, tryIdx = run_single_test_retry(args, filename)
 
     message, color = status.value
     tryColor = 'green' if status == wftest.Status.OK and tryIdx == 1 else 'magenta'
@@ -179,7 +168,7 @@ def run_test_from_path(filename: str) -> Tuple[wftest.Status, str | None]:
 
     return status, explanation
 
-def run_all_tests():
+def run_all_tests(args: argparse.Namespace, ):
     print("Running tests in directory " + colored(args.testdir, "yellow"))
     test_list = []
 
@@ -191,7 +180,7 @@ def run_all_tests():
     results_list = []
 
     with Pool(args.j) as pool:
-        results_list = pool.map(run_test_from_path, test_list)
+        results_list = pool.starmap(run_test_from_path, [(args, test) for test in test_list])
         pool.close()
 
     # Calculate statistics
@@ -230,12 +219,12 @@ def show_failed_tests():
         print(colored(str(i) + '.', 'blue'),
                 colored(get_test_base_dir(test.prefix), 'red'))
 
-def rerun_all_tests(threads: int):
+def rerun_all_tests(args: argparse.Namespace, threads: int):
     global failed_tests
     tests_to_rerun = [x.prefix for x in failed_tests]
 
     with Pool(threads) as pool:
-        results_list = pool.map(run_test_from_path, tests_to_rerun)
+        results_list = pool.starmap(run_test_from_path, [(args, test) for test in tests_to_rerun])
 
     still_failing = []
     for i in range(len(failed_tests)):
@@ -249,7 +238,7 @@ def rerun_all_tests(threads: int):
 
     failed_tests = still_failing
 
-def rerun_test(input: str):
+def rerun_test(args: argparse.Namespace, input: str):
     cmds = [x for x in input.split(' ') if x]
     cmds = cmds[1:] # drop 'run'
 
@@ -266,14 +255,14 @@ def rerun_test(input: str):
         args.ipc_timeout = 0.1
 
     if cmds[-1] == "all":
-        rerun_all_tests(1)
+        rerun_all_tests(args, 1)
         print_test_summary()
     elif cmds[-1] == "all-parallel":
-        rerun_all_tests(args.j)
+        rerun_all_tests(args, args.j)
         print_test_summary()
     else:
         idx = int(cmds[-1])
-        run_test_from_path(failed_tests[idx].prefix)
+        run_test_from_path(args, failed_tests[idx].prefix)
 
 def show_test_logs(tst: FailedTest):
     path = get_test_base_dir(tst.prefix)
@@ -291,7 +280,7 @@ def show_test_logs(tst: FailedTest):
     p.communicate()
 
 # Interactively show Wayfire logs / image diffs / etc.
-def interact_show_logs():
+def interact_show_logs(args: argparse.Namespace):
     global failed_tests
     if not failed_tests:
         return
@@ -304,23 +293,36 @@ def interact_show_logs():
 
         try:
             if idx[:3] == "run":
-                rerun_test(idx)
+                rerun_test(args, idx)
             else:
                 show_test_logs(failed_tests[int(idx)])
                 idx = int(idx)
         except:
             print("Wrong selection!")
 
-check_arguments()
+def check_exec(path):
+    if not os.access(path, os.X_OK):
+        print("The given wayfire binary \"" + path + "\" is not executable!")
+        sys.exit(-1)
+
+def check_arguments():
+    check_exec(args.wayfire)
+    if args.compare_with:
+        check_exec(args.compare_with)
 
 if __name__ == "__main__":
+    _args = parser.parse_args()
+    args = _args
+    check_arguments()
+
     try:
-        run_all_tests()
+        assert args # type: ignore
+        run_all_tests(args)
         if args.last_rerun:
             print("Rerunning last failed tests sequentially...")
             retries = args.maxretries
             args.maxretries = 1
-            rerun_all_tests(1)
+            rerun_all_tests(args, 1)
             args.maxretries = retries
     except KeyboardInterrupt:
         exit_test = True
@@ -334,7 +336,7 @@ if __name__ == "__main__":
 
     print_test_summary()
     if args.interactive:
-        interact_show_logs()
+        interact_show_logs(args)
 
     # Waiting for the background threads which kill all process groups
     print("Cleaning up...")
