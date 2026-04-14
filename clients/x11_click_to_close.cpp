@@ -8,7 +8,7 @@
 #include <X11/Xutil.h>
 #include <stdlib.h>
 #include <string.h>
-#include <iostream>
+#include <unistd.h>
 
 int main(int argc, char **argv) {
     bool set_fullscreen = 0;
@@ -16,6 +16,7 @@ int main(int argc, char **argv) {
     int y = 0;
     int width = 100;
     int height = 100;
+    int delay = 0;
 
     if (argc <= 3) {
         set_fullscreen = 1;
@@ -26,12 +27,16 @@ int main(int argc, char **argv) {
         height = atoi(argv[5]);
     }
 
+    if (argc >= 7) {
+        delay = atoi(argv[6]);
+    }
+
     auto display = XOpenDisplay(NULL);
     auto screen = DefaultScreen(display);
 
     // Create window
     auto window = XCreateSimpleWindow(display, RootWindow(display, screen),
-        x, y, width, height, 0, BlackPixel(display, screen), WhitePixel(display, screen));
+        0, 0, width, height, 0, BlackPixel(display, screen), WhitePixel(display, screen));
 
     // Set app-id so that tests can know which window is which
     XSelectInput(display, window, ButtonPressMask);
@@ -42,7 +47,11 @@ int main(int argc, char **argv) {
 
     // Map the window
     XMapWindow(display, window);
+    XFlush(display);
 
+    if (delay) {
+        usleep(delay);
+    }
 
     // Set fullscreen if needed
     if (set_fullscreen) {
