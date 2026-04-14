@@ -46,6 +46,10 @@ class WayfireIPCClient:
     def list_outputs(self):
         return self.sock.list_outputs()
 
+    def _is_xwayland_special(self, view):
+        return view['type'] == 'unmanaged' and view['title'] == 'nil' and view['app-id'] == 'nil' \
+                and not view['mapped'] and view['pid'] == -1 and view['output'] == 'null' and view['id'] == 3
+
     def list_views(self):
         try:
             views = self.sock.list_views()
@@ -67,6 +71,7 @@ class WayfireIPCClient:
             if 'output' not in views[i]:
                 views[i]['output'] = views[i]['output-name']
 
+        views = [v for v in views if not self._is_xwayland_special(v)]
         return views
 
     def layout_views(self, layout):
