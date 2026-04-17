@@ -18,6 +18,10 @@ class WTest(wt.WayfireTest):
     def _get_views(self):
         return sorted([v['title'] for v in self.socket.list_views()])
 
+    def get_subtests(self):
+        #return [('Basic', False), ('Move While Holding Button', True)]
+        return [('Move While Holding Button', True)]
+
     def _run(self):
         gtk1 = wu.LoggedProcess(self.socket, 'gtk_logger', 'gtk1', 'pointer click-to-menu')
         self.wait_for_clients(2)
@@ -43,15 +47,29 @@ class WTest(wt.WayfireTest):
         if not gtk1.expect_none():
             return wt.Status.WRONG, 'gtk1 has unexpected output: ' + gtk1.last_line
 
+        press_and_hold = self.subtest_data
+        if press_and_hold:
+            self.socket.click_button('BTN_LEFT', 'press')
+            self.wait_for_clients(2)
+            if not gtk1.expect_line("button-press 272"): # Leave main surface
+                return wt.Status.WRONG, 'gtk1 main surface did not press: ' + gtk1.last_line
+
         self.socket.move_cursor(270, 350) # Somewhere in subsurface
         self.socket.move_cursor(270, 360) # Somewhere in subsurface
         self.wait_for_clients(2)
-        if not gtk1.expect_line("pointer-leave"): # Leave main surface
-            return wt.Status.WRONG, 'gtk1 main surface did not get leave: ' + gtk1.last_line
-        if not gtk1.expect_line("pointer-enter"):
-            return wt.Status.WRONG, 'gtk1 subsurface did not get enter: ' + gtk1.last_line
-        if not gtk1.expect_line("pointer-motion 170,160"):
-            return wt.Status.WRONG, 'gtk1 subsurface did not get correct motion: ' + gtk1.last_line
+
+        if not press_and_hold:
+            if not gtk1.expect_line("pointer-leave"): # Leave main surface
+                return wt.Status.WRONG, 'gtk1 main surface did not get leave: ' + gtk1.last_line
+            if not gtk1.expect_line("pointer-enter"):
+                return wt.Status.WRONG, 'gtk1 subsurface did not get enter: ' + gtk1.last_line
+            if not gtk1.expect_line("pointer-motion 170,160"):
+                return wt.Status.WRONG, 'gtk1 subsurface did not get correct motion: ' + gtk1.last_line
+        else:
+            if not gtk1.expect_line("pointer-motion -30,50"):
+                return wt.Status.WRONG, 'gtk1 main surface did not get correct motion: ' + gtk1.last_line
+            if not gtk1.expect_line("pointer-motion -30,60"):
+                return wt.Status.WRONG, 'gtk1 main surface did not get correct motion: ' + gtk1.last_line
 
         if self._get_views() != ['gtk1']:
             return wt.Status.WRONG, 'Apps crashed? ' + str(self._get_views())
