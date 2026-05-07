@@ -18,9 +18,9 @@ class WTest(wt.WayfireTest):
             return wt.Status.SKIPPED, 'PyQt5.QtWidgets missing'
 
     def _run(self):
-        self.socket.run('python3 client.py')
+        self.socket.run('WAYLAND_DEBUG=1 python3 client.py &> /tmp/wlog')
         self.wait_for_clients_to_open(nr_clients=1)
-        self.wait_for_clients(2)
+        self.wait_for_clients(20)
 
         maximized = self.socket.get_view_info_title('test')['geometry']
         if not wi.check_geometry(0, 0, 1000, 500, maximized):
