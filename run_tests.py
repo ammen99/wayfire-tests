@@ -1,11 +1,12 @@
 #!/bin/env python3
 
 import argparse
+import json
 import os
+import shlex
 import sys
 import glob
 import importlib.util
-import subprocess
 import time
 from multiprocessing import Pool
 
@@ -21,13 +22,14 @@ parser.add_argument('wayfire', type=str)
 parser.add_argument('--compare-with', type=str, required=False)
 parser.add_argument('--show-log', action='store_true', required=False)
 parser.add_argument('--ipc-timeout', type=float, default=0.1, required=False)
-parser.add_argument('--interactive', action='store_true', required=False)
+parser.add_argument('--failscript', action='store_true', required=False)
 parser.add_argument('--categories', type=str, default='', required=False)
 parser.add_argument('--force-gui', action='store_true', required=False)
 parser.add_argument('-j', type=int, default='1', required=False)
 parser.add_argument('--maxretries', type=int, default='1', required=False)
-parser.add_argument('--last-rerun', action='store_true', required=False)
 parser.add_argument('--configuration', type=str, default=None, required=False)
+parser.add_argument('--failscript-previous', action='append', default=[], help=argparse.SUPPRESS)
+parser.add_argument('--failscript-test', action='append', default=[], help=argparse.SUPPRESS)
 
 # Make tests execute slower or faster
 
@@ -60,6 +62,235 @@ def _run_test_once(args: argparse.Namespace, TestType, wayfire_exe, logfile: str
 def get_test_base_dir(test_main_file: str):
     # Ending is always main.py, so if we drop it, we get the test dir
     return test_main_file[:-7]
+
+def get_repo_root() -> str:
+    return os.path.dirname(os.path.abspath(__file__))
+
+def get_launcher_path() -> str:
+    return os.environ.get('WF_TEST_LAUNCHER', os.path.join(get_repo_root(), 'run_tests.sh'))
+
+def encode_failed_test(test: 'FailedTest') -> str:
+    return json.dumps([test.prefix, test.gui])
+
+def decode_failed_test(raw: str) -> 'FailedTest':
+    prefix, gui = json.loads(raw)
+    return FailedTest(prefix, gui)
+
+def format_shell_array(items: List[str], indent: str = '    ') -> str:
+    if not items:
+        return '()'
+
+    joined = '\n'.join(f"{indent}{shlex.quote(item)}" for item in items)
+    return f"(\n{joined}\n)"
+
+def get_runner_args(args: argparse.Namespace) -> List[str]:
+    cli_args: List[str] = []
+
+    if args.compare_with:
+        cli_args.extend(['--compare-with', args.compare_with])
+    if args.categories:
+        cli_args.extend(['--categories', args.categories])
+    if args.force_gui:
+        cli_args.append('--force-gui')
+
+    cli_args.extend(['-j', str(args.j)])
+
+    if args.configuration is not None:
+        cli_args.extend(['--configuration', args.configuration])
+    if args.ipc_timeout != 0.1:
+        cli_args.extend(['--ipc-timeout', str(args.ipc_timeout)])
+
+    return cli_args
+
+def write_failscript(args: argparse.Namespace) -> str:
+    script_path = os.path.join(get_repo_root(), 'rerun_failed_tests.sh')
+    launcher = get_launcher_path()
+    fixed_args = get_runner_args(args)
+    failed_prefixes = [test.prefix for test in failed_tests]
+    failed_gui = ['1' if test.gui else '0' for test in failed_tests]
+    previous_failures = [encode_failed_test(test) for test in failed_tests]
+
+    script = f'''#!/bin/bash
+set -euo pipefail
+
+SCRIPT_DIR=$( cd -- "$( dirname -- "${{BASH_SOURCE[0]}}" )" &> /dev/null && pwd )
+cd "$SCRIPT_DIR"
+
+LAUNCHER={shlex.quote(launcher)}
+TESTDIR={shlex.quote(args.testdir)}
+WAYFIRE={shlex.quote(args.wayfire)}
+FIXED_ARGS={format_shell_array(fixed_args)}
+FAILED_TESTS={format_shell_array(failed_prefixes)}
+FAILED_IS_GUI={format_shell_array(failed_gui)}
+PREVIOUS_FAILURES={format_shell_array(previous_failures)}
+
+usage() {{
+    cat <<'EOF'
+Usage:
+  ./rerun_failed_tests.sh
+  ./rerun_failed_tests.sh list
+  ./rerun_failed_tests.sh show <index>
+  ./rerun_failed_tests.sh run [slow|sloow] [log] <index|all|all-parallel>
+EOF
+}}
+
+show_failed_tests() {{
+    if [ ${{#FAILED_TESTS[@]}} -eq 0 ]; then
+        printf 'No failing tests recorded.\\n'
+        return
+    fi
+
+    printf 'Failed tests:\\n'
+    local idx
+    for idx in "${{!FAILED_TESTS[@]}}"; do
+        printf '%s. %s\\n' "$idx" "${{FAILED_TESTS[$idx]%/main.py}}"
+    done
+}}
+
+require_index() {{
+    local idx=$1
+    if ! [[ "$idx" =~ ^[0-9]+$ ]] || [ "$idx" -lt 0 ] || [ "$idx" -ge "${{#FAILED_TESTS[@]}}" ]; then
+        printf 'Wrong selection!\\n' >&2
+        exit 1
+    fi
+}}
+
+show_test() {{
+    local idx=$1
+    local path="${{FAILED_TESTS[$idx]%/main.py}}"
+
+    if [ "${{FAILED_IS_GUI[$idx]}}" = "1" ]; then
+        DISPLAY="${{OLD_DISPLAY:-${{DISPLAY:-}}}}" WAYLAND_DISPLAY="${{OLD_WAYLAND_DISPLAY:-${{WAYLAND_DISPLAY:-}}}}" eog "$path"/*.png
+    else
+        "${{EDITOR:-vi}}" "$path"/*.log
+    fi
+}}
+
+run_tests() {{
+    local mode=$1
+    shift
+
+    if [ ${{#FAILED_TESTS[@]}} -eq 0 ]; then
+        printf 'No failing tests recorded.\\n'
+        return
+    fi
+
+    local extra_args=()
+    local selected_tests=()
+
+    while [ $# -gt 0 ]; do
+        case "$1" in
+            --)
+                shift
+                break
+                ;;
+            *)
+                extra_args+=("$1")
+                shift
+                ;;
+        esac
+    done
+
+    if [ "$mode" = "all" ]; then
+        local idx
+        for idx in "${{!FAILED_TESTS[@]}}"; do
+            selected_tests+=("${{FAILED_TESTS[$idx]}}")
+        done
+    elif [ "$mode" = "all-parallel" ]; then
+        local idx
+        for idx in "${{!FAILED_TESTS[@]}}"; do
+            selected_tests+=("${{FAILED_TESTS[$idx]}}")
+        done
+    else
+        require_index "$mode"
+        selected_tests+=("${{FAILED_TESTS[$mode]}}")
+    fi
+
+    local cmd=("$LAUNCHER")
+    local previous
+    cmd+=("$TESTDIR")
+    cmd+=("$WAYFIRE")
+    cmd+=("${{FIXED_ARGS[@]}}")
+    cmd+=(--maxretries 1)
+    cmd+=(--failscript)
+
+    for previous in "${{PREVIOUS_FAILURES[@]}}"; do
+        cmd+=(--failscript-previous "$previous")
+    done
+
+    local selected_test
+    for selected_test in "${{selected_tests[@]}}"; do
+        cmd+=(--failscript-test "$selected_test")
+    done
+
+    if [ "$mode" = "all" ]; then
+        cmd+=(-j 1)
+    fi
+
+    cmd+=("${{extra_args[@]}}")
+    "${{cmd[@]}}"
+}}
+
+if [ $# -eq 0 ]; then
+    show_failed_tests
+    exit 0
+fi
+
+case "$1" in
+    list)
+        show_failed_tests
+        ;;
+    show)
+        if [ $# -ne 2 ]; then
+            usage
+            exit 1
+        fi
+        require_index "$2"
+        show_test "$2"
+        ;;
+    run)
+        shift
+        timeout_arg=()
+        log_arg=()
+        while [ $# -gt 1 ]; do
+            case "$1" in
+                slow)
+                    timeout_arg=(--ipc-timeout 0.3)
+                    shift
+                    ;;
+                sloow)
+                    timeout_arg=(--ipc-timeout 1)
+                    shift
+                    ;;
+                log)
+                    log_arg=(--show-log)
+                    shift
+                    ;;
+                *)
+                    break
+                    ;;
+            esac
+        done
+
+        if [ $# -ne 1 ]; then
+            usage
+            exit 1
+        fi
+
+        run_tests "$1" -- "${{timeout_arg[@]}}" "${{log_arg[@]}}"
+        ;;
+    *)
+        usage
+        exit 1
+        ;;
+esac
+'''
+
+    with open(script_path, 'w') as f:
+        f.write(script)
+
+    os.chmod(script_path, 0o755)
+    return script_path
 
 def run_test_once(args: argparse.Namespace, test_main_file, TestType, wayfire_exe, logfile: str, timeoutMultiplier: float, image_prefix: str, is_wayfire_B = False) -> TestResult:
     # Go to the directory of the test, so that any temporary files are stored there
@@ -171,10 +402,18 @@ def run_test_from_path(args: argparse.Namespace, filename: str) -> Tuple[wftest.
 def run_all_tests(args: argparse.Namespace, ):
     print("Running tests in directory " + colored(args.testdir, "yellow"))
     test_list = []
+    seen = set()
 
-    for filename in glob.iglob(args.testdir + '/**/main.py', recursive=True):
-        if not shouldRunTest(filename):
+    if args.failscript_test:
+        candidates = args.failscript_test
+    else:
+        candidates = glob.iglob(args.testdir + '/**/main.py', recursive=True)
+
+    for filename in candidates:
+        if filename in seen or not shouldRunTest(filename):
             continue
+
+        seen.add(filename)
         test_list.append(filename)
 
     results_list = []
@@ -219,86 +458,36 @@ def show_failed_tests():
         print(colored(str(i) + '.', 'blue'),
                 colored(get_test_base_dir(test.prefix), 'red'))
 
-def rerun_all_tests(args: argparse.Namespace, threads: int):
+def merge_previous_failed_tests(args: argparse.Namespace):
     global failed_tests
-    tests_to_rerun = [x.prefix for x in failed_tests]
-
-    with Pool(threads) as pool:
-        results_list = pool.starmap(run_test_from_path, [(args, test) for test in tests_to_rerun])
-
-    still_failing = []
-    for i in range(len(failed_tests)):
-        if results_list[i][0] != wftest.Status.OK:
-            still_failing.append(failed_tests[i])
-        else:
-            global tests_ok
-            global tests_wrong
-            tests_wrong -= 1
-            tests_ok += 1
-
-    failed_tests = still_failing
-
-def rerun_test(args: argparse.Namespace, input: str):
-    cmds = [x for x in input.split(' ') if x]
-    cmds = cmds[1:] # drop 'run'
-
-    if 'log' in cmds:
-        args.show_log = True
-    else:
-        args.show_log = False
-
-    if 'sloow' in cmds:
-        args.ipc_timeout = 1
-    elif 'slow' in cmds:
-        args.ipc_timeout = 0.3
-    else:
-        args.ipc_timeout = 0.1
-
-    if cmds[-1] == "all":
-        rerun_all_tests(args, 1)
-        print_test_summary()
-    elif cmds[-1] == "all-parallel":
-        rerun_all_tests(args, args.j)
-        print_test_summary()
-    else:
-        idx = int(cmds[-1])
-        run_test_from_path(args, failed_tests[idx].prefix)
-
-def show_test_logs(tst: FailedTest):
-    path = get_test_base_dir(tst.prefix)
-    command = ""
-    if os.environ.get('OLD_DISPLAY'):
-        command += f"DISPLAY={os.environ['OLD_DISPLAY']} "
-    if os.environ.get('OLD_WAYLAND_DISPLAY'):
-        command += f"WAYLAND_DISPLAY={os.environ['OLD_WAYLAND_DISPLAY']} "
-
-    if tst.gui:
-        command += 'eog {}/*.png'.format(path)
-    else:
-        command += '$EDITOR {}/*.log'.format(path)
-    p = subprocess.Popen(['/bin/sh', '-c', command])
-    p.communicate()
-
-# Interactively show Wayfire logs / image diffs / etc.
-def interact_show_logs(args: argparse.Namespace):
-    global failed_tests
-    if not failed_tests:
+    if not args.failscript_previous:
         return
 
-    while True:
-        show_failed_tests()
-        idx = input('Enter test number from the list above (ENTER to exit):')
-        if not idx:
-            break
+    previous_failed = [decode_failed_test(raw) for raw in args.failscript_previous]
+    current_by_prefix = {test.prefix: test for test in failed_tests}
+    selected_dirs = {
+        os.path.normpath(os.path.abspath(get_test_base_dir(path)))
+        for path in args.failscript_test
+    }
+    merged: List[FailedTest] = []
+    seen = set()
 
-        try:
-            if idx[:3] == "run":
-                rerun_test(args, idx)
-            else:
-                show_test_logs(failed_tests[int(idx)])
-                idx = int(idx)
-        except:
-            print("Wrong selection!")
+    for test in previous_failed:
+        current = current_by_prefix.get(test.prefix)
+        base_dir = os.path.normpath(os.path.abspath(get_test_base_dir(test.prefix)))
+
+        if current:
+            merged.append(current)
+            seen.add(current.prefix)
+        elif base_dir not in selected_dirs:
+            merged.append(test)
+            seen.add(test.prefix)
+
+    for test in failed_tests:
+        if test.prefix not in seen:
+            merged.append(test)
+
+    failed_tests = merged
 
 def check_exec(path):
     if not os.access(path, os.X_OK):
@@ -318,12 +507,6 @@ if __name__ == "__main__":
     try:
         assert args # type: ignore
         run_all_tests(args)
-        if args.last_rerun:
-            print("Rerunning last failed tests sequentially...")
-            retries = args.maxretries
-            args.maxretries = 1
-            rerun_all_tests(args, 1)
-            args.maxretries = retries
     except KeyboardInterrupt:
         exit_test = True
         print('Ctrl-C, stopping tests...')
@@ -334,9 +517,12 @@ if __name__ == "__main__":
 
     tests_total = tests_ok + tests_skip + tests_wrong
 
+    merge_previous_failed_tests(args)
     print_test_summary()
-    if args.interactive:
-        interact_show_logs(args)
+    if args.failscript:
+        script_path = write_failscript(args)
+        show_failed_tests()
+        print(f"Updated {colored(script_path, 'yellow')} ({len(failed_tests)} failing tests recorded)")
 
     # Waiting for the background threads which kill all process groups
     print("Cleaning up...")

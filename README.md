@@ -34,18 +34,17 @@ Running many tests in parallel puts a lot of stress on the system (esp. during W
 To avoid this happening:
 
 - Do not run too many tests in parallel (personal rule of a thumb is to use a bit less than the physical core count, but of course this depends on the system).
-- Use the `--interactive` flag. After the tests are run, you will be presented with a list of tests that failed.
-You can rerun all of them sequentially by typing `run all` or in parallel with `run all-parallel` at the prompt.
-Most of the tests should now become green.
-You can also rerun a particular failed test by typing `run <test number>`, or `run slow <test number>` to add extra timeouts.
+- Use the `--failscript` flag. After the tests are run, `./rerun_failed_tests.sh` will be updated with the current list of failed tests.
+You can list them with `./rerun_failed_tests.sh list`, rerun all of them sequentially with `./rerun_failed_tests.sh run all`, or in parallel with `./rerun_failed_tests.sh run all-parallel`.
+You can also rerun a particular failed test with `./rerun_failed_tests.sh run <test number>`, or add extra timeouts with `./rerun_failed_tests.sh run slow <test number>`.
+Each rerun updates `./rerun_failed_tests.sh` again, so it always tracks the tests that are still failing.
 
 My personal workflow is like this:
 
 ```sh
-./run_tests.sh tests/ <wayfire A> --compare_with <wayfire B> -j 10 --interactive
-# At the prompt:
-run slow all-parallel
-run slow all
+./run_tests.sh tests/ <wayfire A> --compare-with <wayfire B> -j 10 --failscript
+./rerun_failed_tests.sh run slow all-parallel
+./rerun_failed_tests.sh run slow all
 ```
 
 After this, all tests are usually green :)
@@ -54,6 +53,16 @@ After this, all tests are usually green :)
 
 You can also run tests in the background by using a headless Wayfire session, the `run_nested.sh` script can be used for that.
 This is particularly useful for regression testing, where you can just leave all the tests to run and do something else in the meantime.
+
+For example:
+
+```sh
+./run_nested.sh tests/ <wayfire A> --compare-with <wayfire B> -j 10 --failscript
+./rerun_failed_tests.sh list
+./rerun_failed_tests.sh run 0
+```
+
+The generated rerun script remembers which launcher was used originally, so reruns from `run_nested.sh` stay nested.
 
 # How to write a new test
 

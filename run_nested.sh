@@ -1,5 +1,7 @@
 #!/bin/bash
 
+SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
+
 if [ -z "$1" ]; then
     echo "Usage: $0 <test_directory>"
     exit 1
@@ -24,4 +26,4 @@ display=$(cat $OUTER_LOG | grep "Using socket name" | cut -d ' ' -f 9)
 
 rm -rf $1/**/*.png
 rm -rf $1/**/*.log
-WAYLAND_DISPLAY=$display ./run_tests.sh "$@"
+WF_TEST_LAUNCHER="$SCRIPT_DIR/run_nested.sh" WAYLAND_DISPLAY=$display "$SCRIPT_DIR/run_tests.sh" "$@"

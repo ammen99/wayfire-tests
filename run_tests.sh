@@ -22,4 +22,4 @@ function build_dir {
 build_dir clients
 build_dir wleird
 
-PYTHONPATH=$PYTHONPATH:$SCRIPT_DIR/wfpytest/ PATH=$PATH:$SCRIPT_DIR/clients/build:$SCRIPT_DIR/wleird/build $SCRIPT_DIR/run_tests.py "$@"
+WF_TEST_LAUNCHER="${WF_TEST_LAUNCHER:-$SCRIPT_DIR/run_tests.sh}" PYTHONPATH=$PYTHONPATH:$SCRIPT_DIR/wfpytest/ PATH=$PATH:$SCRIPT_DIR/clients/build:$SCRIPT_DIR/wleird/build $SCRIPT_DIR/run_tests.py "$@"
