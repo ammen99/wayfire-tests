@@ -11,7 +11,7 @@ import time
 from multiprocessing import Pool
 
 from termcolor import colored
-from typing import Tuple, List
+from typing import Tuple, List, Optional
 from wfpytest import wftest
 import wfutil as wu
 import traceback
@@ -134,7 +134,30 @@ Usage:
 EOF
 }}
 
+prune_missing_tests() {{
+    local kept_tests=()
+    local kept_is_gui=()
+    local kept_previous=()
+    local idx
+
+    for idx in "${{!FAILED_TESTS[@]}}"; do
+        if [ -e "${{FAILED_TESTS[$idx]}}" ]; then
+            kept_tests+=("${{FAILED_TESTS[$idx]}}")
+            kept_is_gui+=("${{FAILED_IS_GUI[$idx]}}")
+            kept_previous+=("${{PREVIOUS_FAILURES[$idx]}}")
+        else
+            printf 'Dropping deleted test: %s\\n' "${{FAILED_TESTS[$idx]%/main.py}}"
+        fi
+    done
+
+    FAILED_TESTS=("${{kept_tests[@]}}")
+    FAILED_IS_GUI=("${{kept_is_gui[@]}}")
+    PREVIOUS_FAILURES=("${{kept_previous[@]}}")
+}}
+
 show_failed_tests() {{
+    prune_missing_tests
+
     if [ ${{#FAILED_TESTS[@]}} -eq 0 ]; then
         printf 'No failing tests recorded.\\n'
         return
@@ -156,6 +179,8 @@ require_index() {{
 }}
 
 show_test() {{
+    prune_missing_tests
+
     local idx=$1
     local path="${{FAILED_TESTS[$idx]%/main.py}}"
 
@@ -169,6 +194,8 @@ show_test() {{
 run_tests() {{
     local mode=$1
     shift
+
+    prune_missing_tests
 
     if [ ${{#FAILED_TESTS[@]}} -eq 0 ]; then
         printf 'No failing tests recorded.\\n'
@@ -245,6 +272,7 @@ case "$1" in
             usage
             exit 1
         fi
+        prune_missing_tests
         require_index "$2"
         show_test "$2"
         ;;
@@ -380,13 +408,21 @@ def run_single_test_retry(args: argparse.Namespace, filename: str) -> Tuple[wfte
 
 exit_test = False
 
-def run_test_from_path(args: argparse.Namespace, filename: str) -> Tuple[wftest.Status, str | None]:
+def run_test_from_path(args: argparse.Namespace, filename: str) -> Tuple[Optional[wftest.Status], str | None]:
     global exit_test
     if exit_test:
         return wftest.Status.SKIPPED, "Test cancelled"
 
+    if not os.path.exists(filename):
+        print("Dropping deleted test " + colored(filename, 'blue'))
+        return None, None
+
     print("Running test " + colored(filename, 'blue') + " - ", end='')
-    status, explanation, tryIdx = run_single_test_retry(args, filename)
+    try:
+        status, explanation, tryIdx = run_single_test_retry(args, filename)
+    except FileNotFoundError:
+        print("Dropping deleted test")
+        return None, None
 
     message, color = status.value
     tryColor = 'green' if status == wftest.Status.OK and tryIdx == 1 else 'magenta'
@@ -410,6 +446,10 @@ def run_all_tests(args: argparse.Namespace, ):
         candidates = glob.iglob(args.testdir + '/**/main.py', recursive=True)
 
     for filename in candidates:
+        if not os.path.exists(filename):
+            print("Dropping deleted test " + colored(filename, 'blue'))
+            continue
+
         if filename in seen or not shouldRunTest(filename):
             continue
 
@@ -428,6 +468,9 @@ def run_all_tests(args: argparse.Namespace, ):
     global tests_skip
     global failed_tests
     for (filename, (status, _)) in zip(test_list, results_list):
+        if status is None:
+            continue
+
         if status == wftest.Status.OK:
             tests_ok += 1
         elif status == wftest.Status.SKIPPED:
@@ -463,7 +506,8 @@ def merge_previous_failed_tests(args: argparse.Namespace):
     if not args.failscript_previous:
         return
 
-    previous_failed = [decode_failed_test(raw) for raw in args.failscript_previous]
+    previous_failed = [test for test in [decode_failed_test(raw) for raw in args.failscript_previous]
+            if os.path.exists(test.prefix)]
     current_by_prefix = {test.prefix: test for test in failed_tests}
     selected_dirs = {
         os.path.normpath(os.path.abspath(get_test_base_dir(path)))
