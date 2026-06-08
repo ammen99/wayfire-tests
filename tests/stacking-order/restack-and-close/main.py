@@ -22,7 +22,9 @@ class WTest(wt.WayfireTest):
 
     def _run(self):
         self.socket.run('x11_click_to_close 1 0 0 100 100')
+        self.wait_for_clients_to_open(nr_clients=1)
         self.socket.run('x11_click_to_close 2 50 50 100 100')
+        self.wait_for_clients_to_open(nr_clients=2)
         self.socket.run('x11_click_to_close 3 0 50 100 100')
         self.wait_for_clients_to_open(nr_clients=3)
 

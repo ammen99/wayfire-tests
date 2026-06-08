@@ -11,17 +11,18 @@ class WTest(wt.WayfireTest):
 
     def _run(self):
         self.socket.run('firefox')
-        self.wait_ms(1000)
+        self.wait_for_clients_to_open(nr_clients=1, waits=100)
+        self.wait_ms(500)
 
         layout = {}
         layout['firefox'] = (0, 0, 1000, 1000)
         self.socket.layout_views(layout)
-        self.wait_for_clients(2)
+        self.wait_for_clients(6)
 
         self.socket.move_cursor(980, 120)
         self.socket.click_button('BTN_LEFT', 'press')
         self.wait_ms(500)
 
-        if error := self.take_screenshot('final'):
+        if error := self.take_screenshot('2-final'):
             return wt.Status.CRASHED, error
         return wt.Status.OK, None

@@ -15,7 +15,7 @@ class WTest(wt.WayfireTest):
         self.socket.run('wleird-layer-shell -l top -a right -c red')
         self.socket.run('wleird-gamma-blend')
         self.socket.run('wleird-cursor')
-        self.wait_for_clients(2) # Wait for cursor to start
+        self.wait_for_clients_to_open(nr_clients=5)
 
         layout = {}
         layout['wleird-gamma-blend'] = (0, 0, 400, 400)

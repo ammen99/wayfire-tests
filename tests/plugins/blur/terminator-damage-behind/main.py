@@ -18,7 +18,7 @@ class WTest(wt.WayfireTest):
 
     def _run(self):
         gcs_pid = self.socket.run('gtk_color_switcher gcs')['pid']
-        self.wait_for_clients(2)
+        self.wait_for_clients_to_open(nr_clients=1)
 
         layout = {}
         layout['gcs'] = (250, 250, 500, 500)
@@ -27,7 +27,8 @@ class WTest(wt.WayfireTest):
 
         self.socket.run('terminator -m -e /bin/sh')
         self.socket.run('terminator -m -e /bin/sh')
-        self.wait_for_clients(4) # Terminator startup may be slow
+        self.wait_for_clients_to_open(nr_clients=3)
+        self.wait_for_clients(2) # Terminator startup may be slow
 
         if error := self.take_screenshot('scene-setup'):
             return wt.Status.CRASHED, error
