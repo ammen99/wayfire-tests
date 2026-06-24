@@ -33,8 +33,8 @@ class WTest(wt.WayfireTest):
         self.wait_for_clients(2)
 
         info = self.socket.get_view_info_title('TestDialog')
-        Ex = 200 - info['bbox']['x']
-        Ey = 200 - info['bbox']['y']
+        Ex = 200 - int(info['bbox']['x'])
+        Ey = 200 - int(info['bbox']['y'])
         last_line = gtk.skip_to_last_line()
         if last_line != f"pointer-enter-dialog {Ex},{Ey}" and last_line != f"dialog-pointer-motion {Ex},{Ey}":
             return wt.Status.WRONG, f'Dialog expected {Ex},{Ey} but got: {last_line}'
