@@ -22,17 +22,23 @@ class WTest(wt.WayfireTest):
 
         # position the views
         layout = {}
-        layout['gtk1'] = (0, 0, 200, 200, 'WL-1') # Overlaps the left half of WL-2
+        layout['gtk1'] = (0, 0, 200, 200, 'WL-2')
         self.socket.layout_views(layout)
         self.wait_for_clients(2)
 
         # Start a drag and move the drag icon to between the outputs
-        self.socket.move_cursor(100, 100)
+        self.socket.move_cursor(600, 100)
         self.socket.click_button('BTN_LEFT', 'press')
-        self.socket.move_cursor(150, 150)
-        self.socket.move_cursor(170, 170)
+        self.socket.move_cursor(599, 101)
+        self.socket.move_cursor(590, 105)
+        self.wait_for_clients(2)
+        if error := self.take_screenshot('dnd-icon-start'):
+            return wt.Status.CRASHED, error
+
+        self.socket.move_cursor(550, 150)
+        self.socket.move_cursor(470, 170)
         self.socket.move_cursor(350, 50)
-        self.socket.move_cursor(350, 150)
+        self.socket.move_cursor(250, 150)
         self.wait_for_clients(2)
 
         if error := self.take_screenshot('dnd-icon-active'):
