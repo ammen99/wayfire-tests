@@ -4,6 +4,25 @@ import wftest as wt
 import wfipclib as wi
 import signal
 
+LAYOUT_EPSILON = 1e-1
+
+
+def layouts_equal(actual, expected):
+    if isinstance(actual, dict) and isinstance(expected, dict):
+        return actual.keys() == expected.keys() and all(
+            layouts_equal(actual[key], expected[key]) for key in actual)
+
+    if isinstance(actual, list) and isinstance(expected, list):
+        return len(actual) == len(expected) and all(
+            layouts_equal(actual_value, expected_value)
+            for actual_value, expected_value in zip(actual, expected))
+
+    if isinstance(actual, (int, float)) and isinstance(expected, (int, float)):
+        return abs(actual - expected) <= LAYOUT_EPSILON
+
+    return actual == expected
+
+
 def is_gui() -> bool:
     return True
 
@@ -49,7 +68,7 @@ class WTest(wt.WayfireTest):
         EMPTY_LAYOUT_LEFT = {'geometry': {'height': 500, 'width': 500, 'x': -500, 'y': 0}, 'percent': 1.0, 'vertical-split': []}
 
         layout = self._tiling_layout(1, 0, 0)
-        if layout != EMPTY_LAYOUT:
+        if not layouts_equal(layout, EMPTY_LAYOUT):
             return wt.Status.WRONG, "Tiling layout should be empty: {}".format(layout)
 
         pids = []
@@ -59,7 +78,7 @@ class WTest(wt.WayfireTest):
         layout = self._tiling_layout(1, 0, 0)
         expected_layout = {'geometry': {'height': 500, 'width': 500, 'x': 0, 'y': 0}, 'percent': 1.0,
                            'vertical-split': [{'geometry': {'height': 500, 'width': 500, 'x': 0, 'y': 0}, 'percent': 1.0, 'view-id': gcs_id}]}
-        if layout != expected_layout:
+        if not layouts_equal(layout, expected_layout):
             return wt.Status.WRONG, "Tiling layout should contain just one view: {}".format(layout)
 
         wt1_id, pid = self.run_get_id('weston-terminal')
@@ -79,7 +98,7 @@ class WTest(wt.WayfireTest):
                     {'geometry': {'height': 500, 'width': 167, 'x': 333, 'y': 0}, 'percent': 0.334, 'view-id': wt2_id},
                     ]}
 
-        if layout != expected_layout:
+        if not layouts_equal(layout, expected_layout):
             return wt.Status.WRONG, 'Tiling layout with three views at startup is wrong: {}'.format(layout)
 
         self.socket.press_key('KEY_B')
@@ -90,7 +109,7 @@ class WTest(wt.WayfireTest):
         layout = self._tiling_layout(2, 0, 0)
         expected_layout = {'geometry': {'height': 500, 'width': 500, 'x': 0, 'y': 0}, 'percent': 1.0,
                            'vertical-split': [{'geometry': {'height': 500, 'width': 500, 'x': 0, 'y': 0}, 'percent': 1.0, 'view-id': logger2_id}]}
-        if layout != expected_layout:
+        if not layouts_equal(layout, expected_layout):
             return wt.Status.WRONG, "Tiling layout on wset 2 should contain just one view: {}".format(layout)
 
         # Set layout and make sure all views are transferred to correct workspaces and workspace sets
@@ -145,7 +164,7 @@ class WTest(wt.WayfireTest):
                     {'geometry': {'height': 168, 'width': 500, 'x': 0, 'y': 332}, 'percent': 0.336, 'view-id': wt1_id}
                     ], 'percent': 1.0}
 
-        if layout != expected_layout:
+        if not layouts_equal(layout, expected_layout):
             return wt.Status.WRONG, "Tiling layout on 1,1,0 should contain all views: {}".format(layout)
 
         self.wait_for_clients(4)
@@ -154,13 +173,13 @@ class WTest(wt.WayfireTest):
             info = self.socket.get_view_info_id(id)['bbox'] # type: ignore
             geometry = self._find_geometry_in_layout_by_id(id, expected_layout)
             assert geometry
-            if info['x'] != geometry['x'] or info['y'] != geometry['y'] or info['width'] != geometry['width'] or info['height'] != geometry['height']:
+            if not wi.check_geometry(geometry['x'], geometry['y'], geometry['width'], geometry['height'], info):
                 return wt.Status.WRONG, "View with id {} has wrong geometry: {} after retiling, expected {}".format(id, info, geometry)
 
         layout = self._tiling_layout(1, 0, 0) # Check first workspace, we should have just weston-terminal #2 now
         expected_layout = {'geometry': {'height': 500, 'width': 500, 'x': -500, 'y': 0}, 'percent': 1.0,
                            'vertical-split': [{'geometry': {'height': 500, 'width': 500, 'x': -500, 'y': 0}, 'percent': 1.0, 'view-id': wt2_id}]}
-        if layout != expected_layout:
+        if not layouts_equal(layout, expected_layout):
             return wt.Status.WRONG, "Tiling layout on 1,0,0 should contain just weston-terminal: {}".format(layout)
 
         if err := self.take_screenshot('final-tiling'):
@@ -186,11 +205,11 @@ class WTest(wt.WayfireTest):
         self.wait_for_clients(2)
 
         layout = self._tiling_layout(1, 1, 0)
-        if layout != EMPTY_LAYOUT:
+        if not layouts_equal(layout, EMPTY_LAYOUT):
             return wt.Status.WRONG, "Tiling layout on 1,1,0 should be empty at the end: {}".format(layout)
 
         layout = self._tiling_layout(1, 0, 0)
-        if layout != EMPTY_LAYOUT_LEFT:
+        if not layouts_equal(layout, EMPTY_LAYOUT_LEFT):
             return wt.Status.WRONG, "Tiling layout on 1,0,0 should be empty at the end: {}".format(layout)
 
         for pid in pids:

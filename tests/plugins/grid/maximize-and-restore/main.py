@@ -15,7 +15,7 @@ class WTest(wt.WayfireTest):
     def _run(self):
         self.socket.run('weston-terminal --shell=/bin/sh')
         self.socket.run('wf-panel -c wf-shell.ini')
-        self.wait_for_clients(5)
+        self.wait_for_clients_to_open(nr_clients=2)
 
         layout = {}
         layout[self.WESTON_TERMINAL_APP_ID] = (100, 200, 300, 300)

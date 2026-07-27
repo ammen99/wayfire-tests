@@ -28,14 +28,14 @@ class WTest(wt.WayfireTest):
             return wt.Status.WRONG, f'weston-terminal should be focused in the beginning, instead focus is {focus}'
 
         self.socket.press_key('KEY_A')
-        self.wait_for_clients(2)
+        self.wait_for_clients(4)
 
         focus = self._get_focused()
         if focus != 'panel' and focus != '': # '' is in wf-panel gtk4, where the popup gets focus
             return wt.Status.WRONG, f'wf-panel menu did not get focus, instead focus is {focus}'
 
         self.socket.press_key('KEY_A')
-        self.wait_for_clients(2)
+        self.wait_for_clients(4)
 
         focus = self._get_focused()
         if focus != self.WESTON_TERMINAL_APP_ID:

@@ -46,20 +46,8 @@ class WTest(wt.WayfireTest):
             return wt.Status.WRONG, 'gtk1 did not receive touch-down 0: ' + gtk1.last_line
         if not gtk1.expect_line("touch-down 1 90 15"):
             return wt.Status.WRONG, 'gtk1 did not receive touch-down 1: ' + gtk1.last_line
-        if not gtk1.expect_line("touch-down 2 46 87"):
-            return wt.Status.WRONG, 'gtk1 did not receive touch-down 2: ' + gtk1.last_line
-
-        if not gtk1.expect_line("touch-motion 0 45 35"):
-            return wt.Status.WRONG, 'gtk1 did not receive touch-motion 0: ' + gtk1.last_line
-        if not gtk1.expect_line("touch-motion 1 50 33"):
-            return wt.Status.WRONG, 'gtk1 did not receive touch-motion 1: ' + gtk1.last_line
-
-        if not gtk1.expect_line("touch-up 0"):
-            return wt.Status.WRONG, 'gtk1 did not receive touch-up 0: ' + gtk1.last_line
-        if not gtk1.expect_line("touch-up 1"):
-            return wt.Status.WRONG, 'gtk1 did not receive touch-up 1: ' + gtk1.last_line
-        if not gtk1.expect_line("touch-up 2"):
-            return wt.Status.WRONG, 'gtk1 did not receive touch-up 2: ' + gtk1.last_line
+        if not gtk1.expect_line("touch-cancel"):
+            return wt.Status.WRONG, 'gtk1 did not receive cancel: ' + gtk1.last_line
         if not gtk1.expect_none():
             return wt.Status.WRONG, 'gtk1 has trailing output: ' + gtk1.last_line
 

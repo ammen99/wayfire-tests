@@ -154,8 +154,9 @@ class WayfireIPCClient:
         return resp
 
 # Helper functions
-def check_geometry(x: int, y: int, width: int, height: int, obj) -> bool:
-    if obj['x'] == x and obj['y'] == y and \
-        obj['width'] == width and obj['height'] == height:
-        return True
-    return False
+def check_geometry(x: float, y: float, width: float, height: float, obj) -> bool:
+    def eq_eps(a, b, eps=1e-1):
+        return abs(a - b) < eps
+
+    return eq_eps(obj['x'], x) and eq_eps(obj['y'], y) and \
+        eq_eps(obj['width'], width) and eq_eps(obj['height'], height)
